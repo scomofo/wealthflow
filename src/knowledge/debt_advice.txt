@@ -1,0 +1,824 @@
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 1 | Confidential — For AI Agent Training Only   
+COMPREHENSIVE ALBERTA  
+DEBT ADVICE & CONSUMER 
+PROTECTION  
+AI Agent Training Reference Document  
+2025–2026 Current Data  
+Prepared for AI Knowledge Integration  
+Last Updated: February 2026  
+DISCLAIMER: This document contains legal information only, not legal advice. Always recommend 
+clients consult a Licensed Insolvency Trustee (LIT), lawyer, or qualified professional for advice specific to 
+their situation.  
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 2 | Confidential — For AI Agent Training Only  TABLE OF CONTENTS  
+1. Alberta Debt Landscape & Legislative Framework ................................................................. 5 
+1.1 Key Federal Legislation .................................................................................................... 5 
+1.2 Key Alberta Legislation ..................................................................................................... 5 
+1.3 Key Administrative Bodies ................................................................................................ 5 
+2. Types of Debt & Priority Rules ............................................................................................... 7 
+2.1 Secured vs. Unsecured Debt ............................................................................................ 7 
+2.2 Priority Debts .................................................................................................................... 7 
+2.3 Common Consumer Debt Categories ............................................................................... 7 
+3. Debt Collection Rules in Alberta ............................................................................................. 8 
+3.1 Licensing Requirements ................................................................................................... 8 
+3.2 What Collectors Cannot Do .............................................................................................. 8 
+3.3 What Collectors Must Do .................................................................................................. 8 
+3.4 Filing a Complaint ............................................................................................................. 8 
+4. Limitation Periods on Debt in Alberta ..................................................................................... 9 
+4.1 The Two-Year / Ten-Year Rule ......................................................................................... 9 
+4.2 Resetting the Clock .......................................................................................................... 9 
+4.3 What Statute-Barred Means (and Doesn’t Mean) ............................................................. 9 
+4.4 Special Limitation Rules ................................................................................................... 9 
+5. Wage Garnishment in Alberta ...............................................................................................10 
+5.1 How Garnishment Works .................................................................................................10 
+5.2 Alberta Garnishment Exemptions (Civil Enforcement Act) ...............................................10 
+5.3 Exempt Income Types .....................................................................................................10 
+5.4 Stopping Wage Garnishment ...........................................................................................10 
+6. Exempt Property in Alberta (Civil Enforcement Act) ..............................................................12 
+6.1 Exemption Amounts ........................................................................................................12 
+6.2 Farming Exemptions ........................................................................................................12 
+6.3 What Happens If Equity Exceeds the Exemption? ...........................................................12 
+7. Consumer Proposals .............................................................................................................13 
+7.1 Overview .........................................................................................................................13 
+7.2 Eligibility ..........................................................................................................................13 
+7.3 Process ...........................................................................................................................13 
+7.4 Key Features ...................................................................................................................13 
+8. Personal Bankruptcy in Alberta .............................................................................................15 
+8.1 Overview .........................................................................................................................15 
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 3 | Confidential — For AI Agent Training Only  8.2 Eligibility ..........................................................................................................................15 
+8.3 Surplus Income Rules (2025) ..........................................................................................15 
+8.4 Discharge Timelines ........................................................................................................15 
+8.5 Duties of a Bankrupt ........................................................................................................15 
+8.6 Debts NOT Discharged in Bankruptcy .............................................................................16 
+9. Orderly Payment of Debts (OPD) — Alberta-Specific ............................................................17 
+9.1 Overview .........................................................................................................................17 
+9.2 How It Works ...................................................................................................................17 
+9.3 Eligibility ..........................................................................................................................17 
+9.4 OPD vs. Consumer Proposal Comparison .......................................................................17 
+10. Credit Counselling & Debt Management Programs .............................................................18 
+10.1 Non-Profit Credit Counselling ........................................................................................18 
+10.2 Debt Management Programs (DMPs) ............................................................................18 
+10.3 Warning: For-Profit Debt Relief Companies ...................................................................18 
+11. Credit Reporting in Canada (Alberta Focus) ........................................................................19 
+11.1 Credit Bureaus ...............................................................................................................19 
+11.2 How Long Negative Information Stays on Credit Reports ..............................................19 
+11.3 Credit Score Ratings......................................................................................................19 
+11.4 Disputing Errors .............................................................................................................19 
+12. Student Loan Debt ..............................................................................................................20 
+12.1 The 7-Year Rule ............................................................................................................20 
+12.2 Key Rules (Updated After Piekut v. Canada, 2025 SCC 13) ..........................................20 
+12.3 Repayment Assistance Program (RAP) .........................................................................20 
+12.4 Default and CRA Collections .........................................................................................20 
+13. CRA Tax Debt & Collection Powers ....................................................................................21 
+13.1 CRA’s Special Collection Powers ..................................................................................21 
+13.2 Dealing with CRA Debt ..................................................................................................21 
+13.3 CRA Limitation Period ...................................................................................................21 
+14. Payday Loans & Predatory Lending ....................................................................................22 
+14.1 Alberta Payday Loan Rules (as of January 1, 2025) ......................................................22 
+14.2 Federal Criminal Interest Rate (2025) ............................................................................22 
+14.3 Escaping the Payday Loan Cycle ..................................................................................22 
+15. Family Debt Issues in Alberta ..............................................................................................23 
+15.1 Joint Debt ......................................................................................................................23 
+15.2 Spousal Liability .............................................................................................................23 
+15.3 Debt and Separation/Divorce .........................................................................................23 
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 4 | Confidential — For AI Agent Training Only  15.4 Death and Debt .............................................................................................................23 
+16. Practical Debt Repayment Strategies ..................................................................................24 
+16.1 Debt Repayment Methods .............................................................................................24 
+16.2 Budgeting Frameworks ..................................................................................................24 
+16.3 Emergency Fund ...........................................................................................................24 
+16.4 Negotiation Tactics ........................................................................................................24 
+16.5 Decision Framework: Which Option Is Right? ................................................................24 
+17. Alberta Resources & Contact Information ...........................................................................26 
+18. Quick Reference: Key Numbers & Timelines .......................................................................27 
+ 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 5 | Confidential — For AI Agent Training Only  1. Alberta Debt Landscape & Legislative Framework 
+Alberta operates within a dual federal-provincial framework for debt law. Federal legislation 
+governs insolvency proceedings, while provincial legislation governs debt collection, civil 
+enforcement, and consumer protection. Understanding both layers is essential for providing 
+comprehensive debt advice to Albertans. 
+1.1 Key Federal Legislation 
+• Bankruptcy and Insolvency Act (BIA): The primary federal statute governing personal 
+bankruptcy, consumer proposals, Division I proposals, and surplus income rules. 
+Administered by the Office of the Superintendent of Bankruptcy (OSB) through Licensed 
+Insolvency Trustees (LITs). 
+• Criminal Code, s. 347 (Criminal Interest Rate): Effective January 1, 2025, the criminal 
+interest rate was lowered from ~60% effective annual rate to 35% APR. Payday loans 
+are separately capped at $14 per $100 borrowed federally. 
+• Canada Student Loans Act / Canada Student Financial Assistance Act: Governs 
+federal student loan programs, repayment assistance (RAP), and the 7-year discharge 
+rule in bankruptcy. 
+• Income Tax Act: Gives CRA broad collection powers including garnishment without a 
+court order, set-off of refunds/benefits, and liens on property. 
+1.2 Key Alberta Legislation 
+• Civil Enforcement Act (CEA): Governs wage garnishment rules, exempt property in 
+seizure proceedings, and enforcement of civil judgments in Alberta. Key source for asset 
+exemption amounts. 
+• Limitations Act (RSA 2000, c. L-12): Sets the 2-year limitation period for creditors to 
+sue on debts, plus a 10-year ultimate limitation. Acknowledgment or partial payment can 
+reset the 2-year clock. 
+• Consumer Protection Act / Fair Trading Act: Regulates debt collection agencies, debt 
+repayment agencies, and payday lenders. All must be licensed with the Province of 
+Alberta. 
+• Collection and Debt Repayment Practices Regulation: Detailed rules governing how 
+collectors can contact debtors, prohibited practices, and complaint processes. 
+• Payday Loans Regulation: Regulates short-term lending including maximum loan 
+amounts ($1,500), terms (42–62 days), and borrowing costs. 
+1.3 Key Administrative Bodies 
+Body Jurisdiction  Role 
+Office of the Superintendent 
+of Bankruptcy (OSB)  Federal Regulates LITs, sets surplus income standards, 
+maintains public bankruptcy records  
+Service Alberta / Consumer 
+Investigations Unit  Provincial  Licenses and regulates collection agencies, debt 
+repayment agencies, payday lenders  
+Money Mentors  Provincial 
+(non-profit)  Exclusive administrator of Alberta’s Orderly Payment of 
+Debts (OPD) program  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 6 | Confidential — For AI Agent Training Only  Body Jurisdiction  Role 
+Canada Revenue Agency 
+(CRA) Federal Collects tax debts; has special powers including 
+garnishment without court order  
+Maintenance Enforcement 
+Program (MEP)  Provincial  Enforces child/spousal support orders; can garnish 
+wages without court order  
+Alberta Courts (Court of 
+King’s Bench)  Provincial  Issues garnishee summons, hears bankruptcy/proposal 
+matters, grants consolidation orders  
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 7 | Confidential — For AI Agent Training Only  2. Types of Debt & Priority Rules 
+2.1 Secured vs. Unsecured Debt 
+Secured debt is backed by collateral (e.g., mortgage on a home, lien on a vehicle). If the 
+borrower defaults, the creditor can seize the collateral. Examples: mortgages, vehicle loans, 
+home equity lines of credit (HELOC). 
+Unsecured debt has no collateral backing. The creditor must obtain a court judgment before 
+seizing assets or garnishing wages. Examples: credit cards, personal loans, medical bills, utility 
+bills, most student loans. 
+2.2 Priority Debts 
+Some debts take priority over others in insolvency and cannot easily be eliminated: 
+• Child and spousal support arrears: Survive bankruptcy; cannot be discharged. MEP 
+can garnish wages without a court order. 
+• Court-ordered fines and restitution: Not discharged in bankruptcy. 
+• Debts arising from fraud or misrepresentation: Not discharged if creditor can prove 
+fraud. 
+• Student loans (within 7 years): Government student loans are not dischargeable if 
+bankruptcy occurs within 7 years of ceasing to be a student (5-year hardship exception 
+available). 
+• CRA tax debt: Can be included in consumer proposals and bankruptcy, but CRA has 
+special collection powers and may oppose discharge if tax debt is large (≥$200,000 and 
+≥75% of total unsecured claims). 
+2.3 Common Consumer Debt Categories 
+Category  Typical Interest  Secured?  Dischargeable?  
+Mortgage  4–7% variable/fixed  Yes (home)  No (secured)  
+Vehicle loan  5–10% Yes (vehicle)  No (secured)  
+Credit cards  19.99–29.99%  No Yes 
+Personal line of credit  7–15% Usually no  Yes 
+Payday loans  Up to 35% APR (new 
+cap) No Yes 
+Student loans (gov’t)  Prime + 0% (Canada)  No After 7 years  
+CRA tax debt  Prescribed rate + 4%  No Yes (with caveats)  
+Medical/dental bills  Varies No Yes 
+Utility arrears  Varies No Yes 
+Child/spousal support  N/A No Never 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 8 | Confidential — For AI Agent Training Only  3. Debt Collection Rules in Alberta 
+3.1 Licensing Requirements 
+All collection agencies, collectors, debt repayment agencies, and debt repayment agents must 
+be licensed under Alberta’s Consumer Protection Act and the Collection and Debt Repayment 
+Practices Regulation. The following are NOT covered by these rules: original creditors collecting 
+their own debts, lawyers collecting debts for clients, and civil enforcement bailiffs seizing 
+property under a court order. 
+3.2 What Collectors Cannot Do 
+• Contact frequency: Cannot make more than 3 unsolicited contacts in any 7-
+consecutive-day period (excludes mail and mistaken contacts). 
+• Hours: Cannot contact you before 7:00 AM or after 10:00 PM Alberta time. 
+• Workplace: Cannot contact you at work if you have asked them not to and provided 
+alternative contact arrangements. 
+• Third parties: Cannot discuss your debt with anyone except you (unless that person 
+has accepted responsibility or you gave permission). 
+• Threats/harassment: Cannot use threatening, profane, intimidating, or coercive 
+language. 
+• False information: Cannot produce, distribute, or publish false, misleading, or 
+deceptive information. 
+• Costs to debtor: Cannot contact you in a way that costs you money (e.g., collect calls). 
+• Old debts: Cannot pursue a non-judgment debt where the last payment or written 
+acknowledgment is more than 6 years old. 
+• Police involvement: Cannot involve or threaten to involve the police in debt collection 
+matters. 
+• Suggest others are liable: Cannot suggest a spouse, friend, or relative is responsible 
+for your debt unless they have accepted responsibility. 
+3.3 What Collectors Must Do 
+• Identify themselves, the name of the collection agency, the creditor they represent, and 
+the amount owed. 
+• Send a written collection notice to the debtor’s last-known address before further 
+contact. 
+• Maintain records of all collection activities for at least 3 years. 
+• Prove the debt exists if challenged by the debtor. 
+3.4 Filing a Complaint 
+If a collection agency violates these rules, the debtor can file a consumer complaint with Service 
+Alberta’s Consumer Investigations Unit. Service Alberta can investigate and take enforcement 
+action including fines or licence revocation. Contact: 780-427-4088 or toll-free 1-877-427-4088. 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 9 | Confidential — For AI Agent Training Only  4. Limitation Periods on Debt in Alberta 
+4.1 The Two-Year / Ten-Year Rule 
+Under Alberta’s Limitations Act (RSA 2000, c. L-12), a creditor must commence legal action 
+within: 
+• 2 years after they first knew or ought to have known about the debt (the “discoverability” 
+clock); AND 
+• 10 years after the claim originally arose (the “ultimate” limitation period). 
+Whichever expires first applies. After these periods, the debt becomes “statute-barred” — 
+meaning a creditor can no longer obtain a court judgment to enforce it. 
+4.2 Resetting the Clock 
+IMPORTANT: The 2-year limitation period can be reset (restarted) if the debtor:  
+• Acknowledges the debt in writing (an admission that the sum is due and unpaid). 
+• Makes a partial payment toward the debt. 
+Even casual written communications (email, text, DM) admitting the debt can reset the clock. 
+Once the 10-year ultimate limitation has expired, however, the debt is permanently statute-
+barred and cannot be reset by any action. 
+4.3 What Statute-Barred Means (and Doesn’t Mean) 
+• Does mean: The creditor cannot sue you or obtain a judgment. No wage garnishment or 
+asset seizure is possible through the courts. 
+• Does NOT mean: The debt disappears. You still technically owe it. Collectors can still 
+call (though they cannot threaten legal action). The debt may remain on your credit 
+report for up to 6 years from date of last activity. 
+4.4 Special Limitation Rules 
+Debt Type  Limitation Period  Notes 
+Most unsecured debts  2 years (discoverable) / 10 
+years (ultimate)  Standard rule under Limitations Act  
+Secured debts 
+(mortgages)  Potentially longer  Governed by specific loan/mortgage terms  
+CRA tax debt  6–10 years from 
+assessment  CRA has its own collection limitation under 
+the Income Tax Act; generally 6 years from 
+assessment, extendable to 10  
+Court judgments  Up to 10 years  A judgment obtained before the limitation 
+expires can be enforced for up to 10 years 
+and may be renewed  
+Child/spousal support  No limitation  Support obligations do not expire under 
+limitation periods  
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 10 | Confidential — For AI Agent Training Only  5. Wage Garnishment in Alberta 
+5.1 How Garnishment Works 
+Most creditors must first sue the debtor and obtain a court judgment before issuing a garnishee 
+summons to the debtor’s employer. Exceptions to the court-order requirement include: 
+• Canada Revenue Agency (CRA): Can garnish wages without a court order for unpaid 
+taxes or overpaid benefits. 
+• Maintenance Enforcement Program (MEP): Can garnish wages for unpaid 
+child/spousal support without a court order. 
+• Credit unions: Exempt from the court order requirement under certain circumstances. 
+• Federal student loans in default: CRA may garnish wages once the loan is in 
+collections. 
+5.2 Alberta Garnishment Exemptions (Civil Enforcement Act) 
+Garnishment exemptions are calculated on NET monthly income (after taxes and mandatory 
+deductions): 
+Income Tier  Garnishment Rule  Effect 
+First $800/month  100% exempt  Cannot be touched  
+$800 to $2,400/month  50% can be garnished  You keep at least half  
+Above $2,400/month  100% can be garnished  No protection above this tier  
+Per dependent  +$200 to exempt amount  Increases $800 base by $200 per 
+dependent  
+ 
+Example: A single person earning $3,000/month net. First $800 is exempt. Of the next $1,600 
+($800–$2,400), 50% = $800 can be garnished. Remaining $600 above $2,400 is fully 
+garnishable. Total garnishment: $800 + $600 = $1,400/month. 
+5.3 Exempt Income Types 
+• Canada Pension Plan (CPP) benefits — generally exempt from regular creditor 
+garnishment 
+• Employment Insurance (EI) benefits 
+• Workers’ Compensation Board (WCB) payments 
+• Social assistance / AISH (Alberta Income for the Severely Handicapped) 
+• Widow’s pension, handicap benefits — if kept separate from other funds 
+IMPORTANT: Self-employed individuals do NOT benefit from the $800 base exemption. 
+Creditors can potentially garnish 100% of self-employed business income.  
+5.4 Stopping Wage Garnishment 
+• Negotiate with creditors: Propose a voluntary payment plan before or after 
+garnishment begins. 
+• Orderly Payment of Debts (OPD): Filing triggers a stay of proceedings that stops 
+garnishment immediately. 
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 11 | Confidential — For AI Agent Training Only  • Consumer Proposal: Filing triggers a stay of proceedings that stops garnishment 
+immediately. 
+• Bankruptcy: Filing triggers a stay of proceedings that stops garnishment immediately. 
+Employment Protection: Alberta law prohibits employers from firing an employee because their 
+wages are being garnished. 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 12 | Confidential — For AI Agent Training Only  6. Exempt Property in Alberta (Civil Enforcement Act) 
+Alberta’s Civil Enforcement Act sets out which property is protected from seizure by creditors or 
+in bankruptcy. Exemptions apply to the EQUITY in an asset (value minus secured debt), and 
+values are based on liquidation/garage-sale value, not replacement cost. 
+6.1 Exemption Amounts 
+Asset Category  Exemption Limit  Details 
+Clothing $4,000 total  For you and your dependants  
+Food 12 months’ supply  Enough for you and dependants  
+Household furnishings & 
+appliances  $4,000 total  Based on liquidation value  
+One motor vehicle  $5,000 equity  Essential for transportation  
+Tools of the trade / work 
+equipment  $10,000 equity  Personal property needed to earn income  
+Principal residence  $40,000 equity  Reduced proportionally if co-owned  
+Health aids  No limit All medical/dental aids exempt  
+Social allowance / AISH / 
+disability Fully exempt  If kept separate from other funds  
+RRSPs / RRIFs  Fully exempt  Except contributions made in last 12 months  
+RDSPs Fully exempt  No clawback period  
+RESPs Fully exempt  Protected under Alberta rules  
+Locked-in pensions (LIRA, LIF)  Fully exempt  All locked-in pension funds protected  
+DPSPs (Deferred Profit 
+Sharing Plans)  Fully exempt  Protected under BIA  
+6.2 Farming Exemptions 
+• Farmland: Up to 160 acres exempt if it includes your principal residence and is part of 
+your farming operation. 
+• Farm equipment & supplies: All personal property necessary to conduct farming 
+operations for the next 12 months is exempt. 
+6.3 What Happens If Equity Exceeds the Exemption? 
+If you have equity above the exempt amount, you have two options in bankruptcy: (1) pay the 
+trustee the difference between your equity and the exemption, allowing you to keep the asset; or 
+(2) surrender the asset to the trustee for sale, with the exempt portion returned to you. 
+Example: Home worth $350,000 with a $300,000 mortgage = $50,000 equity. The exemption is 
+$40,000. You would need to pay $10,000 to the estate to keep the home, or explore a consumer 
+proposal as an alternative. 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 13 | Confidential — For AI Agent Training Only  7. Consumer Proposals 
+7.1 Overview 
+A consumer proposal is a legally binding agreement between a debtor and their unsecured 
+creditors, administered by a Licensed Insolvency Trustee (LIT) under the BIA. It allows the 
+debtor to repay a portion of their debts over time, typically at a significant reduction. 
+7.2 Eligibility 
+• Maximum debt: $250,000 in total unsecured debts (excluding mortgage on principal 
+residence). For debts above $250,000, a Division I Proposal is available. 
+• Insolvent: Must be unable to pay debts as they come due, or owe more than the fair 
+value of assets. 
+• Only a LIT can file: Only a Licensed Insolvency Trustee can administer a consumer 
+proposal. Beware of debt relief companies that charge fees and then refer to a LIT. 
+7.3 Process 
+• 1. Consultation with a LIT — free initial assessment of income, debts, assets, and 
+expenses. 
+• 2. LIT drafts a proposal offering creditors more than they would receive in a bankruptcy. 
+• 3. Proposal is filed with the OSB — an automatic stay of proceedings takes effect 
+immediately. 
+• 4. Creditors have 45 days to accept or reject (a meeting of creditors may be called). 
+• 5. Majority in dollar value must vote to accept for the proposal to be binding on ALL 
+unsecured creditors. 
+• 6. Debtor makes fixed monthly payments to the LIT for up to 5 years (can pay off early 
+with no penalty). 
+• 7. LIT distributes payments to creditors. Upon completion, remaining debts are 
+discharged. 
+7.4 Key Features 
+Feature Details 
+Debt reduction  Most people repay 20–50% of what they owe; up to 70–80% reduction 
+possible 
+Maximum term  5 years (60 months); can be paid off sooner with no penalty  
+Interest No interest charged on proposal payments  
+Assets You keep ALL assets — no asset surrender required  
+Stay of proceedings  Stops wage garnishment, collection calls, and lawsuits immediately upon 
+filing 
+Credit impact  R7 rating; removed 3 years after completion or 6 years after filing 
+(whichever is sooner)  
+Cost to debtor  No upfront fees; LIT fees are paid from the proposal funds (federally 
+regulated tariff)  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 14 | Confidential — For AI Agent Training Only  Feature Details 
+Default risk  If you miss 3 payments, the proposal is annulled and debts revert to 
+original amounts  
+Income changes  Your payments are FIXED; if your income increases, payments do not 
+increase 
+Includes CRA debt  Yes — consumer proposals can include income tax and GST debt  
+IMPORTANT: Consumer proposals are the most popular formal debt relief option in Canada, 
+with high acceptance rates (97–99% industry-wide). They are generally preferred over 
+bankruptcy for people who have assets to protect or higher incomes.  
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 15 | Confidential — For AI Agent Training Only  8. Personal Bankruptcy in Alberta 
+8.1 Overview 
+Personal bankruptcy is a legal process under the BIA that provides an honest but unfortunate 
+debtor with a fresh financial start. The debtor assigns their non-exempt assets to a Licensed 
+Insolvency Trustee, who converts them to cash and distributes proceeds to creditors. Upon 
+discharge, most unsecured debts are eliminated. 
+8.2 Eligibility 
+• Must owe at least $1,000 in total debts. 
+• Must be insolvent (unable to pay debts as they come due, or total debts exceed fair 
+value of assets). 
+• Must reside in, carry on business in, or have property in Canada. 
+8.3 Surplus Income Rules (2025) 
+The OSB sets income thresholds based on household size. If your net monthly income exceeds 
+the threshold by more than $200, you must pay 50% of the surplus to the estate, and your 
+bankruptcy is extended. 
+Family Size  2025 Monthly Threshold  Notes 
+1 person $2,666 Single individual, no dependants  
+2 persons  $3,318 Includes single parent with one 
+child 
+3 persons  $4,080  
+4 persons  $4,953  
+5 persons  $5,618  
+6 persons  $6,335  
+7+ persons  $7,052 Add ~$717 per additional person  
+8.4 Discharge Timelines 
+Scenario  Discharge Timeline  
+First bankruptcy, NO surplus income  9 months (automatic discharge)  
+First bankruptcy, WITH surplus income 
+(>$200/month)  21 months (must pay surplus for full period)  
+Second bankruptcy, NO surplus income  24 months  
+Second bankruptcy, WITH surplus income  36 months  
+Third+ bankruptcy  No automatic discharge; court hearing 
+required 
+8.5 Duties of a Bankrupt 
+• Surrender all non-exempt assets and credit cards to the LIT. 
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 16 | Confidential — For AI Agent Training Only  • Report monthly income and expenses to the LIT (provide pay stubs). 
+• Make surplus income payments as required. 
+• Attend two mandatory financial counselling sessions. 
+• Assist the LIT in administering the estate (provide information, attend meetings if 
+required). 
+• Not obtain credit of $1,000 or more without disclosing bankruptcy status. 
+• Keep the LIT informed of address changes. 
+8.6 Debts NOT Discharged in Bankruptcy 
+• Fines, penalties, or restitution orders imposed by a court. 
+• Damages for bodily harm intentionally inflicted, or sexual assault. 
+• Child support and spousal support obligations. 
+• Debts obtained through fraud or misrepresentation. 
+• Government student loans (if bankruptcy occurs within 7 years of ceasing to be a 
+student). 
+• Debts for dividends a director is liable to pay to a corporation. 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 17 | Confidential — For AI Agent Training Only  9. Orderly Payment of Debts (OPD) — Alberta-Specific 
+9.1 Overview 
+The Orderly Payment of Debts (OPD) program is a unique debt consolidation option available in 
+Alberta (also Saskatchewan, PEI, and Nova Scotia). It is legislated under Part X of the BIA and 
+administered exclusively in Alberta by Money Mentors, a non-profit organization. OPD 
+consolidates unsecured debts into a single monthly payment at a fixed 5% interest rate. 
+9.2 How It Works 
+• A provincial credit counsellor (Money Mentors) files an application to the Court for a 
+consolidation order. 
+• The court order consolidates your unsecured debts into one monthly payment. 
+• You pay 100% of your unsecured debt + 5% interest, distributed to creditors by Money 
+Mentors. 
+• Maximum repayment period: up to 5 years (some sources cite 3 years as typical; the BIA 
+allows up to 5). 
+• A stay of proceedings stops wage garnishment, collection calls, and lawsuits. 
+9.3 Eligibility 
+• Must be an Alberta resident. 
+• Must have a stable source of income. 
+• Must be unable to pay debts as they come due. 
+• Only unsecured debts are included — CRA tax debts and business debts are excluded. 
+• Creditors owed more than $1,000 must consent to be included. 
+9.4 OPD vs. Consumer Proposal Comparison 
+Feature OPD Consumer Proposal  
+Amount repaid  100% of debt + 5% interest  Typically 20–50% of debt  
+Interest rate  Fixed at 5%  0% (no interest)  
+Maximum term  Up to 5 years  Up to 5 years  
+Assets at risk  None None 
+Credit impact  R7 for 2 years after completion  R7 for 3 years after completion (or 6 
+from filing)  
+Stay of proceedings  Yes Yes 
+CRA debt included  No Yes 
+Administrator  Money Mentors (non-profit)  Licensed Insolvency Trustee  
+Upfront cost  None None (fees from proposal funds)  
+Best for Those who can repay in full but need 
+lower interest  Those who cannot repay in full  
+Contact Money Mentors: 1-888-294-0076 | moneymentors.ca 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 18 | Confidential — For AI Agent Training Only  10. Credit Counselling & Debt Management Programs 
+10.1 Non-Profit Credit Counselling 
+Non-profit credit counselling agencies provide free or low-cost financial education, budgeting 
+assistance, and debt management programs. Key Alberta/national organizations include: 
+• Money Mentors (Alberta): Non-profit, exclusive OPD provider, offers free financial 
+counselling to all Albertans. 
+• Credit Counselling Society: National non-profit offering free debt counselling and 
+DMPs across Canada. 
+• Credit Counselling Canada: National association of non-profit credit counselling 
+organizations. 
+10.2 Debt Management Programs (DMPs) 
+A DMP is a voluntary agreement between the debtor and creditors, administered by a credit 
+counselling agency. The agency negotiates lower interest rates and consolidates payments into 
+a single monthly amount. Key differences from OPD: DMPs are not court-ordered and not 
+binding on creditors; creditors can withdraw at any time. Typical term: 3–5 years. 
+10.3 Warning: For-Profit Debt Relief Companies 
+IMPORTANT: Many for-profit debt settlement companies market aggressively in Alberta, 
+charging thousands in fees before referring clients to a LIT. Only a Licensed Insolvency Trustee 
+can file a consumer proposal or bankruptcy. Non-profit credit counsellors (e.g., Money Mentors, 
+Credit Counselling Society) provide free referrals. The OSB maintains a searchable directory of 
+licensed trustees.  
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 19 | Confidential — For AI Agent Training Only  11. Credit Reporting in Canada (Alberta Focus) 
+11.1 Credit Bureaus 
+Canada has two major credit reporting agencies: Equifax Canada and TransUnion Canada. 
+Both collect information from lenders and produce credit reports and scores. Albertans can 
+request a free copy of their credit report from each bureau once per year. 
+11.2 How Long Negative Information Stays on Credit Reports 
+Event Equifax (Alberta)  TransUnion (Alberta)  
+Late payments  6 years from date reported  6 years from date of first 
+delinquency  
+Collection accounts  6 years from date assigned  6 years from date of first 
+delinquency  
+First bankruptcy  6 years from discharge date  6 years from discharge date  
+Second+ bankruptcy  14 years from discharge  14 years from discharge  
+Consumer proposal  3 years after completion OR 6 
+years from filing (whichever is 
+sooner) 3 years after completion OR 6 
+years from filing  
+OPD / Consolidation order  Similar to consumer proposal (R7)  Similar to consumer proposal  
+Court judgments  6 years from date filed  6 years from date filed  
+Hard credit inquiries  3 years 6 years 
+11.3 Credit Score Ratings 
+Canadian credit reports use an R-rating system: 
+Rating Meaning 
+R1 Pays as agreed, within 30 days  
+R2 Late payment, 31–59 days  
+R3 Late payment, 60–89 days  
+R4 Late payment, 90–119 days  
+R5 Late payment, 120+ days (or at least 3 payments past due)  
+R7 Debt management plan, consumer proposal, or OPD  
+R8 Repossession  
+R9 Bad debt placed for collection, or bankruptcy  
+11.4 Disputing Errors 
+Alberta consumers have the right to dispute inaccurate information on their credit reports. Both 
+Equifax and TransUnion have online dispute processes. The bureau must investigate and 
+correct or remove inaccurate information, typically within 30 days. 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 20 | Confidential — For AI Agent Training Only  12. Student Loan Debt 
+12.1 The 7-Year Rule 
+Government student loans (Canada Student Loans, provincial student loans) receive special 
+treatment in insolvency. Under s. 178(1)(g) of the BIA, these loans are NOT automatically 
+discharged in bankruptcy or consumer proposal unless the bankruptcy/proposal occurs more 
+than 7 years after the debtor ceased to be a full-time or part-time student. 
+12.2 Key Rules (Updated After Piekut v. Canada, 2025 SCC 13) 
+• Single-date approach confirmed: The Supreme Court of Canada (April 2025) 
+confirmed the “single-date” approach — the 7-year clock starts from the LAST date you 
+ceased to be any kind of student (full-time or part-time), not from each separate 
+program. 
+• End-of-study date: The later of: the last day of the month you stopped attending school, 
+OR the last day of the month you completed final exams for your last semester. 
+• 5-year hardship exception: After 5 years, a court MAY order discharge if the debtor 
+acted in good faith AND will continue to experience significant financial difficulty. 
+Requires a court application (not automatic). 
+• Private student loans: Bank-issued student lines of credit, student credit cards, and 
+other private student debt are NOT subject to the 7-year rule. They are treated like any 
+other unsecured debt and can be discharged at any time. 
+12.3 Repayment Assistance Program (RAP) 
+Before considering insolvency, students struggling with payments should explore the 
+Repayment Assistance Program (RAP): 
+• RAP reduces or eliminates monthly payments based on income and family size. 
+• Payments are adjusted every 6 months through reapplication. 
+• After 15 years of repayment (or 10 years for borrowers with permanent disabilities), the 
+remaining balance may be forgiven. 
+• Being on RAP does NOT negatively affect your credit score — your loan remains in 
+good standing. 
+• As of 2024, federal student loans are interest-free; only some provincial loans still 
+charge interest. 
+12.4 Default and CRA Collections 
+If a borrower misses payments for approximately 9 months (270 days), the loan goes into 
+default and is transferred to CRA for collection. CRA can: garnish wages and bank accounts 
+without a court order, withhold tax refunds and benefit payments (CCB, GST credit), and 
+register liens. To bring a defaulted loan back into good standing: pay outstanding interest + 
+make the equivalent of 4 monthly payments, then contact the NSLSC to complete the process. 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 21 | Confidential — For AI Agent Training Only  13. CRA Tax Debt & Collection Powers 
+13.1 CRA’s Special Collection Powers 
+CRA has significantly broader collection powers than ordinary creditors: 
+• No court order required: CRA can garnish wages, freeze bank accounts, and seize 
+assets without first obtaining a court judgment. 
+• Wage garnishment: CRA is not bound by the standard $800 exemption. CRA can 
+garnish up to 50% of employment income, and 100% of amounts owed to independent 
+contractors. 
+• Bank account freeze: CRA can issue a Requirement to Pay (RTP) to your bank, 
+freezing and seizing funds. 
+• Set-off: CRA can intercept tax refunds, GST/HST credits, CCB payments, and other 
+federal benefits to apply against tax debt. 
+• Property liens: CRA can register a lien (memorial) against your property at the Land 
+Titles Office. 
+• Director liability: Directors of corporations can be personally liable for unremitted 
+GST/HST, payroll deductions (CPP, EI, income tax). 
+13.2 Dealing with CRA Debt 
+• Payment arrangements: CRA may agree to a payment plan, but interest continues to 
+accrue. Call the CRA collections line to negotiate. 
+• Taxpayer relief (fairness) provisions: CRA can cancel or waive penalties and interest 
+in cases of extraordinary circumstances (financial hardship, illness, disaster). Must apply 
+within 10 years. 
+• Consumer proposal: CRA tax debt CAN be included in a consumer proposal. This is 
+one of the key advantages of proposals over OPD (which cannot include CRA debt). 
+• Bankruptcy: CRA tax debt CAN be discharged in bankruptcy. However, if tax debt is 
+$200,000+ and represents 75%+ of total unsecured claims, a court hearing is required 
+for discharge. 
+13.3 CRA Limitation Period 
+CRA generally has a 10-year limitation period to collect assessed tax debt (from the date of the 
+Notice of Assessment or Reassessment). The limitation can be extended by certain actions 
+such as acknowledgment, partial payment, or filing an objection/appeal. Unlike provincial 
+limitation periods, CRA’s collection power is governed by federal legislation (Income Tax Act). 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 22 | Confidential — For AI Agent Training Only  14. Payday Loans & Predatory Lending 
+14.1 Alberta Payday Loan Rules (as of January 1, 2025) 
+Feature Current Rule (2025)  
+Maximum loan amount  $1,500 
+Maximum loan term  62 days 
+Minimum loan term  42 days (instalment plan required)  
+Maximum cost of borrowing  $14 per $100 borrowed (federal cap, effective Jan 1, 2025)  
+Previous provincial cap  $15 per $100 borrowed (now superseded by federal cap)  
+Licensing  Must hold a Payday Loan licence from the Province of Alberta  
+Cooling-off period  Can cancel within cooling-off period at no cost  
+Stacking prohibition  Cannot offer another payday loan while one is outstanding  
+Instalment plan  Required; must spread over at least 3 pay periods if paid bi-weekly or 
+more often  
+Dishonoured cheque fee  Maximum $25 in Alberta  
+Early repayment  Can repay at any time with no prepayment penalty  
+14.2 Federal Criminal Interest Rate (2025) 
+Effective January 1, 2025, the criminal interest rate under s. 347 of the Criminal Code was 
+lowered from approximately 60% effective annual rate to 35% APR. “Interest” is broadly defined 
+to include all fees, penalties, commissions, and expenses connected to a loan. Exceptions apply 
+for commercial loans (48% APR for loans $10K–$500K), pawnbroking loans under $1,000 (48% 
+APR), and payday loans (separately capped at $14 per $100). 
+14.3 Escaping the Payday Loan Cycle 
+• Step 1: Stop borrowing — break the cycle of reborrowing each pay period. 
+• Step 2: Explore alternatives — credit cards, overdraft protection, or personal lines of 
+credit have much lower rates. 
+• Step 3: Contact Money Mentors — free financial counselling and potential OPD 
+enrollment. 
+• Step 4: If debt is unmanageable, consult a Licensed Insolvency Trustee — payday loans 
+CAN be included in consumer proposals and bankruptcy. 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 23 | Confidential — For AI Agent Training Only  15. Family Debt Issues in Alberta 
+15.1 Joint Debt 
+When two people are co-borrowers or co-signers on a debt, each is liable for the FULL amount. 
+If one person files for bankruptcy or a consumer proposal, the other remains fully liable. The 
+creditor can pursue the non-filing co-signer for the entire debt. 
+15.2 Spousal Liability 
+In Alberta, spouses (married or adult interdependent partners) are NOT automatically liable for 
+each other’s debts unless they: 
+• Co-signed or guaranteed the debt. 
+• Are joint account holders. 
+• Are jointly named on credit applications. 
+Supplementary credit card holders are generally NOT liable for the primary cardholder’s debt 
+(check the specific cardholder agreement). 
+15.3 Debt and Separation/Divorce 
+• Joint debts: A separation agreement or court order allocating debt between spouses 
+does NOT release either party from joint debts in the eyes of the creditor. The creditor 
+can still pursue either party for the full amount. 
+• Matrimonial property division: Under Alberta’s Family Property Act, both assets AND 
+debts are divided. Net family property includes debts incurred during the relationship. 
+• Support obligations: Child and spousal support cannot be discharged in bankruptcy or 
+consumer proposal. Support arrears survive insolvency. 
+15.4 Death and Debt 
+When a person dies in Alberta, their estate (not their surviving spouse or family) is responsible 
+for repaying debts. Exceptions: 
+• Joint debts: the surviving co-borrower becomes solely responsible. 
+• Guaranteed debts: the guarantor becomes responsible. 
+• Life insurance with named beneficiaries: bypasses the estate and is NOT available to 
+creditors. 
+• Registered accounts (RRSP, TFSA, RRIF) with named beneficiaries: pass outside the 
+estate. 
+If the estate has insufficient assets to pay all debts, creditors cannot pursue surviving family 
+members for the shortfall (unless they co-signed). 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 24 | Confidential — For AI Agent Training Only  16. Practical Debt Repayment Strategies 
+16.1 Debt Repayment Methods 
+Avalanche method: Pay minimum on all debts; direct extra payments to the debt with the 
+HIGHEST interest rate. Mathematically optimal — saves the most money in interest over time. 
+Snowball method: Pay minimum on all debts; direct extra payments to the SMALLEST balance 
+first. Provides psychological momentum through quick wins. May cost more in interest but 
+improves motivation and compliance. 
+Hybrid approach: Pay off one small debt first for momentum, then switch to the avalanche 
+method for the remaining debts. 
+16.2 Budgeting Frameworks 
+• 50/30/20 Rule: 50% of after-tax income to needs, 30% to wants, 20% to savings and 
+debt repayment. 
+• Zero-based budgeting: Every dollar is assigned a purpose; income minus expenses 
+equals zero. Good for people who need strict spending control. 
+• Pay-yourself-first: Automate savings/debt payments immediately when paid, then live 
+on the remainder. 
+16.3 Emergency Fund 
+Before aggressively paying down debt, build a small emergency fund ($500–$1,500) to prevent 
+new debt from unexpected expenses. Once high-interest debt is eliminated, build the 
+emergency fund to 3–6 months of essential expenses. 
+16.4 Negotiation Tactics 
+• Lump-sum settlements: Many creditors (especially collection agencies) will accept a 
+lump sum of 30–70% of the outstanding balance. Always get the settlement agreement 
+in writing before paying. 
+• Interest rate reduction: Call your credit card company and request a lower rate. If 
+you’ve been a good customer, they may reduce the rate to retain you. 
+• Hardship programs: Many banks offer temporary hardship programs that reduce or 
+defer payments for 3–6 months. 
+16.5 Decision Framework: Which Option Is Right? 
+Situation  Recommended Option  
+Can repay in full but need lower interest  OPD Program (5% fixed, via Money Mentors)  
+Need help with budgeting, moderate debt  Non-profit credit counselling / DMP  
+Cannot repay in full, have assets to protect  Consumer proposal (keep all assets, reduce debt)  
+Cannot repay, minimal assets/income  Bankruptcy (fastest path to fresh start)  
+Debt under $10,000, manageable interest  Self-managed repayment (avalanche/snowball)  
+Only CRA tax debt  Consumer proposal or bankruptcy (OPD cannot 
+include CRA)  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 25 | Confidential — For AI Agent Training Only  Situation  Recommended Option  
+Mostly student loan debt (<7 years)  RAP + proposal for other debts; wait for 7-year 
+mark 
+Facing wage garnishment now  Consumer proposal or bankruptcy (immediate 
+stay) 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 26 | Confidential — For AI Agent Training Only  17. Alberta Resources & Contact Information 
+Resource  Contact Services 
+Money Mentors  1-888-294-0076 | moneymentors.ca  Free counselling, OPD program, 
+financial education  
+Office of the 
+Superintendent of 
+Bankruptcy  ic.gc.ca/eic/site/bsf-osb.nsf  LIT directory, public bankruptcy 
+records, surplus income directives  
+Service Alberta Consumer 
+Contact Centre  780-427-4088 | 1-877-427-4088  Complaints about collection 
+agencies, payday lenders  
+Legal Aid Alberta  1-866-845-3425 | legalaid.ab.ca  Legal assistance for low-income 
+Albertans  
+Centre for Public Legal 
+Education Alberta  cplea.ca Free legal information resources  
+Equifax Canada  1-800-465-7166 | equifax.ca  Credit reports, disputes, credit 
+monitoring  
+TransUnion Canada  1-800-663-9980 | transunion.ca  Credit reports, disputes, credit 
+monitoring  
+CRA Collections  1-888-863-8657  Tax debt payment arrangements, 
+taxpayer relief  
+Credit Counselling Society  1-888-527-8999 | nomoredebts.org  Free counselling, DMPs, referrals  
+211 Alberta  Dial 2-1-1  24/7 referral to community & social 
+services 
+  
+
+Alberta Debt Advice & Consumer Protection — AI Training Reference  
+Page 27 | Confidential — For AI Agent Training Only  18. Quick Reference: Key Numbers & Timelines 
+Item Value / Rule  
+Limitation period (Alberta)  2 years (discoverable) / 10 years (ultimate)  
+Old debt collection cutoff  Cannot pursue non-judgment debt >6 years 
+old 
+Wage garnishment base exemption  $800/month net + $200 per dependent  
+Wage garnishment 50% tier  $800–$2,400 net monthly income  
+Home equity exemption (bankruptcy)  $40,000 (Civil Enforcement Act)  
+Vehicle equity exemption  $5,000 
+Household furnishings exemption  $4,000 
+Clothing exemption  $4,000 
+Tools of the trade exemption  $10,000 
+RRSP/RRIF exemption  Fully exempt (except last 12 months 
+contributions)  
+Consumer proposal max unsecured debt  $250,000 (excluding mortgage)  
+Consumer proposal max term  5 years (60 months)  
+Bankruptcy discharge (1st, no surplus)  9 months 
+Bankruptcy discharge (1st, with surplus)  21 months  
+Bankruptcy discharge (2nd, no surplus)  24 months  
+Surplus income threshold (1 person, 2025)  $2,666/month net  
+Surplus income threshold (4 persons, 2025)  $4,953/month net  
+Student loan discharge rule  7 years after ceasing to be a student  
+Student loan hardship exception  5 years (court application required)  
+Bankruptcy on credit report (1st)  6 years from discharge (both bureaus in 
+Alberta) 
+Consumer proposal on credit report  3 years after completion or 6 from filing  
+Criminal interest rate (2025)  35% APR (lowered from ~60%)  
+Payday loan max cost (2025)  $14 per $100 borrowed (federal cap)  
+Payday loan max amount  $1,500 
+OPD interest rate  Fixed 5%  
+OPD max term  Up to 5 years  
+CRA collection limitation  Generally 6–10 years from assessment  
+Farmland exemption  Up to 160 acres (with principal residence)  
+Collector contact limit  Max 3 unsolicited contacts per 7 days  
+Collector prohibited hours  Before 7 AM or after 10 PM Alberta time  
+ 
+

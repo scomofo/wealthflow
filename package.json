@@ -1,0 +1,55 @@
+{
+  "name": "wealthflow",
+  "version": "1.0.0",
+  "description": "WealthFlow - Canadian Personal Finance Desktop App",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "node start.js",
+    "build:win": "electron-builder --win",
+    "build": "electron-builder",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "chart.js": "^4.5.1",
+    "sql.js": "^1.11.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.0.0",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "jest": "^30.3.0",
+    "prettier": "^3.8.1"
+  },
+  "build": {
+    "appId": "com.wealthflow.app",
+    "productName": "WealthFlow",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/app-icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/sql.js/dist/sql-wasm.wasm",
+        "to": "sql-wasm.wasm"
+      }
+    ]
+  }
+}

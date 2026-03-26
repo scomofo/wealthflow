@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xxd \"c:/Users/Scott Morley/Dev/jun7/FIX_APPDATA_WRITE.MD\")",
+      "Bash(find 'c:\\\\Users\\\\Scott Morley\\\\Dev\\\\jun7\\\\output' -name *sharepoint_excel* -o -name *deal_form*)",
+      "Bash(node -e \":*)",
+      "Bash(node -c src/main/logger.js)",
+      "Bash(node -c src/main/stock-service.js)",
+      "Bash(node -c src/main/ipc-handlers.js)",
+      "Bash(node -c src/main/ai-service.js)",
+      "Bash(node -c src/main/database.js)",
+      "Bash(ELECTRON_ENABLE_LOGGING=1 npm start)",
+      "Bash(npx electron -e \":*)"
+    ]
+  }
+}

@@ -1,0 +1,627 @@
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 1 COMPREHENSIVE REFERENCE:  
+Alberta Personal & Family Tax Law  
+AI Agent Training Document  
+Jurisdiction: Alberta, Canada  
+Tax Years Covered: 2025 and 2026  
+Last Updated: February 2026  
+Compiled from CRA, Alberta.ca, and professional tax sources  
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 2 1. FOUNDATIONAL OVERVIEW 
+This document provides comprehensive reference material for an AI agent to achieve expert-level proficiency 
+in Alberta personal and family tax law. It covers the dual federal-provincial tax system, all current rates, credits, 
+deductions, family-specific rules, registered savings plans, estate planning, and strategic planning 
+considerations. All information is current as of February 2026. 
+1.1 Canada's Dual Tax System 
+Canada operates a dual income tax system. Personal income tax is levied at both the federal level (by the 
+Canada Revenue Agency, or CRA) and the provincial level. Alberta residents pay both federal income tax and 
+Alberta provincial income tax. The CRA administers both on behalf of Alberta, meaning Albertans file a single 
+tax return that calculates both federal and provincial tax. 
+Alberta is unique among Canadian provinces for having no provincial sales tax (PST) and no harmonized sales 
+tax (HST). Only the federal 5% Goods and Services Tax (GST) applies. This is a significant tax advantage 
+compared to other provinces. 
+Alberta also has among the lowest probate fees in Canada (maximum $525), no provincial payroll tax, and no 
+provincial health premium, making it one of the most tax-friendly provinces for individuals and families. 
+1.2 Key Governing Legislation 
+• Income Tax Act (Canada) — Federal statute governing all income taxation 
+• Alberta Personal Income Tax Act — Provincial statute setting Alberta-specific rates and credits 
+• Canada Pension Plan Act — Governs CPP contributions and sharing 
+• Employment Insurance Act — Governs EI premiums 
+• Family Law Act (Alberta) — Governs non-divorce family matters including support 
+• Divorce Act (Canada) — Federal statute for divorce proceedings 
+• Wills and Succession Act (Alberta) — Governs estates and wills 
+• Surrogate Rules (Alberta) — Governs probate fees and process 
+• Federal Child Support Guidelines and Alberta Child Support Guidelines 
+• Spousal Support Advisory Guidelines (SSAG) — Non-binding but widely used 
+1.3 Key Administrative Bodies 
+• Canada Revenue Agency (CRA) — Administers both federal and Alberta income tax, benefits 
+• Alberta Tax and Revenue Administration (TRA) — Administers corporate tax, fuel tax, tourism levy 
+• Alberta Maintenance Enforcement Program (MEP) — Enforces child and spousal support orders 
+• Alberta Child Support Recalculation Program — Annual income-based recalculation of child support 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 3 2. INCOME TAX BRACKETS AND RATES 
+2.1 Federal Income Tax Brackets — 2025 
+Taxable Income Range  Rate 
+First $57,375  14.5% (transitional)  
+$57,375 to $114,750  20.5% 
+$114,750 to $177,882  26% 
+$177,882 to $253,414  29% 
+Over $253,414  33% 
+⚠ IMPORTANT: The lowest federal rate was reduced from 15% to 14% effective July 1, 2025, making the 
+blended 2025 rate 14.5%. For 2026 the full-year rate is 14%.  
+2.2 Federal Income Tax Brackets — 2026 
+Taxable Income Range  Rate 
+First $58,523  14% 
+$58,523 to $117,045  20.5% 
+$117,045 to $181,440  26% 
+$181,440 to $258,482  29% 
+Over $258,482  33% 
+2.3 Alberta Provincial Income Tax Brackets — 2025 
+Taxable Income Range  Rate 
+First $60,000  8% 
+$60,000 to $151,234  10% 
+$151,234 to $181,481  12% 
+$181,481 to $241,974  13% 
+$241,974 to $362,961  14% 
+Over $362,961  15% 
+⚠ IMPORTANT: The 8% bracket on the first $60,000 was introduced effective January 1, 2025 (Budget 
+2025), saving individuals up to $750/year. Previously, the lowest Alberta rate was 10%.  
+2.4 Alberta Provincial Income Tax Brackets — 2026 
+Taxable Income Range  Rate 
+First $61,200  8% 
+$61,200 to $154,259  10% 
+$154,259 to $185,111  12% 
+$185,111 to $246,813  13% 
+$246,813 to $370,220  14% 
+Over $370,220  15% 
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 4 Alberta indexation for 2026 is capped at 2% per Bill 32 (Financial Statutes Amendment Act, 2024 No. 2). 
+Without this cap, the increase would have been 2.1%. This cap applies for 2025 and subsequent years, using 
+the lesser of 2% or the Alberta CPI change. 
+2.5 Combined Marginal Tax Rates — 2026 (Alberta) 
+Taxable Income  Ordinary  Cap Gains  Elig Div Non-Elig Div 
+First $58,523  22.00% 11.00% -1.57% 12.41% 
+$58,523–$61,200  28.50% 14.25% 7.40% 19.88% 
+$61,200–$117,045  30.50% 15.25% 10.16% 22.18% 
+$117,045–$154,259  36.00% 18.00% 17.75% 28.51% 
+$154,259–$181,440  38.00% 19.00% 20.51% 30.81% 
+$181,440–$185,111  41.29% 20.65% 25.05% 34.59% 
+$185,111–$246,813  42.29% 21.15% 26.43% 35.74% 
+$246,813–$258,482  43.29% 21.65% 27.81% 36.89% 
+$258,482–$370,220  47.00% 23.50% 32.93% 41.16% 
+Over $370,220  48.00% 24.00% 34.31% 42.31% 
+The maximum combined marginal rate in Alberta is 48% on ordinary income (33% federal + 15% Alberta). 
+Alberta's top combined rate remains the lowest of any Canadian province. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 5 3. PERSONAL AMOUNTS AND NON-REFUNDABLE TAX 
+CREDITS 
+3.1 Basic Personal Amount (BPA) 
+Level 2025 2026 
+Federal BPA  $16,129 $16,452 
+Alberta BPA  $22,323 $22,769 
+The BPA is the amount of income an individual can earn without paying any tax. The federal enhanced BPA is 
+income-tested: it is reduced for individuals with net income above $177,882 (2025) and fully eliminated at 
+$253,414. Alberta's BPA is not income-tested. 
+The Alberta BPA credit is calculated at 8% (the lowest provincial rate). The federal BPA credit is 14% (for 
+2026) of the BPA amount. 
+3.2 Key Alberta Non-Refundable Tax Credits (2025) 
+• Spousal/Common-Law Partner Amount: Up to $22,323 (reduced by spouse's net income) 
+• Eligible Dependant Amount (equivalent-to-spouse): Up to $22,323 
+• Alberta Age Amount (age 65+): Up to $6,221 (reduced when net income exceeds $46,308, eliminated at 
+$87,782) 
+• Pension Income Amount: Up to $1,719 
+• Disability Amount: Mirrors federal DTC certificate requirement 
+• Caregiver Amount for Infirm Dependants Age 18+: Up to $12,922 
+• Medical Expenses: Same eligible expenses as federal; excess over lesser of 3% of net income or threshold 
+• Tuition Tax Credit: 8% of eligible tuition fees 
+• Adoption Expenses: Up to $19,354 per child 
+• Charitable Donations: 8% on first $200, then varying rates above 
+• Political Contributions: Alberta political contribution tax credit 
+• Alberta Supplemental Tax Credit: 2% of non-refundable credits exceeding $60,000 (new for 2025) 
+3.3 Spousal and Equivalent-to-Spouse Credits 
+The spousal amount allows an individual to claim a credit for supporting a spouse or common-law partner with 
+low or no income. The maximum claim is the BPA minus the dependent spouse's net income. A common-law 
+partner is someone who has lived with you in a conjugal relationship for at least 12 continuous months, or is 
+the parent of your child. 
+The equivalent-to-spouse (eligible dependant) credit is available to single, separated, divorced, or widowed 
+taxpayers who support a dependant in their home. This can be a child under 18, or a parent/grandparent, or 
+any relative who is dependent due to mental or physical infirmity. Only one equivalent-to-spouse claim can be 
+made per household. 
+3.4 Canada Workers Benefit (CWB) 
+The CWB is a refundable tax credit for low-income working individuals and families. For 2025, single 
+individuals with working income above $3,000 can receive the benefit, with the maximum single benefit of 
+approximately $1,518. Families can receive up to $2,616. The benefit phases out at higher income levels. 
+Alberta residents use the federal CWB calculation (no separate Alberta working income credit). 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 6 4. CAPITAL GAINS TAXATION 
+4.1 Inclusion Rate — Current Status (as of February 2026) 
+The capital gains inclusion rate remains at 50% for all taxpayers. The proposed increase to 66.67% (two-thirds) 
+— originally announced in the 2024 Federal Budget for June 25, 2024, then deferred to January 1, 2026 — 
+was formally cancelled by Prime Minister Carney on March 21, 2025, prior to the 2025 federal election. 
+Current rule: 50% of net capital gains are included in taxable income for individuals, corporations, and trusts. 
+Principal Residence Exemption: Fully maintained. Capital gains on a principal residence are entirely tax-free. 
+Lifetime Capital Gains Exemption (LCGE): $1,250,000 for qualified small business corporation shares and 
+qualified farming/fishing property (increased from $1,016,836 effective June 25, 2024). Indexed for inflation 
+starting 2026. 
+4.2 Property Flipping Rules 
+If you sell residential property within 365 days of purchase and do not meet an exemption condition, the gain is 
+treated as fully taxable business income (100% inclusion, not 50%) and the principal residence exemption does 
+not apply. Exemptions include death, disability, separation/divorce, threat to personal safety, employment 
+relocation, and insolvency. 
+4.3 Alternative Minimum Tax (AMT) 
+The AMT was substantially revised effective January 1, 2024. The federal AMT rate increased from 15% to 
+20.5%. The basic exemption increased to the start of the fourth federal bracket ($177,882 for 2025, indexed). 
+Capital gains are included at 100% for AMT purposes (up from 80%). This makes large capital gains events 
+more susceptible to triggering AMT. AMT paid in excess of regular tax carries forward for seven years. 
+Provincial AMT applies whenever federal AMT applies. Graduated Rate Estates are exempt from AMT. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 7 5. REGISTERED SAVINGS PLANS 
+5.1 Registered Retirement Savings Plan (RRSP) 
+Parameter  2025 2026 
+Annual Dollar Limit  $32,490 $33,810 
+Contribution Room  18% of prior year earned 
+income, to max  18% of prior year earned 
+income, to max  
+Contribution Deadline (for prior year)  Mar 3, 2025  Mar 2, 2026  
+Final Contribution Year  Year you turn 71  Year you turn 71  
+Contributions are tax-deductible and reduce taxable income. Investment growth is tax-deferred. Withdrawals 
+are fully taxable as income. Unused contribution room carries forward indefinitely. 
+Spousal RRSP: A higher-income spouse can contribute to a spousal RRSP (within their own contribution 
+room) to achieve income splitting in retirement. Three-year attribution rule applies: if the recipient spouse 
+withdraws within three calendar years of the last contribution by the contributor, the withdrawal is attributed 
+back to the contributor. 
+Home Buyers' Plan (HBP): Withdraw up to $60,000 tax-free from your RRSP for a first home purchase. Must 
+be repaid over 15 years. For HBP withdrawals from January 1, 2023 to December 31, 2025, the first repayment 
+is deferred to the 5th calendar year after withdrawal. 
+Lifelong Learning Plan (LLP): Withdraw up to $20,000 for full-time education. Each spouse can withdraw 
+separately. 
+5.2 Tax-Free Savings Account (TFSA) 
+Parameter  2025 2026 
+Annual Contribution Limit  $7,000 $7,000 
+Cumulative Room (if eligible since 2009)  $102,000  $109,000  
+Contributions are not tax-deductible, but all investment growth and withdrawals are completely tax-free. 
+Withdrawals are added back to contribution room the following January 1. No attribution rules on TFSA 
+contributions: a higher-earning spouse can gift money to a lower-earning spouse for TFSA contributions 
+without any income attribution concerns. 
+TFSA income and withdrawals do not affect income-tested benefits (CCB, GST/HST credit, OAS, GIS, ACFB). 
+This makes TFSAs especially powerful for families receiving these benefits. 
+5.3 First Home Savings Account (FHSA) 
+Annual Limit: $8,000 per year 
+Lifetime Limit: $40,000 
+Carry-forward: Unused room from one year carries forward (max $8,000 carry-forward, so up to $16,000 in 
+one year) 
+Tax Treatment: Contributions are tax-deductible (like RRSP). Qualifying withdrawals for first home purchase 
+are tax-free (like TFSA). Best of both worlds. 
+Eligibility: Canadian resident, age 18+, first-time home buyer (neither you nor your spouse owned a home you 
+lived in as principal residence in the current year before opening or in the previous four calendar years) 
+Duration: Must be used within 15 years of opening or by December 31 of the year you turn 71, whichever 
+comes first 
+Transfer to RRSP: If not used for a home, funds can be transferred tax-free to your RRSP/RRIF (does not 
+affect RRSP room) 
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 8 ⚠ IMPORTANT: Unlike RRSPs, FHSA contributions in the first 60 days of a year CANNOT be deducted 
+on the previous year's return. They can only be deducted in the year they are made or a future year.  
+5.4 Registered Education Savings Plan (RESP) 
+Lifetime Contribution Limit: $50,000 per beneficiary (no annual limit) 
+Canada Education Savings Grant (CESG): Federal government matches 20% of annual contributions, up to 
+$500/year per beneficiary ($7,200 lifetime maximum). Higher matching rates for lower-income families. 
+Canada Learning Bond (CLB): Up to $2,000 per child for low-income families; no personal contribution 
+required 
+Tax Treatment: Contributions not deductible. Growth is tax-sheltered. Withdrawals of grants and growth 
+(Educational Assistance Payments/EAPs) are taxed in the hands of the student, who typically has low income 
+Non-Education Use: If the beneficiary does not attend post-secondary education, accumulated income 
+(growth) is taxed at the subscriber's marginal rate plus an additional 20% penalty. CESG grants must be 
+repaid. 
+For 2026, the annual EAP threshold limit is $29,459 (increased from $28,881 in 2025). 
+5.5 Registered Disability Savings Plan (RDSP) 
+Lifetime Contribution Limit: $200,000 (contributions allowed until beneficiary turns 59) 
+Canada Disability Savings Grant (CDSG): Up to $3,500/year matching based on family income 
+Canada Disability Savings Bond (CDSB): Up to $1,000/year for low-income beneficiaries (no contribution 
+required) 
+Eligibility: Must be eligible for the Disability Tax Credit (approved Form T2201) 
+Contributions are not deductible. Growth is tax-sheltered. Withdrawals include a taxable portion (grants, bonds, 
+and growth). Qualifying family member rules extended to end of 2026, allowing siblings to be qualifying family 
+members. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 9 6. FAMILY TAX BENEFITS AND CREDITS 
+6.1 Canada Child Benefit (CCB) 
+The CCB is a tax-free monthly payment from the federal government to eligible families with children under 18. 
+It is income-tested based on adjusted family net income (AFNI) from the prior year's tax return. 
+Child Age  Max Annual Amount (July 2025 –June 2026)  
+Under 6 $7,997 ($666.41/month)  
+Ages 6–17  $6,748 ($562.33/month)  
+The CCB is reduced at higher income levels. For families with AFNI above $36,502 (2025), the reduction 
+begins at varying rates depending on the number of children. For AFNI above $79,087, additional phase-out 
+applies. 
+Shared Custody: When both parents have the child approximately equally (40%–60% of the time), the CRA 
+splits the CCB, calculating each parent's entitlement separately based on their individual AFNI. 
+Filing Requirement: Both parents must file tax returns to receive CCB. Late filing delays payments. 
+6.2 Alberta Child and Family Benefit (ACFB) 
+The ACFB is Alberta's provincial tax-free benefit for low- and middle-income families with children under 18. It 
+is administered by the CRA on Alberta's behalf and paid quarterly (August, November, February, May). It 
+replaced the former Alberta Child Benefit and Alberta Family Employment Tax Credit in July 2020. 
+6.2.1 Base Component (July 2025–June 2026) 
+• 1 child: up to $1,330/year 
+• 2 children: up to $1,995/year 
+• 3 children: up to $2,527/year 
+• 4+ children: up to $2,923/year 
+The base component is available regardless of employment income. It is reduced when adjusted family net 
+income exceeds $27,565 and phases out completely at $46,191. 
+6.2.2 Working Component (July 2025–June 2026) 
+• 1 child: up to $718/year 
+• 2 children: up to $1,718/year 
+• 3 children: up to $2,218/year 
+• 4+ children: up to $2,468/year 
+Available to families with working income exceeding $2,760. The benefit increases at 15% of each additional 
+dollar above $2,760 until the maximum is reached, then reduces when AFNI exceeds $46,191. 
+Automatic Enrollment: No application needed. If you qualify for the federal CCB and file your tax return, you 
+are automatically assessed for the ACFB. 
+ACFB is non-taxable and does not affect AISH, Income Support, or Alberta child care subsidy eligibility. 
+6.3 GST/HST Credit 
+A quarterly tax-free payment for individuals and families with low to modest income. For the July 2025 to June 
+2026 period, the maximum annual amount is approximately $519 for a single individual, $680 for a couple, plus 
+$179 per child under 19. The credit phases out at higher income levels. 
+6.4 Child Care Expense Deduction 
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 10 Child care expenses incurred to earn income, attend school, or conduct research can be deducted. Generally 
+claimed by the lower-income spouse. Maximum deductions for 2025: $8,000 per child under 7, $5,000 per child 
+aged 7–16, $11,000 per child eligible for the Disability Tax Credit. 
+6.5 Climate Action Incentive Payment (CAIP) 
+Note: The federal consumer carbon tax was cancelled effective April 1, 2025. CAIP payments for Alberta 
+residents ended. However, the industrial carbon tax remains. No new CAIP payments are being made for 
+Alberta. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 11 7. INCOME SPLITTING STRATEGIES 
+7.1 Pension Income Splitting (ITA s.60.03) 
+A pensioner may allocate up to 50% of eligible pension income to their spouse or common-law partner through 
+an annual joint election using Form T1032. This is NOT automatic — both spouses must file the T1032 with 
+matching amounts. Failure to file invalidates the split. 
+Under 65: Only life annuity payments from a registered pension plan (RPP) qualify. 
+Age 65+: RRIF withdrawals, RPP payments, life annuity payments from an RRSP, and certain other pension 
+income all qualify. 
+CPP Sharing: CPP has its own separate sharing mechanism under the Canada Pension Plan Act. You must 
+apply separately; it is NOT done through the T1032 pension splitting election. 
+Pension splitting can reduce overall family tax, preserve OAS entitlement (by keeping individual net income 
+below the OAS clawback threshold of $95,323 for 2026), and allow both spouses to claim the $2,000 pension 
+income tax credit. 
+7.2 Spousal RRSP Contributions 
+A higher-income spouse contributes to a spousal RRSP (using the contributor's room) to build retirement 
+savings taxed at the lower-income spouse's rate upon withdrawal. The three-year attribution rule requires that 
+the annuitant spouse not withdraw from any spousal RRSP for three calendar years after the last contribution; 
+otherwise the withdrawal is taxed in the contributor's hands. 
+7.3 TFSA Gifting 
+A higher-earning spouse can gift money to the lower-earning spouse for TFSA contributions. Since TFSA 
+attribution rules do not apply, all growth and withdrawals belong to the recipient spouse. This is the simplest 
+legal income-splitting tool available. 
+7.4 Tax on Split Income (TOSI) — "Kiddie Tax" 
+TOSI rules (ITA s.120.4) tax certain types of income received by family members from a related business at the 
+highest marginal rate. This includes dividends and capital gains from private corporations paid to adult family 
+members who do not make a sufficient contribution to the business (the "excluded amount" test). Children 
+under 18 are subject to TOSI on virtually all split income. These rules significantly limit family income splitting 
+through private corporations. 
+7.5 Attribution Rules 
+When a taxpayer transfers or lends property to a spouse or common-law partner, income earned on that 
+property (interest, dividends, rental income) is attributed back to the transferor and taxed in their hands. Capital 
+gains from transfers to a spouse are also attributed back. However, these rules can be avoided by: lending at 
+the CRA prescribed rate (currently significant), transferring at fair market value with proper consideration, or by 
+contributing to the spouse's TFSA. 
+When property is transferred or lent to a minor child (under 18), income (but not capital gains) is attributed back 
+to the transferor. Capital gains earned by the minor on transferred/loaned property are NOT attributed back and 
+are taxed in the child's hands. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 12 8. SEPARATION AND DIVORCE TAX IMPLICATIONS 
+8.1 Marital Status for Tax Purposes 
+Your marital status on December 31 determines filing status for that tax year. If you separated during the year 
+and remained separated for at least 90 consecutive days (ending in the tax year), you are considered 
+"separated" as of the date of separation. This affects credit eligibility, benefit calculations, and filing 
+requirements. 
+8.2 Spousal Support (Alimony) 
+Deductible for Payer / Taxable for Recipient IF: Payments are periodic (regular intervals), made under a 
+written agreement or court order, paid directly to the recipient, and made while living separate and apart due to 
+relationship breakdown. 
+NOT Deductible/Taxable: Lump-sum payments (unless arrears of periodic support), payments to third parties 
+for specific expenses (unless specifically included in the court order), and voluntary payments without a written 
+agreement. 
+Structuring spousal support for tax efficiency can benefit both parties. The payer gets a deduction reducing 
+their taxable income; the recipient includes it as income but may be in a lower tax bracket, resulting in less total 
+tax paid by the family unit. 
+8.3 Child Support 
+CRITICAL RULE: Child support payments made under agreements or court orders dated after May 1, 1997 
+are NOT deductible by the payer and NOT taxable to the recipient. 
+The Divorce Act prioritizes child support over spousal support. Where there are insufficient funds for both, child 
+support is paid first. 
+Child support is calculated using the Federal Child Support Guidelines based on the paying parent's income 
+(line 15000) and the number of children. Additional "Section 7 expenses" (childcare, medical, educational, 
+extracurricular) are shared proportionate to income. 
+8.4 Property Transfers on Separation 
+Property transferred between spouses as part of a separation agreement or court order is generally transferred 
+at the adjusted cost base (tax-deferred rollover). No immediate capital gains tax is triggered. The receiving 
+spouse inherits the original cost base and will realize the gain or loss upon eventual disposition. 
+⚠ IMPORTANT: If you sell the matrimonial home, the principal residence exemption can eliminate capital 
+gains. However, if either spouse owned other properties designated as principal residence for overlapping 
+years, careful planning is needed.  
+8.5 RRSP/Pension Division on Separation 
+RRSPs and pension assets can be divided between separated spouses on a tax-deferred basis under a court 
+order or written separation agreement (ITA s.146(16) for RRSPs, Pension Benefits Standards Act for 
+pensions). The transfer does not trigger immediate tax. The receiving spouse will pay tax upon withdrawal. 
+8.6 Canada Child Benefit After Separation 
+The primary caregiver receives the full CCB amount based on their individual AFNI. In shared custody 
+(approximately equal parenting time), CRA splits the benefit and calculates each parent's entitlement based on 
+their individual income. Both parents must notify CRA of the separation and custody arrangement. 
+8.7 Legal Fee Deductions 
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 13 • Legal fees to establish or enforce spousal support entitlement: DEDUCTIBLE 
+• Legal fees to defend against or reduce spousal support: NOT DEDUCTIBLE 
+• Legal fees for divorce, separation, child custody: NOT DEDUCTIBLE 
+• Legal fees to establish child support rights: MAY be deductible (consult professional) 
+8.8 Adult Interdependent Partners (Common-Law) in Alberta 
+Alberta's Adult Interdependent Relationships Act defines adult interdependent partners as two persons who 
+have lived together in a relationship of interdependence for at least 3 continuous years, or who have a 
+relationship of some permanence if they have a child together. For tax purposes, the CRA uses the federal 
+definition of common-law partner (12 months cohabitation or parent of your child). These partners have the 
+same tax rights and obligations as married spouses for all federal and provincial tax purposes. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 14 9. ESTATE PLANNING AND TAXATION AT DEATH 
+9.1 No Estate or Inheritance Tax in Canada 
+Canada does not levy a formal estate tax, inheritance tax, or death tax. However, significant taxes can arise at 
+death through deemed dispositions and income inclusion. The practical effect can be substantial. 
+9.2 Deemed Disposition at Death 
+At death, the deceased is deemed to have disposed of all capital property at fair market value (FMV) 
+immediately before death. This triggers capital gains on appreciated assets including investment portfolios, 
+rental properties, vacation homes, and private company shares. The gains are reported on the deceased's 
+terminal (final) T1 return for the year of death. 
+9.3 RRSP/RRIF at Death 
+The full fair market value of RRSPs and RRIFs is included in the deceased's income on the terminal return, 
+unless transferred to a qualifying beneficiary (spouse, financially dependent child or grandchild, or infirm child 
+of any age). Spousal rollover: if the spouse is named as beneficiary, the RRSP/RRIF rolls over tax-free to the 
+surviving spouse's RRSP/RRIF. 
+9.4 TFSA at Death 
+The TFSA value at date of death is tax-free. A successor holder (spouse/common-law partner) can take over 
+the TFSA without tax implications. If there is no successor holder and the TFSA passes through the estate, 
+income earned AFTER the date of death is taxable. 
+9.5 Principal Residence Exemption 
+The PRE remains available at death, eliminating capital gains on the deceased's principal residence. Only one 
+property per family unit can be designated as a principal residence for any given year. 
+9.6 Spousal Rollover 
+Capital property transferred to a surviving spouse or common-law partner (or qualifying spousal trust) is 
+automatically rolled over at the adjusted cost base, deferring all capital gains until the surviving spouse dies or 
+disposes of the property. No election is required — it is the default treatment. 
+9.7 Alberta Probate Fees 
+Alberta has among the lowest probate fees in Canada. They are based on the NET value of the estate (unlike 
+most provinces which use gross value): 
+Net Estate Value  Probate Fee  
+Under $10,000  $35 
+$10,000 to $24,999  $135 
+$25,000 to $124,999  $275 
+$125,000 to $249,999  $400 
+$250,000 and over  $525 (maximum)  
+Compare: Ontario charges approximately $15 per $1,000 over $50,000 (a $500,000 estate = ~$6,750). BC 
+charges approximately 1.4%. Alberta's $525 cap is a significant advantage. 
+9.8 Terminal Return and Filing Deadlines 
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 15 The personal representative (executor) must file a terminal T1 return for income from January 1 to the date of 
+death. Due date: April 30 of the year following death, or 6 months after date of death, whichever is later. A 
+clearance certificate from CRA should be obtained before distributing estate assets; this protects the executor 
+from personal liability for unpaid taxes. 
+9.9 Estate Planning Tools 
+• Beneficiary designations on RRSPs, TFSAs, RRIFs, and life insurance bypass the estate (avoids probate) 
+• Joint ownership with right of survivorship passes property directly to the surviving owner 
+• Inter vivos (living) trusts can hold assets outside the estate but have ongoing costs and tax filing 
+requirements 
+• Alter ego trusts (65+) and joint partner trusts allow tax-deferred transfer with probate bypass 
+• Testamentary spousal trusts defer deemed disposition and provide control over eventual distribution 
+• Life insurance provides tax-free death benefit to cover tax liabilities at death 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 16 10. SENIORS-SPECIFIC TAX PROVISIONS 
+10.1 Age Amount 
+Available to individuals aged 65+ at December 31. For 2025: federal amount up to $8,790 (reduced when net 
+income exceeds $44,325); Alberta amount up to $6,221 (reduced when net income exceeds $46,308, 
+eliminated at $87,782). 
+10.2 Pension Income Amount 
+Both federal and Alberta provide a tax credit on up to $2,000 of eligible pension income ($1,719 Alberta for 
+2025). Eligible income includes RPP payments, RRIF withdrawals (if age 65+), life annuity from RRSP, and 
+certain other pension income. Pension splitting allows the receiving spouse to also claim this credit. 
+10.3 OAS Clawback 
+Old Age Security payments are subject to a recovery tax (clawback) when individual net income exceeds 
+$95,323 (2026). The clawback rate is 15 cents per dollar above the threshold. OAS is fully eliminated at 
+approximately $157,000 of net income. Pension splitting, RRSP contributions (before 71), and TFSA usage can 
+help keep net income below the threshold. 
+10.4 Alberta Seniors Benefit 
+A provincial tax-free monthly payment for low-income seniors aged 65+ who receive federal OAS. For 2025, 
+maximum annual benefit is approximately $3,868 for a single senior with zero non-deductible income. The 
+benefit varies by income, accommodation type, and marital status. Application is required. Couples' income is 
+split 50:50 for calculation purposes. 
+10.5 Seniors Property Tax Deferral Program 
+Alberta allows eligible seniors to defer paying all or part of their property taxes for up to 10 years. A lien is 
+placed on the property. This can provide cash flow relief during retirement without triggering tax consequences. 
+10.6 Medical Expenses 
+Seniors often have significant medical expenses. The medical expense tax credit allows claiming expenses 
+above the lesser of 3% of net income or the threshold ($2,635 federally for 2025). Claiming a 12-month period 
+ending in the current tax year provides flexibility for timing. In the year of death, the period extends to 24 
+months. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 17 11. SELF-EMPLOYMENT AND SPECIAL SITUATIONS 
+11.1 Self-Employment Income 
+Self-employed individuals report net business income (revenue minus expenses) on their tax return. Both the 
+federal and Alberta tax brackets apply. Self-employed individuals pay both the employee and employer 
+portions of CPP (total 11.9% for 2025 on earnings between $3,500 and $71,300). Half of the self-employed 
+CPP contribution is deductible from income. 
+Self-employed individuals and their spouses have an extended tax filing deadline of June 15, but any taxes 
+owing are still due April 30. 
+11.2 Rental Income 
+Rental income is reported at the individual level and taxed at marginal rates. Allowable deductions include 
+mortgage interest (not principal), property taxes, insurance, repairs, maintenance, utilities (if included), 
+advertising, property management, and capital cost allowance (depreciation). CCA claimed on rental property 
+reduces the cost base, increasing eventual capital gains. 
+11.3 Investment Income Types and Tax Treatment 
+• Interest income: Fully taxable at marginal rate (100% inclusion) 
+• Eligible dividends (from public companies): Grossed up by 38%, then a federal dividend tax credit of 
+15.02% and Alberta credit of 8.12% apply. Effective rate is significantly lower than on regular income. 
+• Non-eligible dividends (from small businesses/CCPCs): Grossed up by 15%, then smaller dividend tax 
+credits apply. 
+• Capital gains: 50% inclusion rate (current). Taxed at half the marginal rate. 
+• Return of capital: Not immediately taxable but reduces adjusted cost base, increasing future capital gains. 
+11.4 Foreign Income 
+Canadian residents are taxed on worldwide income. Foreign tax credits are available to prevent double taxation 
+on foreign-source income. Both federal and provincial (Alberta) foreign tax credits can be claimed for taxes 
+paid to foreign governments. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 18 12. KEY DEDUCTIONS FROM INCOME 
+12.1 Common Deductions 
+• RRSP contributions (line 20800) 
+• FHSA contributions (new deduction) 
+• Union and professional dues 
+• Child care expenses (generally claimed by lower-income spouse) 
+• Moving expenses (if moved 40+ km closer to new work/school location) 
+• Carrying charges and interest expense on money borrowed to earn investment income 
+• Employment expenses (if required by employer and Form T2200 provided) 
+• Support payments made (spousal support, if qualifying periodic payments) 
+• Northern residents deductions (applicable in some northern Alberta communities) 
+• Capital gains deduction (LCGE for qualifying small business shares) 
+• Half of self-employed CPP contributions 
+12.2 Charitable Donation Tax Credits 
+Charitable donations generate a two-tier non-refundable tax credit. Federally: 15% on the first $200, 29% on 
+amounts above $200 (33% for donors with income in the top federal bracket). Alberta: 8% on the first $200, 
+then 21% (or higher rates depending on the bracket) above $200. 
+Donating publicly listed securities in-kind eliminates the capital gains tax entirely while providing the full FMV as 
+the donation amount — one of the most tax-efficient giving strategies available. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 19 13. CPP AND EI CONTRIBUTIONS 
+13.1 Canada Pension Plan (CPP) — 2026 
+Parameter  2026 Amount  
+Year's Maximum Pensionable Earnings (YMPE)  $74,600 
+Year's Additional Max Pensionable Earnings (YAMPE)  $85,000 
+Basic Exemption  $3,500 
+Employee Contribution Rate (base CPP)  5.95% 
+CPP2 Rate (on earnings $74,600–$85,000)  4% 
+Max Employee Contribution (CPP + CPP2)  ~$4,640 + $416 = ~$5,056  
+Employers match employee CPP contributions. Self-employed individuals pay both portions. The enhanced 
+CPP (CPP2) introduced in 2024 applies a 4% rate on earnings between the first and second earnings ceilings. 
+13.2 Employment Insurance (EI) — 2026 
+EI premiums apply on insurable earnings up to the maximum insurable earnings ($65,700 for 2026). Employee 
+rate is 1.64%, with a maximum annual employee premium of approximately $1,077. Employers pay 1.4 times 
+the employee rate. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 20 14. TAX FILING REQUIREMENTS AND DEADLINES 
+14.1 Filing Deadlines 
+• Individual tax return (T1): April 30 of the following year 
+• Self-employed individuals: Filing deadline June 15, but balance owing still due April 30 
+• RRSP contribution deadline for 2025: March 2, 2026 
+• Trust returns (T3): 90 days after the trust's tax year end 
+14.2 Payment Requirements 
+Taxes owing must be paid by April 30 to avoid interest charges. If you owe more than $3,000 in the current 
+year and either of the two preceding years, you may be required to make quarterly instalment payments (March 
+15, June 15, September 15, December 15). 
+14.3 Penalties 
+• Late filing penalty: 5% of balance owing plus 1% per month (max 12 months) 
+• Repeated late filing: 10% plus 2% per month (max 20 months) 
+• RRSP over-contribution: 1% per month on excess above $2,000 buffer 
+• TFSA over-contribution: 1% per month on excess amount 
+• FHSA over-contribution: 1% per month on excess amount 
+14.4 Alberta-Specific Filing Notes 
+Alberta's personal income tax is calculated on Form AB428, completed as part of the federal T1 return. Alberta 
+has no separate provincial filing requirement. All Alberta credits and deductions are claimed through the single 
+CRA filing process. 
+For the ACFB and other Alberta benefits, both spouses must file returns by April 30, 2026 (for 2025 tax year) to 
+ensure timely benefit payments. 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 21 15. STRATEGIC TAX PLANNING CONSIDERATIONS 
+15.1 Account Prioritization for Families 
+• RESP: Contribute at least $2,500/year per child to maximize the $500 CESG match (guaranteed 20% 
+return) 
+• FHSA: If eligible, maximize $8,000/year for combined deduction + tax-free withdrawal benefit 
+• Employer-matched RRSP/pension: Contribute enough to get full employer match 
+• TFSA: Maximize for tax-free growth (especially valuable for families receiving income-tested benefits) 
+• RRSP: Use strategically to 'fill brackets' — contribute enough to reduce taxable income to a lower bracket 
+threshold 
+15.2 Alberta's Tax Advantages 
+• No provincial sales tax (saves families thousands annually compared to other provinces) 
+• Lowest combined top marginal rate in Canada (48% vs. 53.5%+ in other provinces) 
+• High provincial basic personal amount ($22,769 for 2026 — highest in Canada) 
+• Maximum probate fees of $525 (vs. $6,750+ in Ontario for a $500K estate) 
+• No provincial health premium or payroll tax 
+• New 8% bracket on first ~$60,000 saves up to $750/year vs. prior 10% rate 
+15.3 Common Tax Planning Mistakes 
+• Not filing tax returns — delays CCB, ACFB, GST credits, and other benefits 
+• Ignoring spousal RRSP for income splitting in retirement 
+• Over-contributing to registered accounts without tracking room 
+• Not claiming medical expenses, child care expenses, or disability credits 
+• Failing to designate beneficiaries on RRSPs, TFSAs, and life insurance 
+• Not pension splitting when one spouse has significantly higher pension income 
+• Mixing up child support (non-deductible) and spousal support (deductible) on tax returns 
+• Not claiming the principal residence exemption when selling a home 
+• Ignoring the FHSA for first-time home buyers — forgoing free deduction + tax-free growth 
+15.4 Year-End Planning Checklist 
+• Maximize TFSA contributions before December 31 (new room available January 1) 
+• Make RESP contributions to get CESG before December 31 
+• Consider FHSA contributions before December 31 (no 60-day grace period like RRSP) 
+• Tax-loss harvest: Sell investments at a loss to offset capital gains (settlement must occur by Dec 31) 
+• Prepay deductible expenses before year-end (if self-employed) 
+• Make charitable donations by December 31 (consider donating securities in-kind) 
+• Review RRSP contribution room for March deadline optimization 
+• Update marital status with CRA if separated/divorced during the year 
+  
+
+Alberta Personal & Family Tax Law — AI Agent Reference  
+Page 22 16. QUICK REFERENCE — KEY NUMBERS FOR 2025/2026 
+Item 2025 2026 
+Federal BPA  $16,129 $16,452 
+Alberta BPA  $22,323 $22,769 
+RRSP Dollar Limit  $32,490 $33,810 
+TFSA Annual Limit  $7,000 $7,000 
+TFSA Cumulative Room (since 2009)  $102,000  $109,000  
+FHSA Annual Limit  $8,000 $8,000 
+FHSA Lifetime Limit  $40,000 $40,000 
+RESP Lifetime Limit (per child)  $50,000 $50,000 
+CESG Annual Max  $500 $500 
+RDSP Lifetime Limit  $200,000  $200,000  
+CPP YMPE  $71,300 $74,600 
+CPP YAMPE (CPP2 ceiling)  $81,200 $85,000 
+CCB Max (under 6)  $7,787/yr  $8,157/yr  
+CCB Max (6–17)  $6,570/yr  $6,883/yr  
+OAS Clawback Threshold  ~$93,454  ~$95,323  
+Capital Gains Inclusion Rate  50% 50% 
+LCGE $1,250,000  $1,250,000+  
+AB Top Combined Marginal Rate  48% 48% 
+AB Max Probate Fee  $525 $525 
+HBP RRSP Withdrawal Limit  $60,000 $60,000 
+ 
+DISCLAIMER: This document is for informational and AI training purposes only. It does not constitute legal, tax, or financial 
+advice. Tax laws change frequently. Always verify current rules with the Canada Revenue Agency (canada.ca/cra) and 
+consult qualified tax and legal professionals for specific situations. Provincial rules at alberta.ca/personal-income-tax.  
+
