@@ -76,7 +76,11 @@ class WealthFlowDatabase {
         return safeStorage.decryptString(buffer);
       }
     } catch { /* fallback to plaintext */ }
-    return encrypted; // Return as-is if not encrypted (migration/fallback)
+    // Legacy plaintext key - flag for re-encryption on next save
+    if (!encrypted.startsWith('enc:')) {
+      this._reEncryptNeeded = encrypted;
+    }
+    return encrypted;
   }
 
   _encryptApiKey(plaintext) {
@@ -369,9 +373,9 @@ class WealthFlowDatabase {
     const income = this.getScalar("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE amount > 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
     const expenses = this.getScalar("SELECT COALESCE(SUM(ABS(amount)), 0) FROM transactions WHERE amount < 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
     const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
-    const totalDebt = this.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts') || 0;
-    const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments') || 0;
-    const totalSaved = this.getScalar('SELECT COALESCE(SUM(current), 0) FROM goals') || 0;
+    const totalDebt = this.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts WHERE deleted_at IS NULL') || 0;
+    const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments WHERE deleted_at IS NULL') || 0;
+    const totalSaved = this.getScalar('SELECT COALESCE(SUM(current), 0) FROM goals WHERE deleted_at IS NULL') || 0;
     const catRows = this.getAll(
       'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL GROUP BY category ORDER BY total DESC'
     );
@@ -383,11 +387,11 @@ class WealthFlowDatabase {
   // Counts for achievements
   getCounts() {
     return {
-      transactions: this.getScalar('SELECT COUNT(*) FROM transactions') || 0,
-      budgets: this.getScalar('SELECT COUNT(*) FROM budgets') || 0,
-      goals: this.getScalar('SELECT COUNT(*) FROM goals') || 0,
-      debts: this.getScalar('SELECT COUNT(*) FROM debts') || 0,
-      investments: this.getScalar('SELECT COUNT(*) FROM investments') || 0,
+      transactions: this.getScalar('SELECT COUNT(*) FROM transactions WHERE deleted_at IS NULL') || 0,
+      budgets: this.getScalar('SELECT COUNT(*) FROM budgets WHERE deleted_at IS NULL') || 0,
+      goals: this.getScalar('SELECT COUNT(*) FROM goals WHERE deleted_at IS NULL') || 0,
+      debts: this.getScalar('SELECT COUNT(*) FROM debts WHERE deleted_at IS NULL') || 0,
+      investments: this.getScalar('SELECT COUNT(*) FROM investments WHERE deleted_at IS NULL') || 0,
     };
   }
 

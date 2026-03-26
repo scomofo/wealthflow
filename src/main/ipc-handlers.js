@@ -16,6 +16,16 @@ function safeHandle(channel, handler) {
   });
 }
 
+function isPathSafe(filePath) {
+  const resolved = path.resolve(filePath);
+  const appData = app.getPath('userData');
+  const documents = app.getPath('documents');
+  const downloads = app.getPath('downloads');
+  const desktop = app.getPath('desktop');
+  return resolved.startsWith(appData) || resolved.startsWith(documents) ||
+         resolved.startsWith(downloads) || resolved.startsWith(desktop);
+}
+
 function registerIpcHandlers(database, aiService) {
   function validate(value, type, name) {
     if (value === undefined || value === null) throw new Error(`${name} is required`);
@@ -148,6 +158,7 @@ function registerIpcHandlers(database, aiService) {
 
   // File system operations with retry for Windows file locks
   safeHandle('fs:write-file', async (_, filePath, content) => {
+    if (!isPathSafe(filePath)) throw new Error('Access denied: path outside allowed directories');
     const doWrite = () => {
       if (Buffer.isBuffer(content) || content instanceof Uint8Array) {
         fs.writeFileSync(filePath, Buffer.from(content));
@@ -172,6 +183,7 @@ function registerIpcHandlers(database, aiService) {
   });
 
   safeHandle('fs:read-file', async (_, filePath) => {
+    if (!isPathSafe(filePath)) throw new Error('Access denied: path outside allowed directories');
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         return fs.readFileSync(filePath, 'utf-8');
@@ -189,7 +201,14 @@ function registerIpcHandlers(database, aiService) {
 
   // PDF generation
   safeHandle('pdf:generate-report', async (event, htmlContent) => {
-    const win = new BrowserWindow({ show: false, width: 800, height: 1100 });
+    const win = new BrowserWindow({
+      show: false, width: 800, height: 1100,
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      }
+    });
     await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
     const pdfData = await win.webContents.printToPDF({
       marginsType: 1,
@@ -230,6 +249,8 @@ function registerIpcHandlers(database, aiService) {
     return docsDir;
   });
   safeHandle('advisor:copy-file', async (_, srcPath, destFilename) => {
+    const stats = fs.statSync(srcPath);
+    if (!stats.isFile()) throw new Error('Source must be a regular file');
     const docsDir = path.join(app.getPath('userData'), 'documents');
     if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir, { recursive: true });
     const safeName = path.basename(destFilename);
