@@ -1,34 +1,38 @@
-@font-face{font-family:'WF Sans';font-weight:300 700;src:local('Segoe UI'),local('SF Pro Display'),local('Helvetica Neue'),local('Arial')}
-@font-face{font-family:'WF Display';font-weight:300 800;src:local('Segoe UI'),local('SF Pro Display'),local('Helvetica Neue'),local('Arial')}
-@font-face{font-family:'WF Mono';font-weight:400 500;src:local('Cascadia Code'),local('SF Mono'),local('Consolas'),local('Monaco'),local('monospace')}
+/* ═══════════════════════════════════════════════════
+   WealthFlow — "Northern Capital" Theme
+   Canadian institutional banking meets modern fintech
+   ═══════════════════════════════════════════════════ */
 
 :root {
-  --bg: #08090d;
-  --card: #0f1015;
-  --sidebar: #0b0c11;
-  --input: #171820;
-  --text: #e4e2dc;
-  --sub: #76757a;
-  --muted: #3e3d44;
-  --border: #1c1d26;
-  --accent: #d4a843;
-  --abg: #d4a84318;
-  --green: #10b981;
-  --red: #ef4444;
-  --blue: #6366f1;
-  --purple: #8b5cf6;
-  --orange: #f59e0b;
-  --pink: #ec4899;
+  --bg: #0c0f0e;
+  --card: #141816;
+  --sidebar: #0e1210;
+  --input: #1a1e1c;
+  --text: #e4dfd4;
+  --sub: #7a7768;
+  --muted: #3e3d38;
+  --border: #1e2220;
+  --accent: #c4935a;
+  --abg: rgba(196,147,90,.07);
+  --green: #3a8c6a;
+  --red: #b84848;
+  --blue: #5a7eb0;
+  --purple: #7a6ea8;
+  --orange: #c08a40;
+  --pink: #a8607a;
+  --font-display: 'Literata', Georgia, 'Times New Roman', serif;
+  --font-body: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Code', 'SF Mono', Consolas, Monaco, monospace;
 }
 
 .light {
-  --bg: #faf9f6;
-  --card: #fff;
-  --sidebar: #fff;
-  --input: #eeeee8;
-  --text: #1a1a1a;
-  --sub: #6b6b6b;
-  --muted: #aaa;
-  --border: #e5e3dc;
-  --abg: #d4a84312;
+  --bg: #f5f2ec;
+  --card: #faf8f4;
+  --sidebar: #faf8f4;
+  --input: #edeae2;
+  --text: #1a1c1a;
+  --sub: #6a6860;
+  --muted: #b0aa9e;
+  --border: #ddd8cc;
+  --abg: rgba(196,147,90,.06);
 }
