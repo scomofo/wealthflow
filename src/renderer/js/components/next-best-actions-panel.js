@@ -44,12 +44,12 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
     const rationale = a.rationale || a.description || '';
     return `
       <div class="card action-card" style="margin-bottom:10px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
-          <div style="display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1">
+        <div class="nba-row">
+          <div class="nba-main">
             <div class="nba-icon-shell">
               ${icon(meta.label === 'Urgent' ? 'alert-triangle' : meta.label === 'High' ? 'arrow-up-right' : 'lightbulb', 15, meta.color)}
             </div>
-            <div style="min-width:0;flex:1">
+            <div class="nba-copy">
               <div style="font-size:14px;font-weight:700;line-height:1.4">${h(a.title || 'Recommended action')}</div>
               ${rationale ? `<div class="nba-rationale">${h(rationale)}</div>` : ''}
               ${a.impact_text ? `<div class="nba-impact"><span class="nba-impact-label">Impact:</span> ${h(a.impact_text)}</div>` : ''}
@@ -58,6 +58,7 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
           <span class="priority-pill priority-${(a.priority || 'low').toLowerCase()}">${meta.label}</span>
         </div>
         <div class="action-buttons">
+          <button class="btn btn-ghost btn-sm" data-action="open-focus-mode" data-id="${h(a.id || '')}">${icon('target', 12)} Focus</button>
           <button class="btn btn-primary btn-sm" data-action="complete-next-best-action" data-id="${h(a.id || '')}">${icon('check', 12)} Mark done</button>
           <button class="btn btn-secondary btn-sm" data-action="dismiss-next-best-action" data-id="${h(a.id || '')}">${icon('x', 12)} Dismiss</button>
           <button class="btn btn-ghost btn-sm" data-action="snooze-next-best-action" data-id="${h(a.id || '')}">${icon('clock', 12)} Snooze 7d</button>

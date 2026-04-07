@@ -265,6 +265,8 @@ export async function handleSharedAction(action, btn, ctx) {
       if (card) card.classList.add('fade-out');
       await ctx.State.completeNextBestAction(btn.dataset.id);
       ctx.showToast('Nice \u2014 progress made', 'success');
+      ctx.appState.activeModal = null;
+      ctx.appState.editData = null;
       setTimeout(() => ctx.render(), 250);
       return true;
     }
@@ -273,6 +275,8 @@ export async function handleSharedAction(action, btn, ctx) {
       if (card) card.classList.add('fade-out');
       await ctx.State.dismissNextBestAction(btn.dataset.id);
       ctx.showToast('Action dismissed', 'info');
+      ctx.appState.activeModal = null;
+      ctx.appState.editData = null;
       setTimeout(() => ctx.render(), 250);
       return true;
     }
@@ -281,8 +285,32 @@ export async function handleSharedAction(action, btn, ctx) {
       if (card) card.classList.add('fade-out');
       const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
-      ctx.showToast('Snoozed for 7 days', 'info');
+      ctx.showToast('Action snoozed for 7 days', 'info');
+      ctx.appState.activeModal = null;
+      ctx.appState.editData = null;
       setTimeout(() => ctx.render(), 250);
+      return true;
+    }
+
+    case 'open-focus-mode': {
+      const actionId = btn.dataset.id;
+      const nbaActions = ctx.State.getState().nextBestActions || [];
+      const action = nbaActions.find(a => a.id === actionId);
+      if (action) {
+        const { renderFocusMode } = await import('../components/focus-mode.js');
+        ctx.appState.activeModal = '_custom';
+        ctx.appState.editData = {
+          title: 'Focus Mode',
+          body: renderFocusMode(action),
+        };
+        ctx.render();
+      }
+      return true;
+    }
+    case 'close-focus-mode': {
+      ctx.appState.activeModal = null;
+      ctx.appState.editData = null;
+      ctx.render();
       return true;
     }
 

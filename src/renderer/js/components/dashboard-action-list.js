@@ -27,7 +27,7 @@ export function renderDashboardActionList(actions = []) {
             <div class="action-meta">${a.impact_text ? h(a.impact_text) : ''}${workflowLabel ? ` · ${h(workflowLabel)}` : ''}</div>
           </div>
           <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:10.5px;flex-shrink:0" data-action="complete-action" data-id="${h(a.id)}">${icon('check', 12)}</button>
-          <button class="btn btn-sm btn-ghost" style="padding:3px 8px;font-size:10.5px;flex-shrink:0;color:var(--red)" data-action="delete-action" data-id="${h(a.id)}">${icon('trash-2', 12)}</button>
+          <button class="btn btn-sm btn-ghost saved-action-delete" style="padding:3px 8px;font-size:10.5px;flex-shrink:0" data-action="delete-action" data-id="${h(a.id)}">${icon('trash-2', 12)}</button>
         </div>`;
       }).join('')}
     </div>`;
