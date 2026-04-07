@@ -363,6 +363,18 @@ function registerIpcHandlers(database, aiService) {
   safeHandle('db:recommended-actions:complete', (_, id) => database.completeRecommendedAction(id));
   safeHandle('db:recommended-actions:delete', (_, id) => database.deleteRecommendedAction(id));
 
+  // Next Best Actions
+  const { NextBestActionsEngine } = require('./next-best-actions-engine');
+  const nbaEngine = new NextBestActionsEngine(database);
+
+  safeHandle('actions:generate-next-best', async () => {
+    return nbaEngine.generateActions();
+  });
+  safeHandle('actions:list-next-best', () => database.listNextBestActions('open'));
+  safeHandle('actions:complete-next-best', (_, id) => database.completeNextBestAction(id));
+  safeHandle('actions:dismiss-next-best', (_, id) => database.dismissNextBestAction(id));
+  safeHandle('actions:snooze-next-best', (_, id, untilDate) => database.snoozeNextBestAction(id, untilDate));
+
   // Currency exchange rate
   safeHandle('stock:fetch-exchange-rate', async (_, from, to) => {
     const { StockService } = require('./stock-service');

@@ -74,3 +74,30 @@ export async function getImportHistory() {
 export async function aiCategorize(descriptions) {
   return api.aiCategorize(descriptions);
 }
+
+// Next Best Actions
+export async function generateNextBestActions() {
+  const result = await api.generateNextBestActions();
+  state.nextBestActions = result;
+  return result;
+}
+
+export async function loadNextBestActions() {
+  state.nextBestActions = await api.getNextBestActions();
+  return state.nextBestActions;
+}
+
+export async function completeNextBestAction(id) {
+  await api.completeNextBestAction(id);
+  state.nextBestActions = state.nextBestActions.filter(a => a.id !== id);
+}
+
+export async function dismissNextBestAction(id) {
+  await api.dismissNextBestAction(id);
+  state.nextBestActions = state.nextBestActions.filter(a => a.id !== id);
+}
+
+export async function snoozeNextBestAction(id, untilDate) {
+  await api.snoozeNextBestAction(id, untilDate);
+  state.nextBestActions = state.nextBestActions.filter(a => a.id !== id);
+}

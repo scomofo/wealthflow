@@ -229,4 +229,11 @@ contextBridge.exposeInMainWorld('wealthflow', {
   addRecommendedAction: (action) => ipcRenderer.invoke('db:recommended-actions:add', action),
   completeRecommendedAction: (id) => ipcRenderer.invoke('db:recommended-actions:complete', id),
   deleteRecommendedAction: (id) => ipcRenderer.invoke('db:recommended-actions:delete', id),
+
+  // Next Best Actions
+  generateNextBestActions: () => ipcRenderer.invoke('actions:generate-next-best'),
+  getNextBestActions: () => ipcRenderer.invoke('actions:list-next-best'),
+  completeNextBestAction: (id) => ipcRenderer.invoke('actions:complete-next-best', id),
+  dismissNextBestAction: (id) => ipcRenderer.invoke('actions:dismiss-next-best', id),
+  snoozeNextBestAction: (id, untilDate) => ipcRenderer.invoke('actions:snooze-next-best', id, untilDate),
 });

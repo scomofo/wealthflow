@@ -24,6 +24,7 @@ const state = {
   advisorProfile: null,
   residence: null,
   recommendedActions: [],
+  nextBestActions: [],
 };
 
 // Initialise all domain modules with shared state and api
@@ -34,7 +35,8 @@ initPlan(state, api);
 
 export async function loadAll() {
   const [settings, transactions, budgets, goals, debts, investments, bills, challenges, counts,
-         contributionRoom, contributions, respBeneficiaries, gics, residence, recommendedActions] = await Promise.all([
+         contributionRoom, contributions, respBeneficiaries, gics, residence, recommendedActions,
+         nextBestActions] = await Promise.all([
     api.getSettings(),
     api.getTransactions(),
     api.getBudgets(),
@@ -50,10 +52,12 @@ export async function loadAll() {
     api.getGICs(),
     api.getPrincipalResidence(),
     api.getRecommendedActions(),
+    api.getNextBestActions(),
   ]);
   Object.assign(state, {
     settings, transactions, budgets, goals, debts, investments, bills, challenges, counts,
     contributionRoom, contributions, respBeneficiaries, gics, residence, recommendedActions,
+    nextBestActions,
   });
   return state;
 }
