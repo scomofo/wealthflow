@@ -49,7 +49,11 @@ export function renderFocusMode(action) {
 
   return `
     <div class="focus-mode">
-      <div class="focus-mode-title">${h(action.title || 'Recommended action')}</div>
+      <div class="focus-mode-eyebrow">Focus Mode</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="focus-mode-title">${h(action.title || 'Recommended action')}</div>
+        <span class="priority-pill priority-${(action.priority || 'medium').toLowerCase()}">${action.priority || 'Medium'}</span>
+      </div>
       <div class="focus-mode-subtitle">One clear next step</div>
 
       ${rationale ? `
@@ -67,7 +71,7 @@ export function renderFocusMode(action) {
       ` : ''}
 
       <div class="focus-mode-section">
-        <div style="font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Next steps</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Next steps</div>
         <div class="focus-mode-steps">
           ${steps.map((step, i) => `
             <div class="focus-mode-step">
