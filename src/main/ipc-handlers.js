@@ -400,6 +400,16 @@ function registerIpcHandlers(database, aiService) {
 
   safeHandle('proactive:evaluate', () => proactiveEngine.evaluate());
 
+  // Engagement
+  const { EngagementEngine } = require('./engagement-engine');
+  const engagementEngine = new EngagementEngine(database);
+
+  safeHandle('engagement:progress', () => ({
+    message: engagementEngine.getProgressMessage(),
+    momentum: engagementEngine.getMomentumState(),
+  }));
+  safeHandle('engagement:enhanced-toast', (_, baseMessage) => engagementEngine.getEnhancedToast(baseMessage));
+
   // Currency exchange rate
   safeHandle('stock:fetch-exchange-rate', async (_, from, to) => {
     const { StockService } = require('./stock-service');

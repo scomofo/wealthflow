@@ -243,4 +243,8 @@ contextBridge.exposeInMainWorld('wealthflow', {
 
   // Proactive
   evaluateProactiveNudges: () => ipcRenderer.invoke('proactive:evaluate'),
+
+  // Engagement
+  getEngagementProgress: () => ipcRenderer.invoke('engagement:progress'),
+  getEnhancedToast: (baseMessage) => ipcRenderer.invoke('engagement:enhanced-toast', baseMessage),
 });
