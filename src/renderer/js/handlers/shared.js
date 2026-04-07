@@ -263,17 +263,21 @@ export async function handleSharedAction(action, btn, ctx) {
     case 'complete-next-best-action': {
       const card = btn.closest('.action-card');
       if (card) card.classList.add('fade-out');
+      const nba = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
       await ctx.State.completeNextBestAction(btn.dataset.id);
-      ctx.showToast('Nice \u2014 progress made', 'success');
+      if (nba) ctx.State.recordInteraction('complete', nba.category || 'other');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
+      ctx.showToast('Nice \u2014 progress made', 'success');
       setTimeout(() => ctx.render(), 250);
       return true;
     }
     case 'dismiss-next-best-action': {
       const card = btn.closest('.action-card');
       if (card) card.classList.add('fade-out');
+      const nbaD = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
       await ctx.State.dismissNextBestAction(btn.dataset.id);
+      if (nbaD) ctx.State.recordInteraction('dismiss', nbaD.category || 'other');
       ctx.showToast('Action dismissed', 'info');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
@@ -283,8 +287,10 @@ export async function handleSharedAction(action, btn, ctx) {
     case 'snooze-next-best-action': {
       const card = btn.closest('.action-card');
       if (card) card.classList.add('fade-out');
+      const nbaS = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
       const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
+      if (nbaS) ctx.State.recordInteraction('snooze', nbaS.category || 'other');
       ctx.showToast('Action snoozed for 7 days', 'info');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
@@ -297,6 +303,7 @@ export async function handleSharedAction(action, btn, ctx) {
       const nbaActions = ctx.State.getState().nextBestActions || [];
       const action = nbaActions.find(a => a.id === actionId);
       if (action) {
+        ctx.State.recordInteraction('focus_open', action.category || 'other');
         const { renderFocusMode } = await import('../components/focus-mode.js');
         ctx.appState.activeModal = '_custom';
         ctx.appState.editData = {

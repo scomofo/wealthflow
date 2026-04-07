@@ -76,8 +76,16 @@ class NextBestActionsEngine {
     const activeKeys = filtered.map((a) => a.action_key);
     db.clearStaleNextBestActions(activeKeys);
 
-    // 7. Return sorted open actions
-    return db.listNextBestActions('open');
+    // 7. Return sorted open actions with personalization weighting
+    try {
+      const { PersonalizationEngine } = require('./personalization-engine');
+      const pe = new PersonalizationEngine(this.database);
+      const profile = pe.buildProfile();
+      const openActions = db.listNextBestActions('open');
+      return pe.applyActionWeighting(openActions, profile);
+    } catch (err) {
+      return db.listNextBestActions('open');
+    }
   }
 
   _ruleBudgetOverrun(budgets, financials) {

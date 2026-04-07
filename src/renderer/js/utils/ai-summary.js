@@ -1,4 +1,4 @@
-export function generateAISummary(actions, financials) {
+export function generateAISummary(actions, financials, emphasis) {
   const top = (actions || []).slice(0, 2);
   if (top.length === 0) {
     return {
@@ -9,10 +9,22 @@ export function generateAISummary(actions, financials) {
   }
 
   // Build headline from top actions
-  const themes = top.map(a => summarizeAction(a));
-  const headline = themes.length === 1
-    ? 'This month, your top priority is ' + themes[0].toLowerCase() + '.'
-    : 'This month, your biggest gains come from ' + themes[0].toLowerCase() + ' and ' + themes[1].toLowerCase() + '.';
+  const emphasisPrefix = {
+    debt_reduction: 'your biggest gains come from reducing interest drag',
+    savings_growth: 'your strongest opportunity is growing your savings',
+    spending_control: 'restoring spending control will improve flexibility',
+    cashflow_improvement: 'improving cash flow is your top priority',
+  };
+
+  let headline;
+  if (emphasis && emphasisPrefix[emphasis] && top.length > 0) {
+    headline = 'This month, ' + emphasisPrefix[emphasis] + '.';
+  } else {
+    const themes = top.map(a => summarizeAction(a));
+    headline = themes.length === 1
+      ? 'This month, your top priority is ' + themes[0].toLowerCase() + '.'
+      : 'This month, your biggest gains come from ' + themes[0].toLowerCase() + ' and ' + themes[1].toLowerCase() + '.';
+  }
 
   // Build bullets from action details
   const bullets = top.map(a => {
