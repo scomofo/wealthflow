@@ -31,6 +31,8 @@ import { exportToQIF } from './utils/qif-export.js';
 import { renderImportModal } from './components/import-modal.js';
 import { renderRecurringModal } from './components/recurring-modal.js';
 import { detectRecurringPayments } from './utils/recurring-detector.js';
+import { renderDecisionCard } from './components/ai-decision-card.js';
+import { renderActionList } from './components/ai-action-list.js';
 
 let sideOpen = true;
 let showAI = false;
@@ -38,6 +40,8 @@ let activeModal = null;
 let editData = null;
 let importModalData = null;
 let recurringModalData = null;
+let activeWorkflowResult = null;
+let workflowLoading = false;
 
 // Setup router callback
 setOnNavigate(() => render());
@@ -224,7 +228,7 @@ async function render() {
   const page = document.getElementById('page');
   const section = getSection();
 
-  if (section === 'dashboard') page.innerHTML = renderPageSafe(renderDashboard, state, F);
+  if (section === 'dashboard') page.innerHTML = renderPageSafe(renderDashboard, state, F, { activeWorkflowResult, workflowLoading });
   else if (section === 'budget') page.innerHTML = renderPageSafe(renderBudget, state, F);
   else if (section === 'transactions') page.innerHTML = renderPageSafe(renderTransactions, state);
   else if (section === 'savings') page.innerHTML = renderPageSafe(renderSavings, state);
@@ -1034,6 +1038,84 @@ function bindEvents() {
         } catch (err) {
           showToast('Report generation failed: ' + err.message, 'error');
         }
+        break;
+      }
+
+      case 'run-workflow': {
+        const workflowType = btn.dataset.workflow;
+        workflowLoading = true;
+        activeWorkflowResult = null;
+        render();
+        try {
+          activeWorkflowResult = await State.runWorkflow(workflowType);
+        } catch (err) {
+          showToast('Workflow failed: ' + err.message, 'error');
+        }
+        workflowLoading = false;
+        // Show as modal if not on dashboard
+        if (getSection() !== 'dashboard' && activeWorkflowResult) {
+          activeModal = '_custom';
+          editData = {
+            title: 'AI Recommendation',
+            body: renderDecisionCard(activeWorkflowResult),
+          };
+        }
+        render();
+        break;
+      }
+
+      case 'save-workflow-action': {
+        const action = {
+          id: uid(),
+          workflow_type: btn.dataset.workflow,
+          title: btn.dataset.title,
+          action_type: btn.dataset.type || null,
+          priority: btn.dataset.priority || 'medium',
+          impact_text: btn.dataset.impact || null,
+          status: 'pending',
+        };
+        await State.addRecommendedAction(action);
+        showToast('Action saved');
+        render();
+        break;
+      }
+
+      case 'save-all-workflow-actions': {
+        if (!activeWorkflowResult) break;
+        const actions = activeWorkflowResult.next_actions || activeWorkflowResult.top_actions || [];
+        for (const a of actions) {
+          await State.addRecommendedAction({
+            id: uid(),
+            workflow_type: activeWorkflowResult.workflow_type,
+            title: a.title,
+            action_type: a.type || null,
+            priority: a.priority || 'medium',
+            impact_text: a.impact || null,
+            status: 'pending',
+          });
+        }
+        showToast('Saved ' + actions.length + ' action' + (actions.length !== 1 ? 's' : ''));
+        render();
+        break;
+      }
+
+      case 'dismiss-workflow': {
+        activeWorkflowResult = null;
+        render();
+        break;
+      }
+
+      case 'complete-action': {
+        await State.completeRecommendedAction(btn.dataset.id);
+        showToast('Action completed');
+        render();
+        break;
+      }
+
+      case 'delete-action': {
+        await State.deleteRecommendedAction(btn.dataset.id);
+        showToast('Action removed');
+        render();
         break;
       }
     }
