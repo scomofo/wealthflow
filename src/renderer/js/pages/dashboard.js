@@ -1,25 +1,11 @@
 import { icon } from '../icons.js';
 import { fmt, h } from '../helpers.js';
 import { stat } from '../components/stat-card.js';
-import { progress } from '../components/progress-bar.js';
-import { computeNextActions } from '../utils/next-actions.js';
+import { renderNextBestActionsPanel } from '../components/next-best-actions-panel.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
 import { renderActionList } from '../components/ai-action-list.js';
 
-let showAllActions = false;
-export function setShowAllActions(val) { showAllActions = val; }
-
-const PRIORITY_COLORS = {
-  high: 'var(--red)',
-  medium: 'var(--orange, #f59e0b)',
-  low: 'var(--blue, #6366f1)',
-};
-
-const PRIORITY_BG = {
-  high: '#ef444426',
-  medium: '#f59e0b26',
-  low: '#6366f126',
-};
+export function setShowAllActions(val) { /* no-op: panel handles its own display */ }
 
 const BADGE_DEFS = [
   { id: 'first-steps',   emoji: '🚀', label: 'First Steps',   check: (s, c) => (c.transactions || 0) >= 1 },
@@ -36,33 +22,6 @@ export function renderDashboard(state, F, workflowCtx) {
   const s = state.settings || {};
   const now = new Date();
   const monthLabel = now.toLocaleString('en-CA', { month: 'long', year: 'numeric' });
-
-  // ── Next Best Actions ────────────────────────────────────────────────────
-  const actions = computeNextActions(state, F);
-  const visibleActions = showAllActions ? actions : actions.slice(0, 3);
-  const hiddenCount = actions.length - 3;
-
-  const actionsHtml = visibleActions.length === 0
-    ? `<div style="display:flex;align-items:center;gap:10px;padding:12px 0;color:var(--green)">
-         ${icon('check-circle', 20, 'var(--green)')}
-         <span style="font-size:13px;font-weight:500">You're on track — no urgent actions right now.</span>
-       </div>`
-    : visibleActions.map(a => {
-        const color = PRIORITY_COLORS[a.priority] || PRIORITY_COLORS.low;
-        const bg = PRIORITY_BG[a.priority] || PRIORITY_BG.low;
-        return `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-          <div style="width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${bg}">
-            ${icon(a.icon, 15, color)}
-          </div>
-          <div style="flex:1;font-size:12.5px;color:var(--text)">${h(a.text)}</div>
-          ${a.link ? `<button class="btn btn-sm btn-secondary" style="padding:3px 10px;font-size:10.5px;white-space:nowrap" data-nav="${a.link}">View</button>` : ''}
-        </div>`;
-      }).join('');
-
-  const showMoreHtml = !showAllActions && hiddenCount > 0
-    ? `<button class="btn btn-secondary" style="margin-top:10px;width:100%;justify-content:center;font-size:11.5px" data-action="show-all-actions">Show ${hiddenCount} more</button>`
-    : '';
 
   // ── Monthly Spending Snapshot ────────────────────────────────────────────
   const catEntries = Object.entries(F.catSpending || {})
@@ -111,13 +70,7 @@ export function renderDashboard(state, F, workflowCtx) {
       ${stat('Savings Rate', F.savingsRate.toFixed(1) + '%', 0, 'piggy-bank', 'var(--blue)')}
     </div>
 
-    <div class="card" style="margin-top:14px">
-      <div style="font-weight:600;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-        ${icon('zap', 15, 'var(--accent)')} Next Best Actions
-      </div>
-      ${actionsHtml}
-      ${showMoreHtml}
-    </div>
+    ${renderNextBestActionsPanel(state.nextBestActions || [])}
 
     <div class="card" style="margin-top:14px">
       <div style="font-weight:700;font-size:15px;margin-bottom:12px">AI Recommendations</div>

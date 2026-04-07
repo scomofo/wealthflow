@@ -5,7 +5,6 @@
 // complete-action, delete-action, show-all-actions, ob-next, ob-prev, start-sample, start-empty
 // Also: handleSaveModal(), addXP()
 
-import { setShowAllActions } from '../pages/dashboard.js';
 import { setExpandedGroup } from '../components/sidebar.js';
 import { renderImportModal } from '../components/import-modal.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
@@ -247,9 +246,33 @@ export async function handleSharedAction(action, btn, ctx) {
       return true;
     }
 
-    case 'show-all-actions': {
-      setShowAllActions(true);
-      render();
+    case 'generate-next-best-actions': {
+      ctx.showToast('Refreshing actions...', 'info');
+      try {
+        await ctx.State.generateNextBestActions();
+        ctx.render();
+      } catch (err) {
+        ctx.showToast('Failed to refresh: ' + err.message, 'error');
+      }
+      return true;
+    }
+    case 'complete-next-best-action': {
+      await ctx.State.completeNextBestAction(btn.dataset.id);
+      ctx.showToast('Action completed');
+      ctx.render();
+      return true;
+    }
+    case 'dismiss-next-best-action': {
+      await ctx.State.dismissNextBestAction(btn.dataset.id);
+      ctx.showToast('Action dismissed');
+      ctx.render();
+      return true;
+    }
+    case 'snooze-next-best-action': {
+      const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+      await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
+      ctx.showToast('Snoozed for 7 days');
+      ctx.render();
       return true;
     }
 

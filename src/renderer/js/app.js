@@ -24,7 +24,6 @@ import { renderDebts } from './pages/debts.js';
 import { renderInvestments, setLastPriceRefresh } from './pages/investments.js';
 import { renderAnalytics, initCharts, destroyCharts } from './pages/analytics.js';
 import { renderBills } from './pages/bills.js';
-import { setShowAllActions } from './pages/dashboard.js';
 import { renderRegisteredAccounts, setRegTab } from './pages/registered-accounts.js';
 import { renderTaxCalculator, updateTaxInput, initTaxInputs } from './pages/tax-calculator.js';
 import { renderPlanning, updatePlanInput } from './pages/planning.js';
@@ -417,6 +416,7 @@ async function init() {
 
   await State.loadAll();
   try { await State.snapshotNetWorth(); } catch (e) { /* ignore */ }
+  try { await State.generateNextBestActions(); } catch (_) { /* non-blocking */ }
   try { await State.processRecurringBills(); } catch (e) { /* ignore */ }
 
   try {
