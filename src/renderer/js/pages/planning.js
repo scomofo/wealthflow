@@ -65,6 +65,11 @@ export function renderPlanning(state) {
 
   return `
     <div style="font-size:12px;color:var(--sub);margin-bottom:16px">Financial Planning & Forecasting</div>
+    <div style="margin-bottom:14px">
+      <button class="btn btn-secondary" data-action="run-workflow" data-workflow="debt_vs_investing">
+        ${icon('lightbulb', 14)} Decide: Debt vs Investing
+      </button>
+    </div>
     <div class="grid2">
       <div class="card">
         <div style="font-weight:600;font-size:14px;margin-bottom:14px">${icon('credit-card', 16)} Debt Payoff Simulator</div>

@@ -3,6 +3,8 @@ import { fmt, h } from '../helpers.js';
 import { stat } from '../components/stat-card.js';
 import { progress } from '../components/progress-bar.js';
 import { computeNextActions } from '../utils/next-actions.js';
+import { renderDecisionCard } from '../components/ai-decision-card.js';
+import { renderActionList } from '../components/ai-action-list.js';
 
 let showAllActions = false;
 export function setShowAllActions(val) { showAllActions = val; }
@@ -30,7 +32,7 @@ const BADGE_DEFS = [
   { id: 'diversified',   emoji: '🌐', label: 'Diversified',    check: (s, c) => (c.investments || 0) >= 3 },
 ];
 
-export function renderDashboard(state, F) {
+export function renderDashboard(state, F, workflowCtx) {
   const s = state.settings || {};
   const now = new Date();
   const monthLabel = now.toLocaleString('en-CA', { month: 'long', year: 'numeric' });
@@ -116,6 +118,16 @@ export function renderDashboard(state, F) {
       ${actionsHtml}
       ${showMoreHtml}
     </div>
+
+    <div class="card" style="margin-top:14px">
+      <div style="font-weight:700;font-size:15px;margin-bottom:12px">AI Recommendations</div>
+      <button class="btn btn-primary" data-action="run-workflow" data-workflow="monthly_action_planner"${workflowCtx?.workflowLoading ? ' disabled' : ''}>
+        ${icon('sparkles', 14)} Generate Monthly Action Plan
+      </button>
+      ${workflowCtx?.workflowLoading ? `<div style="display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--sub);font-size:13px">${icon('loader', 14)} Analyzing your finances...</div>` : ''}
+      ${workflowCtx?.activeWorkflowResult ? renderDecisionCard(workflowCtx.activeWorkflowResult) : ''}
+    </div>
+    ${renderActionList(state.recommendedActions)}
 
     <div class="card" style="margin-top:14px">
       <div style="font-weight:600;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">

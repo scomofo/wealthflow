@@ -19,6 +19,11 @@ export function renderRegisteredAccounts(state) {
           ${tabLabels[t]}
         </button>`).join('')}
     </div>
+    <div style="margin-bottom:14px">
+      <button class="btn btn-secondary" data-action="run-workflow" data-workflow="tfsa_rrsp_optimizer">
+        ${icon('lightbulb', 14)} Optimize TFSA vs RRSP
+      </button>
+    </div>
     ${activeTab === 'tfsa' ? renderTFSA(state) : ''}
     ${activeTab === 'rrsp' ? renderRRSP(state) : ''}
     ${activeTab === 'resp' ? renderRESP(state) : ''}
