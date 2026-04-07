@@ -150,6 +150,8 @@ class WealthFlowDatabase {
       require('./migrations/006-import-history'),
       require('./migrations/007-improvements'),
       require('./migrations/008-new-features'),
+      require('./migrations/009-recommended-actions'),
+      require('./migrations/010-next-best-actions'),
     ];
 
     for (const migration of migrations) {
@@ -803,6 +805,55 @@ class WealthFlowDatabase {
 
   deleteRecommendedAction(id) {
     this.run("UPDATE recommended_actions SET deleted_at = datetime('now') WHERE id = ?", [id]);
+  }
+
+  // Next Best Actions
+  listNextBestActions(statusFilter) {
+    if (statusFilter) {
+      return this.getAll("SELECT * FROM next_best_actions WHERE status = ? AND deleted_at IS NULL ORDER BY score DESC", [statusFilter]);
+    }
+    return this.getAll("SELECT * FROM next_best_actions WHERE deleted_at IS NULL ORDER BY score DESC");
+  }
+
+  upsertNextBestAction(a) {
+    const existing = this.getOne("SELECT id FROM next_best_actions WHERE action_key = ? AND deleted_at IS NULL", [a.action_key]);
+    if (existing) {
+      this.run(
+        "UPDATE next_best_actions SET title=?, description=?, rationale=?, category=?, priority=?, score=?, source_payload=?, related_entity_type=?, related_entity_id=?, impact_text=?, generated_at=datetime('now') WHERE id=?",
+        [a.title, a.description || null, a.rationale || null, a.category || null, a.priority, a.score, a.source_payload || null, a.related_entity_type || null, a.related_entity_id || null, a.impact_text || null, existing.id]
+      );
+      return { ...a, id: existing.id };
+    }
+    this.run(
+      'INSERT INTO next_best_actions (id, action_key, title, description, rationale, category, priority, score, status, source_type, source_payload, related_entity_type, related_entity_id, impact_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [a.id, a.action_key, a.title, a.description || null, a.rationale || null, a.category || null, a.priority, a.score, 'open', a.source_type || 'rule', a.source_payload || null, a.related_entity_type || null, a.related_entity_id || null, a.impact_text || null]
+    );
+    return a;
+  }
+
+  completeNextBestAction(id) {
+    this.run("UPDATE next_best_actions SET status = 'done', completed_at = datetime('now') WHERE id = ?", [id]);
+  }
+
+  dismissNextBestAction(id) {
+    this.run("UPDATE next_best_actions SET status = 'dismissed', dismissed_at = datetime('now') WHERE id = ?", [id]);
+  }
+
+  snoozeNextBestAction(id, untilDate) {
+    this.run("UPDATE next_best_actions SET status = 'snoozed', snoozed_until = ? WHERE id = ?", [untilDate, id]);
+  }
+
+  deleteNextBestAction(id) {
+    this.run("UPDATE next_best_actions SET deleted_at = datetime('now') WHERE id = ?", [id]);
+  }
+
+  clearStaleNextBestActions(activeKeys) {
+    if (!activeKeys || activeKeys.length === 0) return;
+    const placeholders = activeKeys.map(() => '?').join(',');
+    this.run(
+      "UPDATE next_best_actions SET deleted_at = datetime('now') WHERE status = 'open' AND action_key NOT IN (" + placeholders + ") AND deleted_at IS NULL",
+      activeKeys
+    );
   }
 
   // Undo Log
