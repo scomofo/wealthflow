@@ -106,6 +106,16 @@ export function renderDashboard(state, F, workflowCtx) {
       </div>
     </div>
 
+    ${(() => {
+      const completed = (state.recommendedActions || []).filter(a => a.status === 'completed').length;
+      const nbaOpen = (state.nextBestActions || []).length;
+      if (completed === 0 && nbaOpen === 0) return '';
+      const msgs = [];
+      if (completed > 0) msgs.push(completed + ' action' + (completed !== 1 ? 's' : '') + ' completed');
+      if (nbaOpen === 0) msgs.push('no urgent actions remaining');
+      return '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;margin-top:14px;border-radius:4px;background:rgba(58,140,106,.06);border:1px solid rgba(58,140,106,.12);font-size:12px;color:var(--green)">' + icon('check-circle', 14, 'var(--green)') + ' ' + msgs.join(' \u2014 ') + '</div>';
+    })()}
+
     <div class="grid3" style="margin-top:14px">
       <button class="card" style="text-align:left;cursor:pointer;border:none;padding:14px 16px;display:flex;align-items:center;gap:10px" data-action="import-csv">
         ${icon('upload', 18, 'var(--accent)')}

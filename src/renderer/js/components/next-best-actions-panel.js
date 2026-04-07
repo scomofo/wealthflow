@@ -43,7 +43,7 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
     const meta = priorityMeta(a.priority);
     const rationale = a.rationale || a.description || '';
     return `
-      <div class="card" style="margin-bottom:10px;padding:16px 18px;background:${meta.bg};border-color:${meta.color}22">
+      <div class="card action-card" style="margin-bottom:10px">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1">
             <div style="width:34px;height:34px;border-radius:4px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -55,9 +55,9 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
               ${a.impact_text ? `<div style="font-size:11px;color:var(--text);margin-top:7px"><span style="color:var(--sub)">Impact:</span> ${h(a.impact_text)}</div>` : ''}
             </div>
           </div>
-          <span style="padding:5px 9px;border-radius:999px;background:var(--card);border:1px solid ${meta.color}22;color:${meta.color};font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap">${meta.label}</span>
+          <span class="priority-pill priority-${(a.priority || 'low').toLowerCase()}">${meta.label}</span>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+        <div class="action-buttons">
           <button class="btn btn-primary btn-sm" data-action="complete-next-best-action" data-id="${h(a.id || '')}">${icon('check', 12)} Mark done</button>
           <button class="btn btn-secondary btn-sm" data-action="dismiss-next-best-action" data-id="${h(a.id || '')}">${icon('x', 12)} Dismiss</button>
           <button class="btn btn-ghost btn-sm" data-action="snooze-next-best-action" data-id="${h(a.id || '')}">${icon('clock', 12)} Snooze 7d</button>

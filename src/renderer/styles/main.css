@@ -141,12 +141,12 @@ input, select { font-family: inherit; outline: none; }
   border-radius: 6px;
   padding: 20px;
   margin-bottom: 14px;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-1px);
-  border-color: var(--accent);
+  border-color: rgba(196,147,90,.4);
 }
 
 /* ═══ Grids ═══ */
@@ -182,6 +182,7 @@ input, select { font-family: inherit; outline: none; }
 }
 .btn:active {
   transform: scale(0.97);
+  filter: brightness(0.95);
 }
 .btn-primary { background: var(--accent); color: #0c0f0e; }
 .btn-primary:hover { filter: brightness(1.1); }
@@ -582,6 +583,16 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
 .status-negative::before { content: "▼ "; font-size: 0.7em; }
 .status-warning { color: var(--orange); }
 .status-warning::before { content: "● "; font-size: 0.7em; }
+
+/* ═══ Action Animations ═══ */
+@keyframes actionFadeOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(20px); }
+}
+.action-removing {
+  animation: actionFadeOut 0.25s ease forwards;
+  pointer-events: none;
+}
 
 /* ═══ Responsive ═══ */
 @media (max-width: 1200px) { .grid4 { grid-template-columns: repeat(2, 1fr); } }
