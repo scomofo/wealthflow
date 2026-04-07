@@ -666,6 +666,12 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
   background: var(--bg-soft);
 }
 
+/* Progress Strip */
+.progress-strip {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-soft);
+}
+
 /* ═══ Responsive ═══ */
 @media (max-width: 1200px) { .grid4 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 900px) {

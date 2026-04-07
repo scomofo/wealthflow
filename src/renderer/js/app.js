@@ -418,6 +418,10 @@ async function init() {
   try { await State.snapshotNetWorth(); } catch (e) { /* ignore */ }
   try { await State.generateNextBestActions(); } catch (_) { /* non-blocking */ }
   try { await State.evaluateProactiveNudges(); } catch (_) { /* non-blocking */ }
+  try {
+    const ep = await State.getEngagementProgress();
+    State.getState().engagementProgress = ep;
+  } catch (_) { /* non-blocking */ }
   try { await State.processRecurringBills(); } catch (e) { /* ignore */ }
 
   try {

@@ -114,13 +114,15 @@ export function renderDashboard(state, F, workflowCtx) {
     </div>
 
     ${(() => {
-      const completed = (state.recommendedActions || []).filter(a => a.status === 'completed').length;
-      const nbaOpen = (state.nextBestActions || []).length;
-      if (completed === 0 && nbaOpen === 0) return '';
-      const msgs = [];
-      if (completed > 0) msgs.push(completed + ' action' + (completed !== 1 ? 's' : '') + ' completed');
-      if (nbaOpen === 0) msgs.push('no urgent actions remaining');
-      return '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;margin-top:14px;border-radius:4px;background:rgba(58,140,106,.06);border:1px solid rgba(58,140,106,.12);font-size:12px;color:var(--green)">' + icon('check-circle', 14, 'var(--green)') + ' ' + msgs.join(' \u2014 ') + '</div>';
+      const ep = state.engagementProgress;
+      if (!ep || !ep.message) return '';
+      const colors = { strong: 'var(--green)', building: 'var(--accent)', low: 'var(--sub)' };
+      const icons = { strong: 'check-circle', building: 'trending-up', low: 'activity' };
+      const m = ep.momentum || { state: 'low' };
+      return '<div class="card progress-strip" style="display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:14px">'
+        + icon(icons[m.state] || 'activity', 16, colors[m.state] || 'var(--sub)')
+        + '<div style="font-size:12px;color:' + (colors[m.state] || 'var(--sub)') + '">' + ep.message + '</div>'
+        + '</div>';
     })()}
 
     <div class="grid3" style="margin-top:14px">
