@@ -10,8 +10,6 @@ let state = {
   investments: [],
   bills: [],
   challenges: [],
-  communityPosts: [],
-  education: [],
   counts: {},
   contributionRoom: [],
   contributions: [],
@@ -22,7 +20,7 @@ let state = {
 };
 
 export async function loadAll() {
-  const [settings, transactions, budgets, goals, debts, investments, bills, challenges, community, education, counts,
+  const [settings, transactions, budgets, goals, debts, investments, bills, challenges, counts,
          contributionRoom, contributions, respBeneficiaries, gics, residence] = await Promise.all([
     api.getSettings(),
     api.getTransactions(),
@@ -32,8 +30,6 @@ export async function loadAll() {
     api.getInvestments(),
     api.getBills(),
     api.getChallenges(),
-    api.getCommunityPosts(),
-    api.getEducation(),
     api.getCounts(),
     api.getContributionRoom(),
     api.getContributions(),
@@ -42,8 +38,7 @@ export async function loadAll() {
     api.getPrincipalResidence(),
   ]);
   Object.assign(state, {
-    settings, transactions, budgets, goals, debts, investments, bills, challenges,
-    communityPosts: community, education, counts,
+    settings, transactions, budgets, goals, debts, investments, bills, challenges, counts,
     contributionRoom, contributions, respBeneficiaries, gics, residence,
   });
   return state;
@@ -172,21 +167,6 @@ export async function updateBill(b) {
 export async function deleteBill(id) {
   await api.deleteBill(id);
   state.bills = state.bills.filter(b => b.id !== id);
-}
-
-// Community
-export async function addCommunityPost(post) {
-  await api.addCommunityPost(post);
-  state.communityPosts.unshift(post);
-  return post;
-}
-
-// Education
-export async function updateEducation(e) {
-  await api.updateEducation(e);
-  const idx = state.education.findIndex(x => x.id === e.id);
-  if (idx >= 0) Object.assign(state.education[idx], e);
-  return e;
 }
 
 // Challenges

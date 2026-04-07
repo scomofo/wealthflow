@@ -16,10 +16,8 @@ import { renderSavings } from './pages/savings.js';
 import { renderDebts } from './pages/debts.js';
 import { renderInvestments, setLastPriceRefresh } from './pages/investments.js';
 import { renderAnalytics, initCharts, destroyCharts } from './pages/analytics.js';
-import { renderCalendar } from './pages/calendar.js';
-import { renderEducation } from './pages/education.js';
-import { renderCommunity } from './pages/community.js';
-import { renderAchievements } from './pages/achievements.js';
+import { renderBills } from './pages/bills.js';
+import { setShowAllActions } from './pages/dashboard.js';
 import { renderRegisteredAccounts, setRegTab } from './pages/registered-accounts.js';
 import { renderTaxCalculator, updateTaxInput, initTaxInputs } from './pages/tax-calculator.js';
 import { renderPlanning, updatePlanInput } from './pages/planning.js';
@@ -236,9 +234,7 @@ async function render() {
     page.innerHTML = renderPageSafe(renderAnalytics, state, F);
     try { initCharts(state, F); } catch (e) { /* charts optional */ }
   }
-  else if (section === 'calendar') page.innerHTML = renderPageSafe(renderCalendar, state);
-  else if (section === 'education') page.innerHTML = renderPageSafe(renderEducation, state);
-  else if (section === 'community') page.innerHTML = renderPageSafe(renderCommunity, state);
+  else if (section === 'bills') page.innerHTML = renderPageSafe(renderBills, state);
   else if (section === 'registered') page.innerHTML = renderPageSafe(renderRegisteredAccounts, state);
   else if (section === 'tax-calc') {
     initTaxInputs(settings?.province);
@@ -246,7 +242,6 @@ async function render() {
   }
   else if (section === 'tax-season') page.innerHTML = renderPageSafe(renderTaxSeason, state);
   else if (section === 'planning') page.innerHTML = renderPageSafe(renderPlanning, state);
-  else if (section === 'achievements') page.innerHTML = renderPageSafe(renderAchievements, state);
   else if (section === 'advisor') {
     initWizard(state);
     if (!state.advisorProfile) await State.loadAdvisorProfile();
@@ -680,41 +675,8 @@ function bindEvents() {
         break;
       }
 
-      case 'config-widgets': {
-        const WIDGET_OPTIONS = [
-          { id: 'summary', label: 'Financial Summary' },
-          { id: 'budgets', label: 'Budget Alerts' },
-          { id: 'goals', label: 'Savings Goals' },
-          { id: 'transactions', label: 'Recent Transactions' },
-          { id: 'insights', label: 'Spending Insights' },
-        ];
-        const widgetSettings = State.getState().settings;
-        const current = JSON.parse(widgetSettings?.dashboard_widgets || '["summary","budgets","goals","transactions","insights"]');
-        const html = WIDGET_OPTIONS.map(w => {
-          const checked = current.includes(w.id) ? 'checked' : '';
-          return `<label style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;font-size:13px">
-            <input type="checkbox" class="widget-toggle" data-widget="${w.id}" ${checked} style="width:16px;height:16px;accent-color:var(--accent)">
-            ${w.label}
-          </label>`;
-        }).join('');
-        activeModal = '_custom';
-        editData = {
-          title: 'Dashboard Widgets',
-          body: `<div style="padding:4px 0">${html}</div>
-            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:14px" data-action="save-widgets">Save</button>`,
-        };
-        render();
-        break;
-      }
-
-      case 'save-widgets': {
-        const checks = document.querySelectorAll('.widget-toggle');
-        const enabled = [];
-        checks.forEach(cb => { if (cb.checked) enabled.push(cb.dataset.widget); });
-        await State.updateSettings({ dashboard_widgets: JSON.stringify(enabled) });
-        activeModal = null;
-        editData = null;
-        showToast('Dashboard updated', 'success');
+      case 'show-all-actions': {
+        setShowAllActions(true);
         render();
         break;
       }
@@ -835,66 +797,6 @@ function bindEvents() {
             showToast(`Deposited ${fmt(+amt)} to ${g.name}`);
             render();
           }
-        }
-        break;
-      }
-
-      case 'log-challenge': {
-        const state = State.getState();
-        const ch = state.challenges.find(x => x.id === btn.dataset.id);
-        if (ch && ch.progress < ch.target) {
-          const newProgress = Math.min(ch.progress + 1, ch.target);
-          await State.updateChallenge({ id: ch.id, progress: newProgress });
-          if (newProgress >= ch.target) {
-            await addXP(ch.xp);
-            showToast(`Challenge completed! +${ch.xp}XP`);
-          }
-          render();
-        }
-        break;
-      }
-
-      case 'add-community-post': {
-        const titleEl = document.getElementById('community-title');
-        const bodyEl = document.getElementById('community-body');
-        const title = titleEl?.value?.trim();
-        const body = bodyEl?.value?.trim();
-        if (!title || !body) {
-          showToast('Please enter a title and body');
-          break;
-        }
-        const state = State.getState();
-        const author = state.settings?.user_name || 'User';
-        await State.addCommunityPost({
-          id: uid(),
-          author,
-          avatar: author[0] || 'U',
-          title,
-          body,
-          likes: 0,
-          comments: 0,
-          time_label: 'just now',
-          tags: [],
-        });
-        showToast('Post published');
-        render();
-        break;
-      }
-
-      case 'toggle-education-complete': {
-        const eduId = btn.dataset.id;
-        const state = State.getState();
-        const item = state.education.find(e => e.id === eduId);
-        if (item) {
-          const newCompleted = item.completed ? 0 : 1;
-          await State.updateEducation({ id: eduId, completed: newCompleted });
-          if (newCompleted) {
-            await addXP(10);
-            showToast('Marked as completed! +10 XP');
-          } else {
-            showToast('Marked as incomplete');
-          }
-          render();
         }
         break;
       }
