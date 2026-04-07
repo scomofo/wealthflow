@@ -19,7 +19,11 @@ describe('computeNextActions', () => {
   };
 
   test('returns empty array when no issues detected', () => {
-    const actions = computeNextActions(baseState, baseFinancials);
+    const healthyState = {
+      ...baseState,
+      budgets: [{ id: '1', category: 'Food', amount: 500 }],
+    };
+    const actions = computeNextActions(healthyState, baseFinancials);
     expect(actions).toEqual([]);
   });
 

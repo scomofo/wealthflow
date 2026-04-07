@@ -212,7 +212,7 @@ function checkProfile(state, _financials, actions) {
 // Core function
 // ---------------------------------------------------------------------------
 
-function computeNextActions(state, financials) {
+export function computeNextActions(state, financials) {
   const actions = [];
 
   checkBudgets(state, financials, actions);
@@ -229,11 +229,3 @@ function computeNextActions(state, financials) {
   return actions;
 }
 
-// ---------------------------------------------------------------------------
-// Exports
-// ---------------------------------------------------------------------------
-
-// CommonJS (Jest / Node require)
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { computeNextActions };
-}
