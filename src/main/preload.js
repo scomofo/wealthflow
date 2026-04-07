@@ -236,4 +236,8 @@ contextBridge.exposeInMainWorld('wealthflow', {
   completeNextBestAction: (id) => ipcRenderer.invoke('actions:complete-next-best', id),
   dismissNextBestAction: (id) => ipcRenderer.invoke('actions:dismiss-next-best', id),
   snoozeNextBestAction: (id, untilDate) => ipcRenderer.invoke('actions:snooze-next-best', id, untilDate),
+
+  // Personalization
+  getPersonalizationProfile: () => ipcRenderer.invoke('personalization:get-profile'),
+  recordInteraction: (eventType, category) => ipcRenderer.invoke('personalization:record-interaction', eventType, category),
 });

@@ -101,3 +101,8 @@ export async function snoozeNextBestAction(id, untilDate) {
   await api.snoozeNextBestAction(id, untilDate);
   state.nextBestActions = state.nextBestActions.filter(a => a.id !== id);
 }
+
+// Personalization
+export async function recordInteraction(eventType, category) {
+  return api.recordInteraction(eventType, category);
+}

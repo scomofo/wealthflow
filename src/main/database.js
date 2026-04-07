@@ -152,6 +152,7 @@ class WealthFlowDatabase {
       require('./migrations/008-new-features'),
       require('./migrations/009-recommended-actions'),
       require('./migrations/010-next-best-actions'),
+      require('./migrations/011-personalization'),
     ];
 
     for (const migration of migrations) {
@@ -890,6 +891,18 @@ class WealthFlowDatabase {
       'SELECT * FROM bills WHERE deleted_at IS NULL AND next_due_date >= ? AND next_due_date <= ? ORDER BY next_due_date',
       [today, futureDate]
     );
+  }
+
+  // Personalization
+  getPersonalizationProfile() {
+    const row = this.getOne('SELECT personalization_profile FROM settings WHERE id = 1');
+    try {
+      return JSON.parse((row && row.personalization_profile) || '{}');
+    } catch { return {}; }
+  }
+
+  updatePersonalizationProfile(profile) {
+    this.run("UPDATE settings SET personalization_profile = ? WHERE id = 1", [JSON.stringify(profile)]);
   }
 
   close() {
