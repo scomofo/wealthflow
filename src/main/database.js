@@ -784,6 +784,27 @@ class WealthFlowDatabase {
     return report;
   }
 
+  // Recommended Actions
+  listRecommendedActions() {
+    return this.getAll("SELECT * FROM recommended_actions WHERE deleted_at IS NULL ORDER BY created_at DESC");
+  }
+
+  addRecommendedAction(a) {
+    this.run(
+      'INSERT INTO recommended_actions (id, workflow_type, title, action_type, priority, status, impact_text, source_payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [a.id, a.workflow_type, a.title, a.action_type || null, a.priority || 'medium', a.status || 'pending', a.impact_text || null, a.source_payload || null]
+    );
+    return a;
+  }
+
+  completeRecommendedAction(id) {
+    this.run("UPDATE recommended_actions SET status = 'completed', completed_at = datetime('now') WHERE id = ?", [id]);
+  }
+
+  deleteRecommendedAction(id) {
+    this.run("UPDATE recommended_actions SET deleted_at = datetime('now') WHERE id = ?", [id]);
+  }
+
   // Undo Log
   addUndoEntry(entry) {
     this.run(
