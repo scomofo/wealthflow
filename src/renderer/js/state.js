@@ -72,8 +72,9 @@ export async function updateTransaction(tx) {
 }
 export async function deleteTransaction(id) {
   await api.deleteTransaction(id);
+  const prev = state.transactions.length;
   state.transactions = state.transactions.filter(t => t.id !== id);
-  state.counts.transactions--;
+  if (state.transactions.length < prev) state.counts.transactions--;
 }
 
 // Budgets
@@ -91,8 +92,9 @@ export async function updateBudget(b) {
 }
 export async function deleteBudget(id) {
   await api.deleteBudget(id);
+  const prev = state.budgets.length;
   state.budgets = state.budgets.filter(b => b.id !== id);
-  state.counts.budgets--;
+  if (state.budgets.length < prev) state.counts.budgets--;
 }
 
 // Goals
@@ -110,8 +112,9 @@ export async function updateGoal(g) {
 }
 export async function deleteGoal(id) {
   await api.deleteGoal(id);
+  const prev = state.goals.length;
   state.goals = state.goals.filter(g => g.id !== id);
-  state.counts.goals--;
+  if (state.goals.length < prev) state.counts.goals--;
 }
 
 // Debts
@@ -129,8 +132,9 @@ export async function updateDebt(d) {
 }
 export async function deleteDebt(id) {
   await api.deleteDebt(id);
+  const prev = state.debts.length;
   state.debts = state.debts.filter(d => d.id !== id);
-  state.counts.debts--;
+  if (state.debts.length < prev) state.counts.debts--;
 }
 
 // Investments
@@ -148,8 +152,9 @@ export async function updateInvestment(i) {
 }
 export async function deleteInvestment(id) {
   await api.deleteInvestment(id);
+  const prev = state.investments.length;
   state.investments = state.investments.filter(i => i.id !== id);
-  state.counts.investments--;
+  if (state.investments.length < prev) state.counts.investments--;
 }
 
 // Bills
@@ -264,6 +269,9 @@ export async function processRecurringBills() {
 // Batch transactions
 export async function addTransactionsBatch(txs) {
   await api.addTransactionsBatch(txs);
+  // Reload transactions from DB to ensure cache is in sync
+  state.transactions = await api.getTransactions();
+  state.counts = await api.getCounts();
   return txs.length;
 }
 export async function findDuplicateTransactions(checks) {
@@ -455,6 +463,7 @@ export async function getMonthlyReports() {
 
 async function buildFinancialData() {
   const financials = await api.computeFinancials();
+  if (!state.advisorProfile) await loadAdvisorProfile();
   return {
     financials,
     budgets: state.budgets,

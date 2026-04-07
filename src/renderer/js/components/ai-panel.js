@@ -58,6 +58,7 @@ export function endStreaming(fullText) {
     delete lastMsg.streaming;
   }
   streamBuffer = '';
+  _restoreAiInput();
 }
 
 export function handleStreamError(error) {
@@ -69,6 +70,16 @@ export function handleStreamError(error) {
     delete lastMsg.streaming;
   }
   streamBuffer = '';
+  _restoreAiInput();
+}
+
+function _restoreAiInput() {
+  const input = document.getElementById('ai-input');
+  if (input) input.disabled = false;
+  const sendBtn = document.querySelector('[data-action="send-ai"]');
+  if (sendBtn) sendBtn.disabled = false;
+  const typing = document.querySelector('.ai-typing');
+  if (typing) typing.remove();
 }
 
 export function setupStreamListeners() {

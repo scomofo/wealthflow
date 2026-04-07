@@ -7,7 +7,7 @@ import { navigate, setOnNavigate, getSection } from './router.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderHeader } from './components/header.js';
 import { renderModal } from './components/modal.js';
-import { renderAiPanel, addUserMsg, addAiMsg, clearAiHistory, startStreaming, endStreaming, handleStreamError, setupStreamListeners, cleanupStreamListeners, isAiStreaming } from './components/ai-panel.js';
+import { renderAiPanel, addUserMsg, clearAiHistory, startStreaming, endStreaming, handleStreamError, setupStreamListeners, cleanupStreamListeners, isAiStreaming } from './components/ai-panel.js';
 import { showToast, showActionToast, handleToastAction, renderToasts, setOnToastChange } from './components/toast.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderBudget } from './pages/budget.js';
@@ -25,7 +25,7 @@ import { renderTaxCalculator, updateTaxInput, initTaxInputs } from './pages/tax-
 import { renderPlanning, updatePlanInput } from './pages/planning.js';
 import { renderSettings } from './pages/settings-page.js';
 import { renderAdvisorWizard, initWizard, setWizardStep, getWizardStep, updateWizardDraft, getWizardDraft } from './pages/advisor-wizard.js';
-import { computeRiskScore, GOAL_TYPES, DOCUMENT_TYPES, ASSET_TYPES } from './canadian/advisor-constants.js';
+import { computeRiskScore, GOAL_TYPES, DOCUMENT_TYPES } from './canadian/advisor-constants.js';
 import { exportJSON, exportCSV, importFile, applyImport, applyHoldingsImport, checkDuplicates, aiCategorizeImport, saveImportHistory, exportPDF, reconcileAfterImport } from './utils/export-import.js';
 import { renderTaxSeason } from './pages/tax-season.js';
 import { renderResidence } from './pages/residence.js';
@@ -441,7 +441,7 @@ function bindEvents() {
 
       case 'edit-residence': {
         activeModal = 'residence';
-        editData = s.residence || {};
+        editData = State.getState().residence || {};
         render();
         break;
       }
@@ -1554,6 +1554,27 @@ async function handleSaveModal(type) {
         is_cashable: cashable ? 1 : 0,
       });
       showToast('GIC added');
+      break;
+    }
+    case 'residence': {
+      const resData = {
+        address: document.getElementById('m-address')?.value || '',
+        purchase_price: +(document.getElementById('m-purchase-price')?.value || 0),
+        current_value: +(document.getElementById('m-current-value')?.value || 0),
+        purchase_date: document.getElementById('m-purchase-date')?.value || null,
+        mortgage_balance: +(document.getElementById('m-mortgage-balance')?.value || 0),
+        mortgage_rate: +(document.getElementById('m-mortgage-rate')?.value || 0),
+        mortgage_payment: +(document.getElementById('m-mortgage-payment')?.value || 0),
+        mortgage_amortization_months: +(document.getElementById('m-mortgage-amort')?.value || 0),
+        property_tax_annual: +(document.getElementById('m-property-tax')?.value || 0),
+        heloc_balance: +(document.getElementById('m-heloc-balance')?.value || 0),
+        heloc_limit: +(document.getElementById('m-heloc-limit')?.value || 0),
+        heloc_rate: +(document.getElementById('m-heloc-rate')?.value || 0),
+        pre_eligible: document.getElementById('m-pre-eligible')?.checked ? 1 : 0,
+        notes: document.getElementById('m-notes')?.value || '',
+      };
+      await State.updateResidence(resData);
+      showToast(editData?.address ? 'Residence updated' : 'Residence added');
       break;
     }
   }

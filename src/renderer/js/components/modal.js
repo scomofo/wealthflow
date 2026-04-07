@@ -259,6 +259,42 @@ export function getModalConfig(type, data) {
           </div>
         </div>`,
     },
+    'residence': {
+      title: isEdit && d.address ? 'Edit Residence' : 'Add Residence',
+      html: `
+        <label for="m-address" class="input-label">Address</label>
+        <input class="input-field" id="m-address" placeholder="123 Main St, Calgary, AB" value="${d.address || ''}" style="margin-bottom:12px">
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label for="m-purchase-price" class="input-label">Purchase Price ($)</label><input class="input-field" id="m-purchase-price" type="number" step="0.01" value="${d.purchase_price || ''}"></div>
+          <div style="flex:1"><label for="m-current-value" class="input-label">Current Value ($)</label><input class="input-field" id="m-current-value" type="number" step="0.01" value="${d.current_value || ''}"></div>
+        </div>
+        <label for="m-purchase-date" class="input-label">Purchase Date</label>
+        <input class="input-field" id="m-purchase-date" type="date" value="${d.purchase_date || ''}" style="margin-bottom:12px">
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label for="m-mortgage-balance" class="input-label">Mortgage Balance ($)</label><input class="input-field" id="m-mortgage-balance" type="number" step="0.01" value="${d.mortgage_balance || ''}"></div>
+          <div style="flex:1"><label for="m-mortgage-rate" class="input-label">Mortgage Rate (%)</label><input class="input-field" id="m-mortgage-rate" type="number" step="0.01" value="${d.mortgage_rate || ''}"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label for="m-mortgage-payment" class="input-label">Monthly Payment ($)</label><input class="input-field" id="m-mortgage-payment" type="number" step="0.01" value="${d.mortgage_payment || ''}"></div>
+          <div style="flex:1"><label for="m-mortgage-amort" class="input-label">Amortization (months)</label><input class="input-field" id="m-mortgage-amort" type="number" value="${d.mortgage_amortization_months || ''}"></div>
+        </div>
+        <label for="m-property-tax" class="input-label">Annual Property Tax ($)</label>
+        <input class="input-field" id="m-property-tax" type="number" step="0.01" value="${d.property_tax_annual || ''}" style="margin-bottom:12px">
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label for="m-heloc-balance" class="input-label">HELOC Balance ($)</label><input class="input-field" id="m-heloc-balance" type="number" step="0.01" value="${d.heloc_balance || ''}"></div>
+          <div style="flex:1"><label for="m-heloc-limit" class="input-label">HELOC Limit ($)</label><input class="input-field" id="m-heloc-limit" type="number" step="0.01" value="${d.heloc_limit || ''}"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1"><label for="m-heloc-rate" class="input-label">HELOC Rate (%)</label><input class="input-field" id="m-heloc-rate" type="number" step="0.01" value="${d.heloc_rate || ''}"></div>
+          <div style="flex:1;display:flex;align-items:flex-end;padding-bottom:2px">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);cursor:pointer">
+              <input type="checkbox" id="m-pre-eligible" ${d.pre_eligible ? 'checked' : ''}> PRE Eligible
+            </label>
+          </div>
+        </div>
+        <label for="m-notes" class="input-label">Notes</label>
+        <textarea class="input-field" id="m-notes" rows="2" style="margin-bottom:4px">${d.notes || ''}</textarea>`,
+    },
   };
   return configs[type] || null;
 }

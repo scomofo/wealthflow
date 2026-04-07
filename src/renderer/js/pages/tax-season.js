@@ -40,7 +40,7 @@ export function renderTaxSeason(state) {
         <div style="font-size:18px;font-weight:700">Tax Season ${year} Summary</div>
         <div style="font-size:12px;color:var(--sub);margin-top:4px">T1 Preparation Helper - Province: ${province}</div>
       </div>
-      <button class="btn btn-primary" data-action="export-tax-pdf">${icon('file-text', 14)} Export PDF</button>
+      <button class="btn btn-primary" data-action="export-pdf">${icon('file-text', 14)} Export PDF</button>
     </div>
 
     <div class="grid4" style="margin-bottom:16px">
