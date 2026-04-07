@@ -233,16 +233,20 @@ export async function handleSharedAction(action, btn, ctx) {
     }
 
     case 'complete-action': {
+      const card = btn.closest('.action-card, .card');
+      if (card) card.classList.add('fade-out');
       await State.completeRecommendedAction(btn.dataset.id);
-      showToast('Nice \u2014 progress made', 'success');
-      render();
+      showToast('Plan item completed', 'success');
+      setTimeout(() => render(), 180);
       return true;
     }
 
     case 'delete-action': {
+      const card = btn.closest('.action-card, .card');
+      if (card) card.classList.add('fade-out');
       await State.deleteRecommendedAction(btn.dataset.id);
-      showToast('Action removed');
-      render();
+      showToast('Action removed', 'info');
+      setTimeout(() => render(), 180);
       return true;
     }
 
@@ -268,7 +272,7 @@ export async function handleSharedAction(action, btn, ctx) {
       const card = btn.closest('.action-card');
       if (card) card.classList.add('action-removing');
       await ctx.State.dismissNextBestAction(btn.dataset.id);
-      ctx.showToast('Action dismissed');
+      ctx.showToast('Action dismissed', 'info');
       setTimeout(() => ctx.render(), 250);
       return true;
     }
@@ -277,7 +281,7 @@ export async function handleSharedAction(action, btn, ctx) {
       if (card) card.classList.add('action-removing');
       const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
-      ctx.showToast('Snoozed for 7 days');
+      ctx.showToast('Snoozed for 7 days', 'info');
       setTimeout(() => ctx.render(), 250);
       return true;
     }

@@ -593,6 +593,15 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
   animation: actionFadeOut 0.25s ease forwards;
   pointer-events: none;
 }
+.fade-out {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+.action-card:hover {
+  background: rgba(255,255,255,0.02);
+}
 
 /* ═══ Responsive ═══ */
 @media (max-width: 1200px) { .grid4 { grid-template-columns: repeat(2, 1fr); } }
