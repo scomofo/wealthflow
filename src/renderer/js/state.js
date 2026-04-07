@@ -17,11 +17,12 @@ let state = {
   gics: [],
   advisorProfile: null,
   residence: null,
+  recommendedActions: [],
 };
 
 export async function loadAll() {
   const [settings, transactions, budgets, goals, debts, investments, bills, challenges, counts,
-         contributionRoom, contributions, respBeneficiaries, gics, residence] = await Promise.all([
+         contributionRoom, contributions, respBeneficiaries, gics, residence, recommendedActions] = await Promise.all([
     api.getSettings(),
     api.getTransactions(),
     api.getBudgets(),
@@ -36,10 +37,11 @@ export async function loadAll() {
     api.getRESPBeneficiaries(),
     api.getGICs(),
     api.getPrincipalResidence(),
+    api.getRecommendedActions(),
   ]);
   Object.assign(state, {
     settings, transactions, budgets, goals, debts, investments, bills, challenges, counts,
-    contributionRoom, contributions, respBeneficiaries, gics, residence,
+    contributionRoom, contributions, respBeneficiaries, gics, residence, recommendedActions,
   });
   return state;
 }
@@ -454,4 +456,31 @@ async function buildFinancialData() {
     advisorProfile: state.advisorProfile,
     settings: state.settings,
   };
+}
+
+// AI Workflows
+export async function runWorkflow(workflowType) {
+  const financialData = await buildFinancialData();
+  return api.runWorkflow(workflowType, financialData);
+}
+
+// Recommended Actions
+export async function addRecommendedAction(action) {
+  await api.addRecommendedAction(action);
+  state.recommendedActions.unshift(action);
+  return action;
+}
+
+export async function completeRecommendedAction(id) {
+  await api.completeRecommendedAction(id);
+  const idx = state.recommendedActions.findIndex(a => a.id === id);
+  if (idx >= 0) {
+    state.recommendedActions[idx].status = 'completed';
+    state.recommendedActions[idx].completed_at = new Date().toISOString();
+  }
+}
+
+export async function deleteRecommendedAction(id) {
+  await api.deleteRecommendedAction(id);
+  state.recommendedActions = state.recommendedActions.filter(a => a.id !== id);
 }
