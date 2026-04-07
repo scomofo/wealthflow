@@ -2,141 +2,158 @@ import { icon } from '../icons.js';
 import { fmt, h } from '../helpers.js';
 import { stat } from '../components/stat-card.js';
 import { progress } from '../components/progress-bar.js';
+import { computeNextActions } from '../utils/next-actions.js';
+
+let showAllActions = false;
+export function setShowAllActions(val) { showAllActions = val; }
+
+const PRIORITY_COLORS = {
+  high: 'var(--red)',
+  medium: 'var(--orange, #f59e0b)',
+  low: 'var(--blue, #6366f1)',
+};
+
+const PRIORITY_BG = {
+  high: '#ef444426',
+  medium: '#f59e0b26',
+  low: '#6366f126',
+};
+
+const BADGE_DEFS = [
+  { id: 'first-steps',   emoji: '🚀', label: 'First Steps',   check: (s, c) => (c.transactions || 0) >= 1 },
+  { id: 'budget-master', emoji: '📊', label: 'Budget Master',  check: (s, c) => (c.budgets || 0) >= 3 },
+  { id: 'goal-setter',   emoji: '🎯', label: 'Goal Setter',    check: (s, c) => (c.goals || 0) >= 1 },
+  { id: 'debt-aware',    emoji: '💪', label: 'Debt Aware',     check: (s, c) => (c.debts || 0) >= 1 },
+  { id: 'investor',      emoji: '📈', label: 'Investor',       check: (s, c) => (c.investments || 0) >= 1 },
+  { id: 'level-5',       emoji: '⭐', label: 'Level 5',        check: (s, c) => (s.level || 1) >= 5 },
+  { id: 'data-rich',     emoji: '📚', label: 'Data Rich',      check: (s, c) => (c.transactions || 0) >= 10 },
+  { id: 'diversified',   emoji: '🌐', label: 'Diversified',    check: (s, c) => (c.investments || 0) >= 3 },
+];
 
 export function renderDashboard(state, F) {
-  const s = state.settings;
-  const widgets = JSON.parse(s?.dashboard_widgets || '["summary","budgets","goals","transactions","insights"]');
+  const s = state.settings || {};
+  const now = new Date();
+  const monthLabel = now.toLocaleString('en-CA', { month: 'long', year: 'numeric' });
 
-  // Budget alerts — budgets over 80%
-  const budgetAlerts = state.budgets.map(b => {
-    const sp = F.catSpending[b.category] || 0;
-    const pct = b.amount > 0 ? (sp / b.amount * 100) : 0;
-    return { ...b, spent: sp, pct };
-  }).filter(b => b.pct > 80);
+  // ── Next Best Actions ────────────────────────────────────────────────────
+  const actions = computeNextActions(state, F);
+  const visibleActions = showAllActions ? actions : actions.slice(0, 3);
+  const hiddenCount = actions.length - 3;
 
-  // Spending insight — compare category spending
-  const topCats = Object.entries(F.catSpending).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const totalSpent = Object.values(F.catSpending).reduce((s, v) => s + v, 0);
-
-  const showProfileCTA = !s.profile_completed;
-
-  return `
-    ${showProfileCTA ? `
-    <div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,var(--abg),#d4a84308);border-color:var(--accent)33;display:flex;align-items:center;gap:16px;padding:18px 22px">
-      <div style="width:44px;height:44px;border-radius:12px;background:var(--accent)18;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        ${icon('clipboard-list', 22, 'var(--accent)')}
-      </div>
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:14px;margin-bottom:3px">Complete Your Financial Profile</div>
-        <div style="font-size:11px;color:var(--sub);line-height:1.5">Answer a few questions to get personalized recommendations on savings, investments, insurance, and tax strategy.</div>
-      </div>
-      <button class="btn btn-primary" data-action="nav-to-advisor">${icon('arrow-up-right', 13)} Get Started</button>
-    </div>
-    ` : ''}
-    <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
-      <button class="edit-btn" data-action="config-widgets" title="Customize dashboard widgets" style="padding:4px 8px;border-radius:6px;background:var(--card);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub)">
-        ${icon('settings', 13)} Widgets
-      </button>
-    </div>
-    ${widgets.includes('summary') ? `
-    <div class="welcome-card">
-      <div>
-        <div style="font-size:13px;color:var(--sub)">Welcome back,</div>
-        <div style="font-size:26px;font-weight:800;letter-spacing:-1px">${h(s.user_name)} ${icon('maple-leaf', 20, 'var(--red)')}</div>
-        <div style="font-size:12px;color:var(--sub);margin-top:3px">Savings rate: ${F.savingsRate.toFixed(1)}%</div>
-      </div>
-      <div style="display:flex;gap:10px">
-        <div style="padding:8px 16px;background:var(--card);border-radius:11px;border:1px solid var(--border);text-align:center">
-          <div style="font-size:10px;color:var(--sub)">Level</div>
-          <div style="font-size:20px;font-weight:700;color:var(--accent)">${s.level}</div>
-        </div>
-        <div style="padding:8px 16px;background:var(--card);border-radius:11px;border:1px solid var(--border);text-align:center">
-          <div style="font-size:10px;color:var(--sub)">XP</div>
-          <div style="font-size:20px;font-weight:700;color:var(--orange)">${s.xp}</div>
-        </div>
-      </div>
-    </div>
-    <div class="grid4">
-      ${stat('Net Worth', fmt(F.netWorth), 5.2, 'wallet', 'var(--accent)')}
-      ${stat('Income', fmt(F.income), 14.1, 'arrow-up-right', 'var(--green)')}
-      ${stat('Expenses', fmt(F.expenses), -3.8, 'receipt', 'var(--red)')}
-      ${stat('Savings Rate', F.savingsRate.toFixed(1) + '%', 4.2, 'piggy-bank', 'var(--blue)')}
-    </div>
-    ` : ''}
-    ${widgets.includes('budgets') && budgetAlerts.length > 0 ? `
-    <div class="card insight-card" style="margin-top:14px">
-      <div style="font-weight:600;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-        ${icon('alert-triangle', 15, 'var(--orange)')} Budget Alerts
-      </div>
-      ${budgetAlerts.map(b => `
-        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
-          <div style="flex:1;font-size:12px;font-weight:500">${h(b.category)}</div>
-          <div class="mono" style="font-size:12px;color:${b.pct > 100 ? 'var(--red)' : 'var(--orange)'}">
-            ${b.pct.toFixed(0)}% — ${fmt(b.spent)} / ${fmt(b.amount)}
+  const actionsHtml = visibleActions.length === 0
+    ? `<div style="display:flex;align-items:center;gap:10px;padding:12px 0;color:var(--green)">
+         ${icon('check-circle', 20, 'var(--green)')}
+         <span style="font-size:13px;font-weight:500">You're on track — no urgent actions right now.</span>
+       </div>`
+    : visibleActions.map(a => {
+        const color = PRIORITY_COLORS[a.priority] || PRIORITY_COLORS.low;
+        const bg = PRIORITY_BG[a.priority] || PRIORITY_BG.low;
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${bg}">
+            ${icon(a.icon, 15, color)}
           </div>
-        </div>`).join('')}
-    </div>` : ''}
-    ${widgets.includes('insights') && totalSpent > 0 ? `
-    <div class="card insight-card" style="margin-top:${budgetAlerts.length > 0 ? '0' : '14px'}">
+          <div style="flex:1;font-size:12.5px;color:var(--text)">${h(a.text)}</div>
+          ${a.link ? `<button class="btn btn-sm btn-secondary" style="padding:3px 10px;font-size:10.5px;white-space:nowrap" data-nav="${a.link}">View</button>` : ''}
+        </div>`;
+      }).join('');
+
+  const showMoreHtml = !showAllActions && hiddenCount > 0
+    ? `<button class="btn btn-secondary" style="margin-top:10px;width:100%;justify-content:center;font-size:11.5px" data-action="show-all-actions">Show ${hiddenCount} more</button>`
+    : '';
+
+  // ── Monthly Spending Snapshot ────────────────────────────────────────────
+  const catEntries = Object.entries(F.catSpending || {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  const catHtml = catEntries.length === 0
+    ? '<div class="empty">No spending data this month</div>'
+    : catEntries.map(([cat, spent]) => {
+        const budget = (state.budgets || []).find(b => b.category === cat);
+        const max = budget ? budget.amount : spent;
+        const over = budget && spent > budget.amount;
+        const barColor = over ? 'var(--red)' : 'var(--accent)';
+        return `
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:500">${h(cat)}</span>
+            <span class="mono" style="font-size:11px;color:${over ? 'var(--red)' : 'var(--sub)'}">
+              ${fmt(spent)}${budget ? ` / ${fmt(budget.amount)}` : ''}
+            </span>
+          </div>
+          <div style="height:6px;border-radius:3px;background:var(--border);overflow:hidden">
+            <div style="height:100%;width:${Math.min(spent / max * 100, 100).toFixed(1)}%;background:${barColor};border-radius:3px;transition:width 0.3s"></div>
+          </div>
+        </div>`;
+      }).join('');
+
+  // ── Achievements strip ───────────────────────────────────────────────────
+  const level = s.level || 1;
+  const xp = s.xp || 0;
+  const xpForNext = level * 100;
+  const earnedBadges = BADGE_DEFS.filter(b => b.check(s, state.counts || {}));
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  return `
+    <div style="margin-bottom:18px">
+      <div style="font-size:20px;font-weight:700;letter-spacing:-0.5px">${monthLabel}</div>
+      <div style="font-size:12px;color:var(--sub);margin-top:2px">Your monthly financial command center</div>
+      <div style="font-size:12px;color:var(--sub);margin-top:1px">Welcome back, <b style="color:var(--text)">${h(s.user_name || 'User')}</b></div>
+    </div>
+
+    <div class="grid4">
+      ${stat('Net Worth', fmt(F.netWorth), 0, 'wallet', 'var(--accent)')}
+      ${stat('Income', fmt(F.income), 0, 'arrow-up-right', 'var(--green)')}
+      ${stat('Expenses', fmt(F.expenses), 0, 'receipt', 'var(--red)')}
+      ${stat('Savings Rate', F.savingsRate.toFixed(1) + '%', 0, 'piggy-bank', 'var(--blue)')}
+    </div>
+
+    <div class="card" style="margin-top:14px">
       <div style="font-weight:600;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-        ${icon('lightbulb', 15, 'var(--accent)')} Spending Insights
+        ${icon('zap', 15, 'var(--accent)')} Next Best Actions
       </div>
-      <div style="font-size:12px;color:var(--sub);line-height:1.6">
-        Total spending this period: <b style="color:var(--text)">${fmt(totalSpent)}</b>.
-        ${topCats.length > 0 ? `Top categories: ${topCats.map(([k, v]) => `<b style="color:var(--text)">${k}</b> (${fmt(v)}, ${(v / totalSpent * 100).toFixed(0)}%)`).join(', ')}.` : ''}
-        ${F.savingsRate > 20 ? ' Your savings rate is strong — keep it up!' : ' Consider trimming discretionary spending to boost your savings rate above 20%.'}
+      ${actionsHtml}
+      ${showMoreHtml}
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+        ${icon('bar-chart-2', 15, 'var(--accent)')} Monthly Spending Snapshot
       </div>
-    </div>` : ''}
+      ${catHtml}
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <span style="font-size:13px;font-weight:700;color:var(--accent)">Lv ${level}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:120px;max-width:120px;height:6px;border-radius:3px;background:var(--border);overflow:hidden">
+            <div style="height:100%;width:${Math.min(xp / xpForNext * 100, 100).toFixed(1)}%;background:var(--accent);border-radius:3px;transition:width 0.3s"></div>
+          </div>
+          <span style="font-size:11px;color:var(--sub)">${xp} / ${xpForNext} XP</span>
+        </div>
+        ${earnedBadges.length > 0 ? `
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+          ${earnedBadges.map(b => `<span title="${b.label}" style="font-size:16px">${b.emoji}</span>`).join('')}
+        </div>` : ''}
+      </div>
+    </div>
+
     <div class="grid3" style="margin-top:14px">
-      ${widgets.includes('transactions') ? `
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <span style="font-weight:600;font-size:14px">Recent Transactions</span>
-          <button class="btn-ghost" style="font-size:11px;color:var(--accent);background:none;border:none" data-nav="transactions">See all</button>
-        </div>
-        ${state.transactions.length === 0 ? '<div class="empty">No transactions yet<br><button class="btn btn-primary btn-sm" style="margin-top:8px" data-action="open-modal" data-modal="tx">Add your first transaction</button></div>' : ''}
-        ${state.transactions.slice(0, 5).map(t => `
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
-            <div class="tx-icon" style="width:32px;height:32px;border-radius:8px">${icon(t.icon || 'receipt', 14)}</div>
-            <div style="flex:1">
-              <div style="font-size:12px;font-weight:500">${h(t.description)}</div>
-              <div style="font-size:10px;color:var(--sub)">${t.date}</div>
-            </div>
-            <div class="mono" style="font-size:12.5px;font-weight:600;color:${t.amount > 0 ? 'var(--green)' : 'var(--text)'}">
-              ${t.amount > 0 ? '+' : ''}${fmt(t.amount)}
-            </div>
-          </div>`).join('')}
-      </div>` : ''}
-      ${widgets.includes('goals') ? `
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-          <span style="font-weight:600;font-size:14px">Savings Goals</span>
-          <button class="btn-ghost" style="font-size:11px;color:var(--accent);background:none;border:none" data-nav="savings">See all</button>
-        </div>
-        ${state.goals.length === 0 ? '<div class="empty">No savings goals yet<br><button class="btn btn-primary btn-sm" style="margin-top:8px" data-action="open-modal" data-modal="goal">Create a goal</button></div>' : ''}
-        ${state.goals.slice(0, 4).map(g => `
-          <div style="margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:500">${h(g.name)}</span>
-              <span class="mono" style="font-size:10.5px;color:var(--sub)">${Math.round(g.current / g.target * 100)}%</span>
-            </div>
-            ${progress(g.current, g.target, g.color)}
-          </div>`).join('')}
-      </div>` : ''}
-      <div class="card">
-        <div style="font-weight:600;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
-          ${icon('flame', 15, 'var(--orange)')} Challenges
-        </div>
-        ${state.challenges.map(ch => `
-          <div style="padding:10px;background:var(--input);border-radius:9px;margin-bottom:7px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-              <span style="font-size:12px;font-weight:600">${h(ch.name)}</span>
-              <span style="font-size:10px;color:var(--accent);font-weight:600">+${ch.xp}XP</span>
-            </div>
-            ${progress(ch.progress, ch.target, 'var(--accent)', 5)}
-            <div style="font-size:10px;color:var(--muted);margin-top:3px;text-align:right">${ch.progress}/${ch.target}</div>
-          </div>`).join('')}
-        ${state.challenges.length === 0 ? '<div class="empty">No active challenges</div>' : ''}
-      </div>
+      <button class="card" style="text-align:left;cursor:pointer;border:none;padding:14px 16px;display:flex;align-items:center;gap:10px" data-action="import-csv">
+        ${icon('upload', 18, 'var(--accent)')}
+        <span style="font-size:13px;font-weight:500">Import Transactions</span>
+      </button>
+      <button class="card" style="text-align:left;cursor:pointer;border:none;padding:14px 16px;display:flex;align-items:center;gap:10px" data-action="generate-monthly-report">
+        ${icon('file-text', 18, 'var(--green)')}
+        <span style="font-size:13px;font-weight:500">AI Monthly Report</span>
+      </button>
+      <button class="card" style="text-align:left;cursor:pointer;border:none;padding:14px 16px;display:flex;align-items:center;gap:10px" data-nav="analytics">
+        ${icon('trending-up', 18, 'var(--blue)')}
+        <span style="font-size:13px;font-weight:500">View Analytics</span>
+      </button>
     </div>`;
 }
