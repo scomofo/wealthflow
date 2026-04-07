@@ -79,21 +79,32 @@ function renderStep1(settings) {
           <div>
             <div class="input-label">Monthly Income</div>
             <input class="input-field" id="ob-income" type="number" placeholder="e.g. 5000" value="${h(String(settings?.monthly_income || ''))}" min="0">
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">Use your after-tax monthly take-home if possible</div>
           </div>
           <div>
             <div class="input-label">Major Monthly Expenses</div>
             <input class="input-field" id="ob-expenses" type="number" placeholder="e.g. 3000" value="${h(String(settings?.monthly_expenses || ''))}" min="0">
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">A rough estimate is fine</div>
           </div>
         </div>
         <div>
           <div class="input-label">Total Debt <span style="color:var(--sub);font-weight:400">(optional)</span></div>
           <input class="input-field" id="ob-debt" type="number" placeholder="e.g. 15000" value="${h(String(settings?.total_debt || ''))}" min="0">
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Optional — helps with payoff guidance</div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div class="input-label">Savings / Cash Buffer</div>
+          <input class="input-field" id="ob-savings" type="number" placeholder="e.g. 3000" value="${h(String(settings?.savings_buffer || ''))}" min="0">
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Optional — useful for emergency fund decisions</div>
         </div>
         <div>
           <div class="input-label">Claude API Key <span style="color:var(--sub);font-weight:400">(optional)</span></div>
           <input class="input-field" id="ob-api-key" type="password" placeholder="sk-ant-..." value="${h(settings?.ai_api_key || '')}">
           <div style="color:var(--sub);font-size:11px;margin-top:3px">Powers the AI financial advisor. Add later in Settings if you prefer.</div>
         </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:12px;text-align:center">
+        A rough estimate is enough to get started \u2014 you can refine later
       </div>
       <div style="display:flex;gap:8px;margin-top:16px">
         <button class="btn btn-ghost" style="flex:0 0 auto;justify-content:center" data-action="ob-prev">${icon('arrow-left', 14)}</button>
@@ -167,10 +178,13 @@ function renderStep4(state) {
   return `
     <div style="text-align:center">
       <div style="font-size:17px;font-weight:700;margin-bottom:4px">Here are your top priorities right now</div>
-      <div style="color:var(--sub);font-size:12px;margin-bottom:16px">${isReal ? 'Based on your financial profile' : 'To get you started'}</div>
+      <div style="font-size:12px;color:var(--sub);margin-top:6px;margin-bottom:16px">
+        We generated these from the information you just entered
+      </div>
       <div style="text-align:left;margin-bottom:20px">
         ${actionCards}
       </div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:8px">Focus Mode helps you complete this step without distractions</div>
       <div style="font-size:12px;color:var(--sub);margin-bottom:14px">↓ Start here — your dashboard is ready</div>
       <button class="btn btn-primary" style="width:100%;justify-content:center" data-action="ob-complete">
         Go to Dashboard ${icon('arrow-right', 14)}

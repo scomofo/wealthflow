@@ -68,6 +68,8 @@ export async function handleSharedAction(action, btn, ctx) {
         if (expenses && +expenses > 0) updates.monthly_expenses = +expenses;
         const debt = document.getElementById('ob-debt')?.value;
         if (debt && +debt > 0) updates.total_debt = +debt;
+        const savings = document.getElementById('ob-savings')?.value;
+        if (savings && +savings >= 0) updates.savings_buffer = +savings;
         const key = document.getElementById('ob-api-key')?.value?.trim();
         if (key) updates.ai_api_key = key;
       }
@@ -285,7 +287,13 @@ export async function handleSharedAction(action, btn, ctx) {
       if (nba) ctx.State.recordInteraction('complete', nba.category || 'other');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
-      ctx.showToast('Nice \u2014 progress made', 'success');
+      const settings = ctx.State.getState().settings;
+      if (!settings.first_action_completed) {
+        ctx.State.updateSettings({ first_action_completed: true });
+        ctx.showToast('Nice \u2014 you\u2019ve taken your first step. That already improves your financial position.', 'success');
+      } else {
+        ctx.showToast('Nice \u2014 progress made', 'success');
+      }
       setTimeout(() => ctx.render(), 250);
       return true;
     }

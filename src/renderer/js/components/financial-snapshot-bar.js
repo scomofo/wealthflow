@@ -1,6 +1,11 @@
 import { fmt } from '../helpers.js';
 
 export function renderFinancialSnapshotBar(state, F) {
+  if (!F.netWorth && !F.income && !F.expenses) {
+    return `<div class="card snapshot-bar" style="text-align:center;padding:18px;color:var(--sub);font-size:13px">
+      Complete setup to view your financial snapshot
+    </div>`;
+  }
   const cashflow = (F.income || 0) - (F.expenses || 0);
   const status = cashflow >= 0 ? 'You are cash-flow positive this month' : 'Your expenses are currently outpacing income';
 
