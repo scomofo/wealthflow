@@ -390,7 +390,8 @@ function registerIpcHandlers(database, aiService) {
   });
   safeHandle('personalization:summary-emphasis', () => {
     const profile = personalizationEngine.buildProfile();
-    return personalizationEngine.chooseSummaryEmphasis(profile);
+    const financials = database.computeFinancials();
+    return personalizationEngine.chooseSummaryEmphasis(profile, financials);
   });
 
   // Currency exchange rate
