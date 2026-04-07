@@ -2,7 +2,7 @@
 import { icon } from './icons.js';
 import { h, fmt, uid, validateRequired, validateAmount, showFieldError, clearFieldErrors } from './helpers.js';
 import { SAMPLE_DATA, PROVINCES, CATEGORIES } from './canadian/constants.js';
-import * as State from './state.js';
+import * as State from './state/core.js';
 import { navigate, setOnNavigate, getSection } from './router.js';
 import { renderSidebar, setExpandedGroup } from './components/sidebar.js';
 import { renderHeader } from './components/header.js';
