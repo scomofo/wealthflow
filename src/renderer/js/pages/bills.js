@@ -1,7 +1,7 @@
 import { icon } from '../icons.js';
 import { fmt, h } from '../helpers.js';
 
-export function renderCalendar(state) {
+export function renderBills(state) {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
