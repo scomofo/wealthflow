@@ -6,6 +6,8 @@ import { renderDecisionCard } from '../components/ai-decision-card.js';
 import { renderActionList } from '../components/ai-action-list.js';
 import { renderFinancialSnapshotBar } from '../components/financial-snapshot-bar.js';
 import { renderDashboardInsightCards } from '../components/dashboard-insight-cards.js';
+import { renderAISummary } from '../components/ai-summary.js';
+import { generateAISummary } from '../utils/ai-summary.js';
 
 export function setShowAllActions(val) { /* no-op: panel handles its own display */ }
 
@@ -64,6 +66,8 @@ export function renderDashboard(state, F, workflowCtx) {
       <div class="dashboard-subtitle" style="margin-top:4px">Your monthly financial command center</div>
       <div class="dashboard-subtitle" style="margin-top:1px">Welcome back, <b style="color:var(--text)">${h(s.user_name || 'User')}</b></div>
     </div>
+
+    ${renderAISummary(generateAISummary(state.nextBestActions, F))}
 
     ${renderFinancialSnapshotBar(state, F)}
 
