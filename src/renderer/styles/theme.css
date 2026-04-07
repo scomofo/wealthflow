@@ -23,6 +23,10 @@
   --font-display: 'Literata', Georgia, 'Times New Roman', serif;
   --font-body: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Cascadia Code', 'SF Mono', Consolas, Monaco, monospace;
+  --bg-elevated: #1a1d22;
+  --bg-soft: rgba(255,255,255,0.02);
+  --border-soft: rgba(255,255,255,0.06);
+  --accent-soft: rgba(212,168,67,0.12);
 }
 
 .light {
@@ -35,4 +39,8 @@
   --muted: #b0aa9e;
   --border: #ddd8cc;
   --abg: rgba(196,147,90,.06);
+  --bg-elevated: #f0ede6;
+  --bg-soft: rgba(0,0,0,0.02);
+  --border-soft: rgba(0,0,0,0.06);
+  --accent-soft: rgba(160,112,48,0.08);
 }

@@ -22,6 +22,6 @@ export function renderFinancialSnapshotBar(state, F) {
         <div class="stat-label">Cash Flow</div>
         <div class="stat-val" style="color:${cashflow >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(cashflow)}</div>
       </div>
-      <div style="flex-basis:100%;font-size:11px;color:var(--sub);margin-top:6px">${status}</div>
+      <div class="snapshot-status">${status}</div>
     </div>`;
 }

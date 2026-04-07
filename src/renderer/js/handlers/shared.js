@@ -262,7 +262,7 @@ export async function handleSharedAction(action, btn, ctx) {
     }
     case 'complete-next-best-action': {
       const card = btn.closest('.action-card');
-      if (card) card.classList.add('action-removing');
+      if (card) card.classList.add('fade-out');
       await ctx.State.completeNextBestAction(btn.dataset.id);
       ctx.showToast('Nice \u2014 progress made', 'success');
       setTimeout(() => ctx.render(), 250);
@@ -270,7 +270,7 @@ export async function handleSharedAction(action, btn, ctx) {
     }
     case 'dismiss-next-best-action': {
       const card = btn.closest('.action-card');
-      if (card) card.classList.add('action-removing');
+      if (card) card.classList.add('fade-out');
       await ctx.State.dismissNextBestAction(btn.dataset.id);
       ctx.showToast('Action dismissed', 'info');
       setTimeout(() => ctx.render(), 250);
@@ -278,7 +278,7 @@ export async function handleSharedAction(action, btn, ctx) {
     }
     case 'snooze-next-best-action': {
       const card = btn.closest('.action-card');
-      if (card) card.classList.add('action-removing');
+      if (card) card.classList.add('fade-out');
       const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
       ctx.showToast('Snoozed for 7 days', 'info');

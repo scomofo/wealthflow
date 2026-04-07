@@ -117,15 +117,15 @@ export function renderDashboard(state, F, workflowCtx) {
     })()}
 
     <div class="grid3" style="margin-top:14px">
-      <button class="card" style="text-align:left;cursor:pointer;border:none;padding:14px 16px;display:flex;align-items:center;gap:10px" data-action="import-csv">
+      <button class="card" style="text-align:left;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;background:var(--bg-soft);border-color:var(--border-soft)" data-action="import-csv">
         ${icon('upload', 18, 'var(--accent)')}
         <span style="font-size:13px;font-weight:500">Import Transactions</span>
       </button>
-      <button class="card" style="text-align:left;cursor:pointer;border:none;padding:14px 16px;display:flex;align-items:center;gap:10px" data-action="generate-monthly-report">
+      <button class="card" style="text-align:left;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;background:var(--bg-soft);border-color:var(--border-soft)" data-action="generate-monthly-report">
         ${icon('file-text', 18, 'var(--green)')}
         <span style="font-size:13px;font-weight:500">AI Monthly Report</span>
       </button>
-      <button class="card" style="text-align:left;cursor:pointer;border:none;padding:14px 16px;display:flex;align-items:center;gap:10px" data-nav="analytics">
+      <button class="card" style="text-align:left;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;background:var(--bg-soft);border-color:var(--border-soft)" data-nav="analytics">
         ${icon('trending-up', 18, 'var(--blue)')}
         <span style="font-size:13px;font-weight:500">View Analytics</span>
       </button>

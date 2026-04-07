@@ -17,10 +17,10 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
   const header = `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
       <div>
-        <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;letter-spacing:-.3px">
+        <div class="nba-title">
           ${icon('sparkles', 18, 'var(--accent)')} Next Best Actions
         </div>
-        <div style="margin-top:4px;font-size:12px;color:var(--sub)">Your highest-impact financial moves right now</div>
+        <div class="nba-subtitle">Your highest-impact financial moves right now</div>
       </div>
       <button class="btn btn-secondary btn-sm" data-action="generate-next-best-actions" ${loading ? 'disabled' : ''}>
         ${loading ? `${icon('loader', 13)} Refreshing...` : `${icon('refresh-cw', 13)} Refresh`}
@@ -46,13 +46,13 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
       <div class="card action-card" style="margin-bottom:10px">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
           <div style="display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1">
-            <div style="width:34px;height:34px;border-radius:4px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <div class="nba-icon-shell">
               ${icon(meta.label === 'Urgent' ? 'alert-triangle' : meta.label === 'High' ? 'arrow-up-right' : 'lightbulb', 15, meta.color)}
             </div>
             <div style="min-width:0;flex:1">
               <div style="font-size:14px;font-weight:700;line-height:1.4">${h(a.title || 'Recommended action')}</div>
-              ${rationale ? `<div style="font-size:12px;color:var(--sub);line-height:1.55;margin-top:5px">${h(rationale)}</div>` : ''}
-              ${a.impact_text ? `<div style="font-size:11px;color:var(--text);margin-top:7px"><span style="color:var(--sub)">Impact:</span> ${h(a.impact_text)}</div>` : ''}
+              ${rationale ? `<div class="nba-rationale">${h(rationale)}</div>` : ''}
+              ${a.impact_text ? `<div class="nba-impact"><span class="nba-impact-label">Impact:</span> ${h(a.impact_text)}</div>` : ''}
             </div>
           </div>
           <span class="priority-pill priority-${(a.priority || 'low').toLowerCase()}">${meta.label}</span>
