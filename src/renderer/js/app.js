@@ -37,6 +37,7 @@ import { renderRecurringModal } from './components/recurring-modal.js';
 import { detectRecurringPayments } from './utils/recurring-detector.js';
 import { renderDecisionCard } from './components/ai-decision-card.js';
 import { renderActionList } from './components/ai-action-list.js';
+import { renderOnboardingStepper } from './components/onboarding-stepper.js';
 
 // Handler modules
 import { handleSharedAction } from './handlers/shared.js';
@@ -106,88 +107,7 @@ setOnToastChange(() => {
   if (tc) tc.innerHTML = renderToasts(); // trusted render function
 });
 
-// --- Onboarding wizard ---
-const OB_DEFAULT_BUDGETS = ['Food/Groceries', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Housing'];
-
-function renderOnboardingWizard(step, settings) {
-  const steps = ['Name', 'Province', 'API Key', 'Budgets', 'Data'];
-  const dots = steps.map((s, i) => `<div style="display:flex;align-items:center;gap:6px;${i <= step ? 'color:var(--accent)' : 'color:var(--sub)'}">
-    <div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${i < step ? 'background:var(--accent);color:#fff' : i === step ? 'border:2px solid var(--accent);color:var(--accent)' : 'border:2px solid var(--border);color:var(--sub)'}">${i < step ? '&#10003;' : i + 1}</div>
-    <span style="font-size:12px;font-weight:${i === step ? '600' : '400'}">${s}</span>
-  </div>`).join('');
-
-  let body = '';
-  if (step === 0) {
-    body = `<div style="text-align:left;margin-bottom:14px">
-      <div class="input-label">Your Name</div>
-      <input class="input-field" id="ob-name" placeholder="Enter your name" value="${h(settings?.user_name || '')}">
-    </div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center" data-action="ob-next">Continue</button>`;
-  } else if (step === 1) {
-    const provOptions = PROVINCES.map(p =>
-      `<option value="${p.code}" ${(settings?.province || 'AB') === p.code ? 'selected' : ''}>${p.name}</option>`
-    ).join('');
-    body = `<div style="text-align:left;margin-bottom:14px">
-      <div class="input-label">Your Province</div>
-      <select class="input-field" id="ob-province">${provOptions}</select>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" style="flex:1;justify-content:center" data-action="ob-prev">${icon('arrow-left', 14)} Back</button>
-      <button class="btn btn-primary" style="flex:1;justify-content:center" data-action="ob-next">Continue</button>
-    </div>`;
-  } else if (step === 2) {
-    body = `<div style="text-align:left;margin-bottom:14px">
-      <div class="input-label">Claude API Key (optional)</div>
-      <input class="input-field" id="ob-api-key" type="password" placeholder="sk-ant-..." value="${h(settings?.ai_api_key || '')}">
-      <div style="color:var(--sub);font-size:11px;margin-top:4px">Powers the AI financial advisor. You can add this later in Settings.</div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" style="flex:1;justify-content:center" data-action="ob-prev">${icon('arrow-left', 14)} Back</button>
-      <button class="btn btn-primary" style="flex:1;justify-content:center" data-action="ob-next">Continue</button>
-      <button class="btn btn-ghost" style="justify-content:center" data-action="ob-next">Skip</button>
-    </div>`;
-  } else if (step === 3) {
-    const cats = CATEGORIES.filter(c => c !== 'Income' && c !== 'Investment Income' && c !== 'Government Benefits' && c !== 'GST/HST');
-    const checks = cats.map(c => `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer">
-      <input type="checkbox" class="ob-budget-cat" value="${c}" ${OB_DEFAULT_BUDGETS.includes(c) ? 'checked' : ''}>
-      <span style="font-size:13px">${c}</span>
-    </label>`).join('');
-    body = `<div style="text-align:left;margin-bottom:14px">
-      <div class="input-label">Select budget categories to track</div>
-      <div style="max-height:200px;overflow-y:auto;padding:4px 0">${checks}</div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" style="flex:1;justify-content:center" data-action="ob-prev">${icon('arrow-left', 14)} Back</button>
-      <button class="btn btn-primary" style="flex:1;justify-content:center" data-action="ob-next">Continue</button>
-    </div>`;
-  } else if (step === 4) {
-    body = `<div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:15px;font-weight:600;margin-bottom:8px">How would you like to start?</div>
-      <div style="color:var(--sub);font-size:12.5px">Sample data gives you a feel for the app. You can always reset later.</div>
-    </div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center" data-action="start-sample">
-      ${icon('sparkles', 15)} Start with Sample Data
-    </button>
-    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px" data-action="start-empty">
-      Start fresh (empty)
-    </button>
-    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:4px;font-size:12px;color:var(--sub)" data-action="ob-prev">
-      ${icon('arrow-left', 12)} Back
-    </button>`;
-  }
-
-  return `<div class="onboard">
-    <div class="card onboard-card" style="max-width:440px">
-      <div class="side-logo" style="width:60px;height:60px;border-radius:16px;font-size:26px;margin:0 auto 18px">W</div>
-      <div style="font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:6px">Welcome to WealthFlow</div>
-      <div style="color:var(--sub);font-size:13.5px;margin-bottom:20px;line-height:1.6">
-        AI-powered personal finance for Canadians.
-      </div>
-      <div style="display:flex;justify-content:center;gap:16px;margin-bottom:24px">${dots}</div>
-      ${body}
-    </div>
-  </div>`;
-}
+// Onboarding wizard replaced by renderOnboardingStepper — see components/onboarding-stepper.js
 
 // --- Error screen ---
 function renderErrorScreen(error) {
@@ -257,10 +177,10 @@ async function render() {
     document.body.classList.add('light');
   }
 
-  // Onboarding wizard
+  // Onboarding stepper
   if (!settings || !settings.onboarded) {
     const obStep = settings?.last_wizard_step || 0;
-    el.innerHTML = renderOnboardingWizard(obStep, settings); // trusted function
+    el.innerHTML = renderOnboardingStepper(obStep, settings, state); // trusted function
     return;
   }
 

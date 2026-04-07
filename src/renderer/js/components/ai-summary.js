@@ -1,16 +1,18 @@
 import { icon } from '../icons.js';
 
 const FALLBACK_MESSAGE = 'Your finances are steady right now — no major changes need attention.';
+const NEW_USER_MESSAGE = 'Add your financial details to see what matters most';
 
-export function renderAISummary(summary) {
+export function renderAISummary(summary, options = {}) {
   if (!summary || !summary.headline) {
+    const msg = options.isNewUser ? NEW_USER_MESSAGE : FALLBACK_MESSAGE;
     return `
     <div class="card ai-summary dashboard-section">
       <div class="ai-summary-header">
         ${icon('sparkles', 14, 'var(--accent)')}
         <span class="ai-summary-label">AI Summary</span>
       </div>
-      <div class="ai-summary-headline">${FALLBACK_MESSAGE}</div>
+      <div class="ai-summary-headline">${msg}</div>
     </div>`;
   }
 

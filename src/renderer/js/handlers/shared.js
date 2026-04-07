@@ -57,14 +57,21 @@ export async function handleSharedAction(action, btn, ctx) {
       const s = State.getState().settings || {};
       const obStep = s.last_wizard_step || 0;
       const updates = {};
-      if (obStep === 0) {
-        updates.user_name = document.getElementById('ob-name')?.value || 'User';
-      } else if (obStep === 1) {
+      if (obStep === 1) {
+        // Quick Financial Setup — save all fields from single screen
+        const name = document.getElementById('ob-name')?.value?.trim();
+        updates.user_name = name || s.user_name || 'User';
         updates.province = document.getElementById('ob-province')?.value || 'AB';
-      } else if (obStep === 2) {
+        const income = document.getElementById('ob-income')?.value;
+        if (income && +income > 0) updates.monthly_income = +income;
+        const expenses = document.getElementById('ob-expenses')?.value;
+        if (expenses && +expenses > 0) updates.monthly_expenses = +expenses;
+        const debt = document.getElementById('ob-debt')?.value;
+        if (debt && +debt > 0) updates.total_debt = +debt;
         const key = document.getElementById('ob-api-key')?.value?.trim();
         if (key) updates.ai_api_key = key;
       }
+      // Step 2 (budget categories) is saved by start-sample / start-empty
       updates.last_wizard_step = obStep + 1;
       await State.updateSettings(updates);
       render();
@@ -79,10 +86,17 @@ export async function handleSharedAction(action, btn, ctx) {
       return true;
     }
 
+    case 'ob-complete': {
+      await State.updateSettings({ onboarded: true });
+      render();
+      return true;
+    }
+
     case 'start-sample': {
       const checkedCats = [...document.querySelectorAll('.ob-budget-cat:checked')].map(el => el.value);
       const defaultAmounts = { 'Food/Groceries': 600, 'Transport': 400, 'Utilities': 350, 'Entertainment': 200, 'Shopping': 300, 'Housing': 2000, 'Rent/Mortgage': 2000, 'Healthcare': 200, 'Insurance': 300, 'Childcare': 500, 'Education': 200, 'Property Tax': 300 };
-      await State.updateSettings({ onboarded: true, last_wizard_step: 0 });
+      // Don't set onboarded yet — advance to step 4 (instant value screen)
+      await State.updateSettings({ last_wizard_step: 4 });
       await State.seedSampleData(SAMPLE_DATA);
       for (const cat of checkedCats) {
         const exists = State.getState().budgets.find(b => b.category === cat);
@@ -90,6 +104,7 @@ export async function handleSharedAction(action, btn, ctx) {
           await State.addBudget({ id: uid(), category: cat, amount: defaultAmounts[cat] || 300, color: '#6366f1' });
         }
       }
+      try { await State.generateNextBestActions(); } catch (_) { /* non-blocking */ }
       render();
       return true;
     }
@@ -97,11 +112,13 @@ export async function handleSharedAction(action, btn, ctx) {
     case 'start-empty': {
       const checkedCats2 = [...document.querySelectorAll('.ob-budget-cat:checked')].map(el => el.value);
       const defaultAmounts2 = { 'Food/Groceries': 600, 'Transport': 400, 'Utilities': 350, 'Entertainment': 200, 'Shopping': 300, 'Housing': 2000, 'Rent/Mortgage': 2000, 'Healthcare': 200, 'Insurance': 300, 'Childcare': 500, 'Education': 200, 'Property Tax': 300 };
-      await State.updateSettings({ onboarded: true, last_wizard_step: 0 });
+      // Don't set onboarded yet — advance to step 4 (instant value screen)
+      await State.updateSettings({ last_wizard_step: 4 });
       await State.loadAll();
       for (const cat of checkedCats2) {
         await State.addBudget({ id: uid(), category: cat, amount: defaultAmounts2[cat] || 300, color: '#6366f1' });
       }
+      try { await State.generateNextBestActions(); } catch (_) { /* non-blocking */ }
       render();
       return true;
     }
