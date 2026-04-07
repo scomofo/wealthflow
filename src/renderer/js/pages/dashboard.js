@@ -4,6 +4,8 @@ import { stat } from '../components/stat-card.js';
 import { renderNextBestActionsPanel } from '../components/next-best-actions-panel.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
 import { renderActionList } from '../components/ai-action-list.js';
+import { renderFinancialSnapshotBar } from '../components/financial-snapshot-bar.js';
+import { renderDashboardInsightCards } from '../components/dashboard-insight-cards.js';
 
 export function setShowAllActions(val) { /* no-op: panel handles its own display */ }
 
@@ -57,23 +59,18 @@ export function renderDashboard(state, F, workflowCtx) {
 
   // ── Render ───────────────────────────────────────────────────────────────
   return `
-    <div style="margin-bottom:18px">
-      <div style="font-size:20px;font-weight:700;letter-spacing:-0.5px">${monthLabel}</div>
-      <div style="font-size:12px;color:var(--sub);margin-top:2px">Your monthly financial command center</div>
-      <div style="font-size:12px;color:var(--sub);margin-top:1px">Welcome back, <b style="color:var(--text)">${h(s.user_name || 'User')}</b></div>
+    <div class="card dashboard-hero" style="margin-bottom:18px;padding:22px">
+      <div style="font-size:18px;font-weight:700;letter-spacing:-0.5px">${monthLabel}</div>
+      <div class="dashboard-subtitle" style="margin-top:4px">Your monthly financial command center</div>
+      <div class="dashboard-subtitle" style="margin-top:1px">Welcome back, <b style="color:var(--text)">${h(s.user_name || 'User')}</b></div>
     </div>
 
-    <div class="grid4">
-      ${stat('Net Worth', fmt(F.netWorth), 0, 'wallet', 'var(--accent)')}
-      ${stat('Income', fmt(F.income), 0, 'arrow-up-right', 'var(--green)')}
-      ${stat('Expenses', fmt(F.expenses), 0, 'receipt', 'var(--red)')}
-      ${stat('Savings Rate', F.savingsRate.toFixed(1) + '%', 0, 'piggy-bank', 'var(--blue)')}
-    </div>
+    ${renderFinancialSnapshotBar(state, F)}
 
     ${renderNextBestActionsPanel(state.nextBestActions || [])}
 
-    <div class="card" style="margin-top:14px">
-      <div style="font-weight:700;font-size:15px;margin-bottom:12px">AI Recommendations</div>
+    <div class="card dashboard-section">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px">AI Recommendations</div>
       <button class="btn btn-primary" data-action="run-workflow" data-workflow="monthly_action_planner"${workflowCtx?.workflowLoading ? ' disabled' : ''}>
         ${icon('sparkles', 14)} Generate Monthly Action Plan
       </button>
@@ -82,14 +79,16 @@ export function renderDashboard(state, F, workflowCtx) {
     </div>
     ${renderActionList(state.recommendedActions)}
 
-    <div class="card" style="margin-top:14px">
+    <div class="card dashboard-section">
       <div style="font-weight:600;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
         ${icon('bar-chart-2', 15, 'var(--accent)')} Monthly Spending Snapshot
       </div>
       ${catHtml}
     </div>
 
-    <div class="card" style="margin-top:14px">
+    ${renderDashboardInsightCards(state, F)}
+
+    <div class="card dashboard-section">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           <span style="font-size:13px;font-weight:700;color:var(--accent)">Lv ${level}</span>

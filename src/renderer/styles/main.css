@@ -422,6 +422,66 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
 /* Settings danger zone */
 .danger-zone { border-color: rgba(184,72,72,.2) !important; }
 
+/* ═══ Dashboard Layout ═══ */
+.dashboard-section {
+  margin-top: 18px;
+}
+
+.dashboard-hero {
+  background: linear-gradient(150deg, var(--abg), transparent 70%);
+  border: 1px solid rgba(196,147,90,.18);
+}
+
+.dashboard-hero:hover {
+  transform: none;
+}
+
+.dashboard-subtitle {
+  font-size: 11px;
+  color: var(--sub);
+  line-height: 1.5;
+}
+
+/* ═══ Snapshot Bar ═══ */
+.snapshot-bar {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.snapshot-cell {
+  flex: 1;
+  min-width: 140px;
+}
+
+.snapshot-cell + .snapshot-cell {
+  border-left: 1px solid var(--border);
+  padding-left: 14px;
+}
+
+/* ═══ Action Cards ═══ */
+.action-card {
+  padding: 16px 18px;
+}
+
+.action-meta {
+  font-size: 11px;
+  color: var(--sub);
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.secondary-card-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* Dashboard insight */
 .insight-card { border-color: rgba(196,147,90,.12); background: var(--abg); }
 
@@ -544,6 +604,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
   .welcome-card { flex-direction: column; gap: 12px; text-align: center; }
   .header h1 { font-size: 16px; }
   .inv-grid { grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 11px; }
+  .snapshot-cell + .snapshot-cell { border-left: none; padding-left: 0; }
 }
 @media (max-width: 480px) {
   .content { padding: 10px 8px; }

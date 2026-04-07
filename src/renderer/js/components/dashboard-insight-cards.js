@@ -19,7 +19,7 @@ export function renderDashboardInsightCards(state, F) {
     });
   }
 
-  if ((F.debt || 0) > 0) {
+  if ((F.totalDebt || 0) > 0) {
     insights.push({
       title: 'Debt is a key factor',
       desc: 'Reducing debt will improve your overall financial position.',
