@@ -394,6 +394,12 @@ function registerIpcHandlers(database, aiService) {
     return personalizationEngine.chooseSummaryEmphasis(profile, financials);
   });
 
+  // Proactive nudges
+  const { ProactiveEngine } = require('./proactive-engine');
+  const proactiveEngine = new ProactiveEngine(database);
+
+  safeHandle('proactive:evaluate', () => proactiveEngine.evaluate());
+
   // Currency exchange rate
   safeHandle('stock:fetch-exchange-rate', async (_, from, to) => {
     const { StockService } = require('./stock-service');

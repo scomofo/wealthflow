@@ -240,4 +240,7 @@ contextBridge.exposeInMainWorld('wealthflow', {
   // Personalization
   getPersonalizationProfile: () => ipcRenderer.invoke('personalization:get-profile'),
   recordInteraction: (eventType, category) => ipcRenderer.invoke('personalization:record-interaction', eventType, category),
+
+  // Proactive
+  evaluateProactiveNudges: () => ipcRenderer.invoke('proactive:evaluate'),
 });

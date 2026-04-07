@@ -25,6 +25,7 @@ const state = {
   residence: null,
   recommendedActions: [],
   nextBestActions: [],
+  proactiveNudges: [],
 };
 
 // Initialise all domain modules with shared state and api

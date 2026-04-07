@@ -106,3 +106,9 @@ export async function snoozeNextBestAction(id, untilDate) {
 export async function recordInteraction(eventType, category) {
   return api.recordInteraction(eventType, category);
 }
+
+// Proactive
+export async function evaluateProactiveNudges() {
+  state.proactiveNudges = await api.evaluateProactiveNudges();
+  return state.proactiveNudges;
+}
