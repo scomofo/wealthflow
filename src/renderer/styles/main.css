@@ -651,10 +651,13 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
 .focus-mode-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* AI Summary */
-.ai-summary { padding: 18px; background: var(--bg-soft); border: 1px solid var(--border-soft); }
+.ai-summary { padding: 18px; background: linear-gradient(150deg, var(--abg), transparent 70%); border: 1px solid rgba(196,147,90,.18); }
+.ai-summary-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ai-summary-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--sub); font-weight: 600; }
+.ai-summary-confidence { margin-left: auto; }
 .ai-summary-headline { font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
 .ai-summary-bullets { padding-left: 16px; font-size: 12px; color: var(--sub); line-height: 1.7; }
-.ai-summary-bullets li { margin-bottom: 4px; }
+.ai-summary-bullets li { margin-bottom: 2px; }
 
 /* ═══ Responsive ═══ */
 @media (max-width: 1200px) { .grid4 { grid-template-columns: repeat(2, 1fr); } }

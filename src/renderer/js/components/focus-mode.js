@@ -6,37 +6,37 @@ function getStepsForAction(action) {
   switch (cat) {
     case 'budget':
       return [
-        'Review your spending in this category for the current month',
+        'Check your transactions page for this category right now',
         'Identify one purchase pattern you can reduce this week',
         'Re-check progress after your next transaction import',
       ];
     case 'debt':
       return [
-        'Confirm your current balance and APR',
+        'Open your debts page and note the current balance',
         'Decide on an extra payment amount for this month',
         'Apply it to the highest-interest balance first',
       ];
     case 'investing':
       return [
-        'Review your available contribution room',
+        'Check your registered accounts for current room',
         'Decide on a contribution amount',
         'Log or make the contribution',
       ];
     case 'bills':
       return [
-        'Confirm the bill amount and due date',
+        'Open your bills page and verify the amount due',
         'Pay or schedule the payment today',
         'Mark complete once paid or scheduled',
       ];
     case 'cashflow':
       return [
-        'Review your current savings balance',
+        'Check your savings goals for your current balance',
         'Set up a recurring transfer to build your buffer',
         'Track progress monthly',
       ];
     default:
       return [
-        'Review the details for this action',
+        'Open the relevant page and review the details',
         'Take the recommended step today',
         'Mark complete when done',
       ];
@@ -87,5 +87,6 @@ export function renderFocusMode(action) {
         <button class="btn btn-secondary" data-action="dismiss-next-best-action" data-id="${h(action.id)}">${icon('x', 14)} Dismiss</button>
         <button class="btn btn-ghost" data-action="snooze-next-best-action" data-id="${h(action.id)}">${icon('clock', 14)} Snooze 7d</button>
       </div>
+      <button class="btn btn-ghost btn-sm" data-action="close-modal" style="margin-top:8px">${icon('arrow-left', 12)} Back to dashboard</button>
     </div>`;
 }
