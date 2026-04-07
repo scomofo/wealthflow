@@ -220,4 +220,13 @@ contextBridge.exposeInMainWorld('wealthflow', {
 
   // AI bulk re-categorize
   aiRecategorizeOthers: () => ipcRenderer.invoke('ai:recategorize-others'),
+
+  // AI Workflows
+  runWorkflow: (type, financialData) => ipcRenderer.invoke('ai:run-workflow', type, financialData),
+
+  // Recommended Actions
+  getRecommendedActions: () => ipcRenderer.invoke('db:recommended-actions:list'),
+  addRecommendedAction: (action) => ipcRenderer.invoke('db:recommended-actions:add', action),
+  completeRecommendedAction: (id) => ipcRenderer.invoke('db:recommended-actions:complete', id),
+  deleteRecommendedAction: (id) => ipcRenderer.invoke('db:recommended-actions:delete', id),
 });

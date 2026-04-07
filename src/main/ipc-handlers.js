@@ -345,6 +345,24 @@ function registerIpcHandlers(database, aiService) {
     return aiService.generateMonthlyReport(apiKey, model, financialData, month, year);
   });
 
+  // AI Workflows
+  const { AiWorkflowService } = require('./ai-workflows');
+  const aiWorkflowService = new AiWorkflowService();
+
+  safeHandle('ai:run-workflow', async (_, workflowType, financialData) => {
+    const settings = database.getSettings();
+    const apiKey = settings.ai_api_key;
+    const model = settings.ai_model || DEFAULT_AI_MODEL;
+    if (!apiKey) throw new Error('No API key configured. Go to Settings to add your Claude API key.');
+    return aiWorkflowService.runWorkflow(apiKey, model, workflowType, financialData);
+  });
+
+  // Recommended Actions
+  safeHandle('db:recommended-actions:list', () => database.listRecommendedActions());
+  safeHandle('db:recommended-actions:add', (_, action) => database.addRecommendedAction(action));
+  safeHandle('db:recommended-actions:complete', (_, id) => database.completeRecommendedAction(id));
+  safeHandle('db:recommended-actions:delete', (_, id) => database.deleteRecommendedAction(id));
+
   // Currency exchange rate
   safeHandle('stock:fetch-exchange-rate', async (_, from, to) => {
     const { StockService } = require('./stock-service');
