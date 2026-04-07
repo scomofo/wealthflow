@@ -4,7 +4,7 @@ import { parseCSV, generateCSV, autoMapColumns, autoCategorize } from './csv-par
 import { parseOFX, isOFX } from './ofx-parser.js';
 import { generateMonthlyReportHTML } from './pdf-report.js';
 import { detectBank, applyBankPreset, listBankPresets } from './bank-presets.js';
-import * as State from '../state.js';
+import * as State from '../state/core.js';
 
 const api = window.wealthflow;
 
