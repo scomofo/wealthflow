@@ -4,7 +4,7 @@ import { h, fmt, uid, validateRequired, validateAmount, showFieldError, clearFie
 import { SAMPLE_DATA, PROVINCES, CATEGORIES } from './canadian/constants.js';
 import * as State from './state.js';
 import { navigate, setOnNavigate, getSection } from './router.js';
-import { renderSidebar } from './components/sidebar.js';
+import { renderSidebar, setExpandedGroup } from './components/sidebar.js';
 import { renderHeader } from './components/header.js';
 import { renderModal } from './components/modal.js';
 import { renderAiPanel, addUserMsg, clearAiHistory, startStreaming, endStreaming, handleStreamError, setupStreamListeners, cleanupStreamListeners, isAiStreaming } from './components/ai-panel.js';
@@ -332,6 +332,21 @@ function bindEvents() {
         sideOpen = !sideOpen;
         render();
         break;
+
+      case 'toggle-group': {
+        const groupId = btn.dataset.group;
+        const currentEl = document.querySelector('.nav-group.expanded .nav-group-header');
+        const currentExpanded = currentEl?.dataset.group;
+        setExpandedGroup(currentExpanded === groupId ? null : groupId);
+        render();
+        break;
+      }
+      case 'expand-group': {
+        sideOpen = true;
+        setExpandedGroup(btn.dataset.group);
+        render();
+        break;
+      }
 
       case 'toggle-theme': {
         const s = State.getState().settings;
