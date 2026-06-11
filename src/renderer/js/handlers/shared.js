@@ -8,6 +8,10 @@
 import { setExpandedGroup } from '../components/sidebar.js';
 import { renderImportModal } from '../components/import-modal.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
+import {
+  buildCompletionToast,
+  getNextActionAfterCompletion,
+} from '../utils/action-momentum.js';
 
 export async function handleSharedAction(action, btn, ctx) {
   const { State, render, showToast, showActionToast, uid, appState, navigate, getSection,
@@ -255,6 +259,7 @@ export async function handleSharedAction(action, btn, ctx) {
       const card = btn.closest('.action-card, .card');
       if (card) card.classList.add('fade-out');
       await State.completeRecommendedAction(btn.dataset.id);
+      try { await State.refreshEngagementProgress(); } catch (_) { /* non-critical */ }
       showToast('Plan item completed', 'success');
       setTimeout(() => render(), 180);
       return true;
@@ -283,17 +288,39 @@ export async function handleSharedAction(action, btn, ctx) {
       const card = btn.closest('.action-card');
       if (card) card.classList.add('fade-out');
       const nba = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
+      const wasFocusMode = ctx.appState.activeModal === '_custom';
+      const settings = ctx.State.getState().settings || {};
+      const isFirstAction = !settings.first_action_completed;
+
       await ctx.State.completeNextBestAction(btn.dataset.id);
-      if (nba) ctx.State.recordInteraction('complete', nba.category || 'other');
+      if (nba) await ctx.State.recordInteraction('complete', nba.category || 'other');
+      if (isFirstAction) await ctx.State.updateSettings({ first_action_completed: true });
+      await ctx.State.refreshEngagementProgress();
+
+      const feedback = await ctx.State.getCompletionFeedback({
+        isFirstAction,
+        actionTitle: nba?.title || '',
+      });
+      const nextAction = getNextActionAfterCompletion(ctx.State.getState().nextBestActions || [], btn.dataset.id);
+
+      if (wasFocusMode && nba) {
+        const { renderFocusMode } = await import('../components/focus-mode.js');
+        ctx.appState.activeModal = '_custom';
+        ctx.appState.editData = {
+          title: 'Focus Mode',
+          body: renderFocusMode(nba, ctx.State.getState().personalizationProfile || {}, {
+            completionFeedback: feedback,
+            nextAction,
+          }),
+        };
+        ctx.render();
+        return true;
+      }
+
+      const toast = buildCompletionToast(feedback);
+      ctx.showToast(toast.message, toast.type);
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
-      const settings = ctx.State.getState().settings;
-      if (!settings.first_action_completed) {
-        ctx.State.updateSettings({ first_action_completed: true });
-        ctx.showToast('Nice \u2014 you\u2019ve taken your first step. That already improves your financial position.', 'success');
-      } else {
-        ctx.showToast('Nice \u2014 progress made', 'success');
-      }
       setTimeout(() => ctx.render(), 250);
       return true;
     }
@@ -302,7 +329,8 @@ export async function handleSharedAction(action, btn, ctx) {
       if (card) card.classList.add('fade-out');
       const nbaD = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
       await ctx.State.dismissNextBestAction(btn.dataset.id);
-      if (nbaD) ctx.State.recordInteraction('dismiss', nbaD.category || 'other');
+      if (nbaD) await ctx.State.recordInteraction('dismiss', nbaD.category || 'other');
+      try { await ctx.State.refreshEngagementProgress(); } catch (_) { /* non-critical */ }
       ctx.showToast('Action dismissed', 'info');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
@@ -315,7 +343,8 @@ export async function handleSharedAction(action, btn, ctx) {
       const nbaS = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
       const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
-      if (nbaS) ctx.State.recordInteraction('snooze', nbaS.category || 'other');
+      if (nbaS) await ctx.State.recordInteraction('snooze', nbaS.category || 'other');
+      try { await ctx.State.refreshEngagementProgress(); } catch (_) { /* non-critical */ }
       ctx.showToast('Action snoozed for 7 days', 'info');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
