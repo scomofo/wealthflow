@@ -43,7 +43,7 @@ class NextBestActionsEngine {
       ...this._ruleBudgetOverrun(budgets, financials),
       ...this._ruleHighInterestDebt(debts),
       ...this._ruleBillsDueSoon(bills),
-      ...this._ruleLowEmergencyFund(goals, financials, debts),
+      ...this._ruleLowEmergencyFund(financials, debts),
       ...this._ruleUnusedContributionRoom(contributionRoom, financials),
       ...this._ruleGoalOffTrack(goals),
       ...this._ruleMissingProfile(settings),
@@ -212,14 +212,13 @@ class NextBestActionsEngine {
     return actions;
   }
 
-  _ruleLowEmergencyFund(goals, financials, debts) {
-    const totalGoalSavings = goals.reduce(
-      (sum, g) => sum + (g.current_amount || 0),
-      0
-    );
+  _ruleLowEmergencyFund(financials, debts) {
+    // Use the same saved total as the dashboard financials (goal savings,
+    // falling back to the onboarding savings buffer when no goals exist)
+    const totalSaved = financials.totalSaved || 0;
     const monthlyExpenses = financials.expenses || 0;
 
-    if (monthlyExpenses > 0 && totalGoalSavings < monthlyExpenses) {
+    if (monthlyExpenses > 0 && totalSaved < monthlyExpenses) {
       let score = 75;
       if (debts && debts.length > 0) score += 10;
 
@@ -227,7 +226,7 @@ class NextBestActionsEngine {
         makeAction({
           action_key: 'low_emergency_fund',
           title: 'Build emergency fund to cover at least 1 month of expenses',
-          description: `Your total goal savings ($${totalGoalSavings.toLocaleString('en-CA')}) are below 1 month of expenses ($${monthlyExpenses.toLocaleString('en-CA')}).`,
+          description: `Your total savings ($${totalSaved.toLocaleString('en-CA')}) are below 1 month of expenses ($${monthlyExpenses.toLocaleString('en-CA')}).`,
           rationale:
             'An emergency fund protects you from unexpected expenses and income disruption.',
           category: 'cashflow',

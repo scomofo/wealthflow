@@ -108,6 +108,48 @@ describe('NextBestActionsEngine', () => {
     expect(investAction.score).toBeGreaterThanOrEqual(60);
   });
 
+  test('does not flag emergency fund when total saved covers a month of expenses', async () => {
+    const db = mockDb();
+    db.computeFinancials.mockReturnValue({
+      income: 5000,
+      expenses: 3000,
+      savingsRate: 40,
+      catSpending: {},
+      netWorth: 50000,
+      totalDebt: 0,
+      totalSaved: 3500,
+    });
+
+    const engine = new NextBestActionsEngine(db);
+    await engine.generateActions();
+
+    const upserted = db.upsertNextBestAction.mock.calls.map((c) => c[0]);
+    const fundAction = upserted.find((a) => a.action_key === 'low_emergency_fund');
+    expect(fundAction).toBeUndefined();
+  });
+
+  test('flags emergency fund using the dashboard saved total when below expenses', async () => {
+    const db = mockDb();
+    db.computeFinancials.mockReturnValue({
+      income: 5000,
+      expenses: 3000,
+      savingsRate: 40,
+      catSpending: {},
+      netWorth: 50000,
+      totalDebt: 0,
+      totalSaved: 500,
+    });
+
+    const engine = new NextBestActionsEngine(db);
+    await engine.generateActions();
+
+    const upserted = db.upsertNextBestAction.mock.calls.map((c) => c[0]);
+    const fundAction = upserted.find((a) => a.action_key === 'low_emergency_fund');
+    expect(fundAction).toBeDefined();
+    expect(fundAction.description).toContain('$500');
+    expect(fundAction.score).toBeGreaterThanOrEqual(75);
+  });
+
   test('generates goal off-track action', async () => {
     const sixMonths = new Date();
     sixMonths.setMonth(sixMonths.getMonth() + 4);
