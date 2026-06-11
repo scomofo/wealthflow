@@ -15,7 +15,7 @@ function mockDb(existingActions = []) {
     listBills: jest.fn(() => []),
     listGoals: jest.fn(() => []),
     listInvestments: jest.fn(() => []),
-    getContributionRoom: jest.fn(() => []),
+    listContributionRoom: jest.fn(() => []),
     computeFinancials: jest.fn(() => ({
       income: 5000,
       expenses: 3000,
@@ -94,8 +94,8 @@ describe('NextBestActionsEngine', () => {
 
   test('generates contribution room action', async () => {
     const db = mockDb();
-    db.getContributionRoom.mockReturnValue([
-      { account_type: 'TFSA', room: 7000 },
+    db.listContributionRoom.mockReturnValue([
+      { account_type: 'TFSA', known_room: 7000 },
     ]);
 
     const engine = new NextBestActionsEngine(db);
@@ -193,6 +193,25 @@ describe('NextBestActionsEngine', () => {
       completed_at: new Date().toISOString(),
     };
     const db = mockDb([recentlyCompleted]);
+    db.getSettings.mockReturnValue({ province: 'AB', profile_completed: false });
+
+    const engine = new NextBestActionsEngine(db);
+    await engine.generateActions();
+
+    const upserted = db.upsertNextBestAction.mock.calls.map((c) => c[0]);
+    const profileAction = upserted.find(
+      (a) => a.action_key === 'missing_profile'
+    );
+    expect(profileAction).toBeUndefined();
+  });
+
+  test('does not regenerate recently done action', async () => {
+    const recentlyDone = {
+      action_key: 'missing_profile',
+      status: 'done',
+      completed_at: new Date().toISOString(),
+    };
+    const db = mockDb([recentlyDone]);
     db.getSettings.mockReturnValue({ province: 'AB', profile_completed: false });
 
     const engine = new NextBestActionsEngine(db);

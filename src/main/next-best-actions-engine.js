@@ -32,7 +32,9 @@ class NextBestActionsEngine {
     const debts = db.listDebts();
     const bills = db.listBills();
     const goals = db.listGoals();
-    const contributionRoom = db.getContributionRoom();
+    const contributionRoom = db.listContributionRoom
+      ? db.listContributionRoom()
+      : db.getContributionRoom();
     const settings = db.getSettings();
     const financials = db.computeFinancials();
 
@@ -56,7 +58,7 @@ class NextBestActionsEngine {
       existing
         .filter(
           (a) =>
-            a.status === 'completed' &&
+            (a.status === 'completed' || a.status === 'done') &&
             a.completed_at &&
             new Date(a.completed_at).getTime() > sevenDaysAgo
         )
@@ -245,7 +247,7 @@ class NextBestActionsEngine {
     if (income <= expenses) return actions;
 
     for (const cr of contributionRoom) {
-      const room = cr.room || 0;
+      const room = cr.known_room ?? cr.room ?? 0;
       if (room > 0) {
         let score = 60;
         if (room > 5000) score += 10;

@@ -8,6 +8,7 @@ import { renderFinancialSnapshotBar } from '../components/financial-snapshot-bar
 import { renderDashboardInsightCards } from '../components/dashboard-insight-cards.js';
 import { renderAISummary } from '../components/ai-summary.js';
 import { generateAISummary } from '../utils/ai-summary.js';
+import { buildDashboardAISummary } from '../utils/dashboard-intelligence.js';
 import { renderProactiveBanner } from '../components/proactive-banner.js';
 
 export function setShowAllActions(val) { /* no-op: panel handles its own display */ }
@@ -68,7 +69,7 @@ export function renderDashboard(state, F, workflowCtx) {
       <div class="dashboard-subtitle" style="margin-top:1px">Welcome back, <b style="color:var(--text)">${h(s.user_name || 'User')}</b></div>
     </div>
 
-    ${renderAISummary(generateAISummary(state.nextBestActions, F))}
+    ${renderAISummary(buildDashboardAISummary(state, F, generateAISummary))}
 
     ${renderProactiveBanner(state.proactiveNudges)}
 

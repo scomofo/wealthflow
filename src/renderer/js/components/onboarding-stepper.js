@@ -4,14 +4,9 @@
 import { icon } from '../icons.js';
 import { h } from '../helpers.js';
 import { PROVINCES, CATEGORIES } from '../canadian/constants.js';
+import { selectOnboardingActions } from '../utils/onboarding.js';
 
 const OB_DEFAULT_BUDGETS = ['Food/Groceries', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Housing'];
-
-const FALLBACK_ACTIONS = [
-  { title: 'Track your top 3 spending categories this week', icon: 'bar-chart', priority: 'high' },
-  { title: 'Review your largest recurring expense', icon: 'repeat', priority: 'medium' },
-  { title: 'Complete your Financial Profile for better advice', icon: 'user-check', priority: 'medium' },
-];
 
 function stepDots(current) {
   const labels = ['Start', 'Setup', 'Budget', 'Data', 'Next Steps'];
@@ -160,9 +155,7 @@ function renderStep3() {
 }
 
 function renderStep4(state) {
-  const actions = (state?.nextBestActions || []).filter(a => a.status === 'pending').slice(0, 3);
-  const displayActions = actions.length > 0 ? actions : FALLBACK_ACTIONS;
-  const isReal = actions.length > 0;
+  const displayActions = selectOnboardingActions(state);
 
   const actionCards = displayActions.map((a, i) => `
     <div class="onboard-value-card${i === 0 ? ' onboard-highlight' : ''}" style="display:flex;align-items:flex-start;gap:10px">

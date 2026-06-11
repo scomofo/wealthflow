@@ -75,7 +75,7 @@ function debouncedPageRender(section, renderFn, delay = 300) {
       if (restored) {
         restored.focus();
         if (cursorPos !== undefined && restored.setSelectionRange) {
-          try { restored.setSelectionRange(cursorPos, cursorPos); } catch {}
+          try { restored.setSelectionRange(cursorPos, cursorPos); } catch { /* input type may not support selection */ }
         }
       }
     }
@@ -337,6 +337,7 @@ async function init() {
   await State.loadAll();
   try { await State.snapshotNetWorth(); } catch (e) { /* ignore */ }
   try { await State.generateNextBestActions(); } catch (_) { /* non-blocking */ }
+  try { await State.loadPersonalizationContext(); } catch (_) { /* non-blocking */ }
   try { await State.evaluateProactiveNudges(); } catch (_) { /* non-blocking */ }
   try {
     const ep = await State.getEngagementProgress();
