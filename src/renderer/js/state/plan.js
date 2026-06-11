@@ -129,8 +129,19 @@ export async function evaluateProactiveNudges() {
 }
 
 // Engagement
+export async function refreshEngagementProgress() {
+  state.engagementProgress = await api.getEngagementProgress();
+  return state.engagementProgress;
+}
+
 export async function getEngagementProgress() {
-  return api.getEngagementProgress();
+  return refreshEngagementProgress();
+}
+
+export async function getCompletionFeedback(payload) {
+  if (!api.getCompletionFeedback) return null;
+  state.lastCompletionFeedback = await api.getCompletionFeedback(payload);
+  return state.lastCompletionFeedback;
 }
 
 export async function getEnhancedToast(baseMessage) {

@@ -247,5 +247,6 @@ contextBridge.exposeInMainWorld('wealthflow', {
 
   // Engagement
   getEngagementProgress: () => ipcRenderer.invoke('engagement:progress'),
+  getCompletionFeedback: (payload) => ipcRenderer.invoke('engagement:completion-feedback', payload),
   getEnhancedToast: (baseMessage) => ipcRenderer.invoke('engagement:enhanced-toast', baseMessage),
 });
