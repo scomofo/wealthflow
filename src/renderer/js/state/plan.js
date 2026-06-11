@@ -130,20 +130,51 @@ export async function evaluateProactiveNudges() {
   return state.proactiveNudges;
 }
 
+function getRefreshApiMethod(methodName) {
+  if (!api || typeof api[methodName] !== 'function') {
+    throw new Error(`api.${methodName} is not available`);
+  }
+  return api[methodName].bind(api);
+}
+
+function toRefreshError(step, error) {
+  return {
+    step,
+    message: error?.message || String(error),
+  };
+}
+
+async function runRefreshStep(step, errors, refresh) {
+  try {
+    await refresh();
+  } catch (error) {
+    errors.push(toRefreshError(step, error));
+  }
+}
+
 export async function refreshCommandCenterIntelligence(reason = 'manual') {
   const plan = getIntelligenceRefreshPlan(reason);
+  const errors = [];
 
   if (plan.includes('nextBestActions')) {
-    state.nextBestActions = await api.generateNextBestActions();
+    await runRefreshStep('nextBestActions', errors, async () => {
+      state.nextBestActions = await getRefreshApiMethod('generateNextBestActions')();
+    });
   }
   if (plan.includes('personalization')) {
-    await loadPersonalizationContext();
+    await runRefreshStep('personalization', errors, async () => {
+      await loadPersonalizationContext();
+    });
   }
   if (plan.includes('proactiveNudges')) {
-    state.proactiveNudges = await api.evaluateProactiveNudges();
+    await runRefreshStep('proactiveNudges', errors, async () => {
+      state.proactiveNudges = await getRefreshApiMethod('evaluateProactiveNudges')();
+    });
   }
   if (plan.includes('engagementProgress')) {
-    state.engagementProgress = await api.getEngagementProgress();
+    await runRefreshStep('engagementProgress', errors, async () => {
+      state.engagementProgress = await getRefreshApiMethod('getEngagementProgress')();
+    });
   }
 
   state.lastIntelligenceRefresh = {
@@ -151,6 +182,9 @@ export async function refreshCommandCenterIntelligence(reason = 'manual') {
     refreshed_at: new Date().toISOString(),
     plan,
   };
+  if (errors.length > 0) {
+    state.lastIntelligenceRefresh.errors = errors;
+  }
   return state.lastIntelligenceRefresh;
 }
 
