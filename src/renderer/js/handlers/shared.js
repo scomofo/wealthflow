@@ -12,7 +12,7 @@ import {
   buildCompletionToast,
   getNextActionAfterCompletion,
 } from '../utils/action-momentum.js';
-import { findRelatedActionForNudge } from '../utils/proactive-routing.js';
+import { findRelatedActionForNudge, getNudgeFallbackRoute } from '../utils/proactive-routing.js';
 
 export async function handleSharedAction(action, btn, ctx) {
   const { State, render, showToast, showActionToast, uid, appState, navigate, getSection,
@@ -377,7 +377,7 @@ export async function handleSharedAction(action, btn, ctx) {
         return true;
       }
 
-      navigate(category || 'dashboard');
+      navigate(getNudgeFallbackRoute(category));
       return true;
     }
 
