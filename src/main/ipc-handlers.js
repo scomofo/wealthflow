@@ -404,10 +404,8 @@ function registerIpcHandlers(database, aiService) {
   const { EngagementEngine } = require('./engagement-engine');
   const engagementEngine = new EngagementEngine(database);
 
-  safeHandle('engagement:progress', () => ({
-    message: engagementEngine.getProgressMessage(),
-    momentum: engagementEngine.getMomentumState(),
-  }));
+  safeHandle('engagement:progress', () => engagementEngine.getProgressSummary());
+  safeHandle('engagement:completion-feedback', (_, payload) => engagementEngine.getCompletionFeedback(payload || {}));
   safeHandle('engagement:enhanced-toast', (_, baseMessage) => engagementEngine.getEnhancedToast(baseMessage));
 
   // Currency exchange rate

@@ -240,11 +240,13 @@ contextBridge.exposeInMainWorld('wealthflow', {
   // Personalization
   getPersonalizationProfile: () => ipcRenderer.invoke('personalization:get-profile'),
   recordInteraction: (eventType, category) => ipcRenderer.invoke('personalization:record-interaction', eventType, category),
+  getSummaryEmphasis: () => ipcRenderer.invoke('personalization:summary-emphasis'),
 
   // Proactive
   evaluateProactiveNudges: () => ipcRenderer.invoke('proactive:evaluate'),
 
   // Engagement
   getEngagementProgress: () => ipcRenderer.invoke('engagement:progress'),
+  getCompletionFeedback: (payload) => ipcRenderer.invoke('engagement:completion-feedback', payload),
   getEnhancedToast: (baseMessage) => ipcRenderer.invoke('engagement:enhanced-toast', baseMessage),
 });

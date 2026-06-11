@@ -1,12 +1,20 @@
 // Simple transform that converts ES module exports to CommonJS for Jest
 module.exports = {
   process(source) {
-    // Replace 'export function' with 'function' and add module.exports at end
+    // Minimal renderer ESM to CommonJS transform for Jest.
     const exports = [];
-    const transformed = source.replace(/export\s+function\s+(\w+)/g, (_, name) => {
-      exports.push(name);
-      return 'function ' + name;
-    });
+    let transformed = source
+      .replace(/import\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"];?/g, (_, names, path) => {
+        return 'const {' + names.trim() + "} = require('" + path + "');";
+      })
+      .replace(/export\s+function\s+(\w+)/g, (_, name) => {
+        exports.push(name);
+        return 'function ' + name;
+      })
+      .replace(/export\s+const\s+(\w+)\s+=/g, (_, name) => {
+        exports.push(name);
+        return 'const ' + name + ' =';
+      });
     const cjsExports = exports.length > 0
       ? '\nif (typeof module !== "undefined" && module.exports) { module.exports = { ' + exports.join(', ') + ' }; }'
       : '';
