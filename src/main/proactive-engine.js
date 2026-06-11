@@ -21,6 +21,16 @@ class ProactiveEngine {
     this.database.updatePersonalizationProfile(profile);
   }
 
+  _nudge(fields) {
+    const message = fields.message || '';
+    return {
+      id: crypto.createHash('md5').update(message).digest('hex').slice(0, 16),
+      related_action_category: fields.category,
+      cta_label: 'Focus action',
+      ...fields,
+    };
+  }
+
   evaluate() {
     const nudges = [];
     const financials = this.database.computeFinancials();
@@ -43,14 +53,14 @@ class ProactiveEngine {
           const over = Math.round(spent - b.amount);
           const pct = Math.round((spent / b.amount - 1) * 100);
           const message = 'You\u2019re already ' + pct + '% over your ' + b.category + ' budget \u2014 tightening now could improve cash flow by $' + over;
-          nudges.push({
-            id: crypto.createHash('md5').update(message).digest('hex').slice(0, 16),
+          nudges.push(this._nudge({
             type: 'risk',
             message,
+            why_now: pct + '% over budget with the month still active',
             priority: 'high',
             category: 'budget',
             expires_at: this._endOfMonth(),
-          });
+          }));
           break; // max one overspending nudge
         }
       }
@@ -66,14 +76,14 @@ class ProactiveEngine {
       });
       if (dueSoon.length > 0) {
         const message = dueSoon.length + ' bill' + (dueSoon.length !== 1 ? 's' : '') + ' due in the next 3 days';
-        nudges.push({
-          id: crypto.createHash('md5').update(message).digest('hex').slice(0, 16),
+        nudges.push(this._nudge({
           type: 'time',
           message,
+          why_now: 'Due within 3 days',
           priority: 'high',
           category: 'bills',
           expires_at: new Date(Date.now() + 4 * 86400000).toISOString().slice(0, 10),
-        });
+        }));
       }
     }
 
@@ -82,14 +92,14 @@ class ProactiveEngine {
       const totalRoom = contributionRoom.reduce((s, cr) => s + (cr.known_room || 0), 0);
       if (totalRoom > 5000 && (financials.savingsRate || 0) > 15) {
         const message = 'You have $' + Math.round(totalRoom).toLocaleString('en-CA') + ' in unused registered account room \u2014 consider a contribution';
-        nudges.push({
-          id: crypto.createHash('md5').update(message).digest('hex').slice(0, 16),
+        nudges.push(this._nudge({
           type: 'opportunity',
           message,
+          why_now: 'Available room and positive cash flow detected',
           priority: 'medium',
           category: 'investing',
           expires_at: this._endOfMonth(),
-        });
+        }));
       }
     }
 
@@ -99,14 +109,14 @@ class ProactiveEngine {
       if (highInterest.length > 0) {
         const worst = highInterest.sort((a, b) => b.rate - a.rate)[0];
         const message = worst.name + ' at ' + worst.rate + '% APR is costing you \u2014 prioritize payoff';
-        nudges.push({
-          id: crypto.createHash('md5').update(message).digest('hex').slice(0, 16),
+        nudges.push(this._nudge({
           type: 'risk',
           message,
+          why_now: 'High APR debt is active',
           priority: 'high',
           category: 'debt',
           expires_at: this._endOfMonth(),
-        });
+        }));
       }
     }
 
@@ -116,14 +126,14 @@ class ProactiveEngine {
         const daysSince = (Date.now() - new Date(profile.last_updated).getTime()) / 86400000;
         if (daysSince > 7) {
           const message = 'You haven\u2019t taken action recently \u2014 review your top priorities';
-          nudges.push({
-            id: crypto.createHash('md5').update(message).digest('hex').slice(0, 16),
+          nudges.push(this._nudge({
             type: 'behavior',
             message,
+            why_now: 'No recent action completion signal',
             priority: 'low',
             category: 'planning',
             expires_at: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
-          });
+          }));
         }
       }
     }
@@ -134,14 +144,14 @@ class ProactiveEngine {
       const daysLeft = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate();
       if (daysLeft <= 5) {
         const message = daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' left this month \u2014 review your spending and goals';
-        nudges.push({
-          id: crypto.createHash('md5').update(message).digest('hex').slice(0, 16),
+        nudges.push(this._nudge({
           type: 'time',
           message,
+          why_now: 'Month-end decision window',
           priority: 'medium',
           category: 'planning',
           expires_at: this._endOfMonth(),
-        });
+        }));
       }
     }
 

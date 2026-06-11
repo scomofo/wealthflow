@@ -744,6 +744,13 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
   background: var(--bg-soft);
 }
 
+.proactive-why-now {
+  margin-top: 3px;
+  color: var(--sub);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 /* Progress Strip */
 .progress-strip {
   display: flex;

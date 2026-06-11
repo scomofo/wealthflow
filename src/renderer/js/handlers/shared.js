@@ -12,6 +12,7 @@ import {
   buildCompletionToast,
   getNextActionAfterCompletion,
 } from '../utils/action-momentum.js';
+import { findRelatedActionForNudge } from '../utils/proactive-routing.js';
 
 export async function handleSharedAction(action, btn, ctx) {
   const { State, render, showToast, showActionToast, uid, appState, navigate, getSection,
@@ -351,6 +352,32 @@ export async function handleSharedAction(action, btn, ctx) {
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
       setTimeout(() => ctx.render(), 250);
+      return true;
+    }
+
+    case 'open-related-nudge-action': {
+      const nudgeId = btn.dataset.nudgeId;
+      const category = btn.dataset.category;
+      const state = ctx.State.getState();
+      const nudges = state.proactiveNudges || [];
+      const nudge = nudges.find(n => n.id === nudgeId) || { related_action_category: category };
+      const related = findRelatedActionForNudge(nudge, state.nextBestActions || []);
+
+      if (related) {
+        const profile = await ctx.State.recordInteraction('focus_open', related.category || 'other');
+        const { renderFocusMode } = await import('../components/focus-mode.js');
+        ctx.appState.activeModal = '_custom';
+        ctx.appState.editData = {
+          title: 'Focus Mode',
+          body: renderFocusMode(related, profile || state.personalizationProfile || {}, {
+            financials: await ctx.State.computeFinancials(),
+          }),
+        };
+        ctx.render();
+        return true;
+      }
+
+      navigate(category || 'dashboard');
       return true;
     }
 
