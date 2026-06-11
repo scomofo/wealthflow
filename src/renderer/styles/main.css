@@ -671,6 +671,30 @@ input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px;
   font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
 .focus-mode-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.focus-mode-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid rgba(76, 146, 106, .28);
+  background: rgba(76, 146, 106, .08);
+  border-radius: 6px;
+}
+.focus-mode-complete-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.focus-mode-complete-detail {
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.4;
+}
 
 /* AI Summary */
 .ai-summary { padding: 18px; background: linear-gradient(150deg, var(--abg), transparent 70%); border: 1px solid rgba(196,147,90,.18); }
