@@ -78,7 +78,7 @@ export function renderDashboard(state, F, workflowCtx) {
 
     ${renderProgressStrip(state.engagementProgress)}
 
-    ${renderNextBestActionsPanel(state.nextBestActions || [])}
+    ${renderNextBestActionsPanel(state.nextBestActions || [], { financials: F })}
 
     <div class="card dashboard-section">
       <div style="font-weight:700;font-size:14px;margin-bottom:12px">AI Recommendations</div>
