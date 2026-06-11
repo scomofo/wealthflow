@@ -58,7 +58,7 @@ function buildActionBullet(action) {
   const category = (action.category || '').toLowerCase();
 
   if (category === 'budget') {
-    const match = title.match(/Reduce\s+(.+?)\s+spending\s+by\s+\$?([\d,]+)/i);
+    const match = title.match(/Reduce\s+(.+?)\s+spending\s+by\s+\$?([\d,]+(?:\.\d+)?)/i);
     if (match) return 'Reducing ' + match[1] + ' spending by $' + match[2] + ' this month creates room in the monthly plan.';
   }
   if (category === 'debt') {
