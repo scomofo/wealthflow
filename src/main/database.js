@@ -405,16 +405,23 @@ class WealthFlowDatabase {
   computeFinancials() {
     const settings = this.getSettings();
     // Exclude transfers from income/expense totals — they're not real income or spending
-    const transactionIncome = this.getScalar("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE amount > 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
-    const transactionExpenses = this.getScalar("SELECT COALESCE(SUM(ABS(amount)), 0) FROM transactions WHERE amount < 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
-    const income = transactionIncome || settings.monthly_income || 0;
-    const expenses = transactionExpenses || settings.monthly_expenses || 0;
+    const txStats = this.getOne(
+      "SELECT " +
+      "COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as income, " +
+      "COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0) as expenses, " +
+      "COUNT(*) as total_count " +
+      "FROM transactions " +
+      "WHERE deleted_at IS NULL AND category != 'Transfer'"
+    );
+    const hasTransactions = (txStats?.total_count || 0) > 0;
+    const income = hasTransactions ? txStats.income : (settings.monthly_income || 0);
+    const expenses = hasTransactions ? txStats.expenses : (settings.monthly_expenses || 0);
     const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
-    const debtTotal = this.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts WHERE deleted_at IS NULL') || 0;
-    const totalDebt = debtTotal || settings.total_debt || 0;
+    const debtStats = this.getOne('SELECT COALESCE(SUM(balance), 0) as total, COUNT(*) as total_count FROM debts WHERE deleted_at IS NULL');
+    const totalDebt = (debtStats?.total_count || 0) > 0 ? debtStats.total : (settings.total_debt || 0);
     const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments WHERE deleted_at IS NULL') || 0;
-    const goalSavings = this.getScalar('SELECT COALESCE(SUM(current), 0) FROM goals WHERE deleted_at IS NULL') || 0;
-    const totalSaved = goalSavings || settings.savings_buffer || 0;
+    const goalStats = this.getOne('SELECT COALESCE(SUM(current), 0) as total, COUNT(*) as total_count FROM goals WHERE deleted_at IS NULL');
+    const totalSaved = (goalStats?.total_count || 0) > 0 ? goalStats.total : (settings.savings_buffer || 0);
     const catRows = this.getAll(
       'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL GROUP BY category ORDER BY total DESC'
     );
