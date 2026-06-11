@@ -30,9 +30,10 @@ export function buildActionBecause(action = {}, financials = {}) {
     return 'Because cash reserves reduce the chance of relying on debt when expenses surprise you.';
   }
 
-  const fallback = action.rationale || action.description || action.impact_text || '';
+  const fallback = (action.rationale || action.description || action.impact_text || '').trim();
   if (fallback) {
-    return 'Because ' + fallback.charAt(0).toLowerCase() + fallback.slice(1);
+    const normalizedFallback = fallback.replace(/^because\b\s*/i, '');
+    return 'Because ' + normalizedFallback.charAt(0).toLowerCase() + normalizedFallback.slice(1);
   }
 
   return '';

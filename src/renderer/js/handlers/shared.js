@@ -305,10 +305,12 @@ export async function handleSharedAction(action, btn, ctx) {
 
       if (wasFocusMode && nba) {
         const { renderFocusMode } = await import('../components/focus-mode.js');
+        const financials = await ctx.State.computeFinancials();
         ctx.appState.activeModal = '_custom';
         ctx.appState.editData = {
           title: 'Focus Mode',
           body: renderFocusMode(nba, ctx.State.getState().personalizationProfile || {}, {
+            financials,
             completionFeedback: feedback,
             nextAction,
           }),
@@ -359,10 +361,11 @@ export async function handleSharedAction(action, btn, ctx) {
       if (action) {
         const profile = await ctx.State.recordInteraction('focus_open', action.category || 'other');
         const { renderFocusMode } = await import('../components/focus-mode.js');
+        const financials = await ctx.State.computeFinancials();
         ctx.appState.activeModal = '_custom';
         ctx.appState.editData = {
           title: 'Focus Mode',
-          body: renderFocusMode(action, profile || ctx.State.getState().personalizationProfile || {}),
+          body: renderFocusMode(action, profile || ctx.State.getState().personalizationProfile || {}, { financials }),
         };
         ctx.render();
       }

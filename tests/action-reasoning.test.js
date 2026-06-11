@@ -42,4 +42,15 @@ describe('buildActionBecause', () => {
       {}
     )).toBe('Because a complete profile improves recommendations.');
   });
+
+  test('normalizes fallback rationale whitespace and existing because prefix', () => {
+    expect(buildActionBecause(
+      {
+        title: 'Review account setup',
+        category: 'planning',
+        rationale: '  Because this keeps recommendations accurate.',
+      },
+      {}
+    )).toBe('Because this keeps recommendations accurate.');
+  });
 });
