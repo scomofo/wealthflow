@@ -30,6 +30,7 @@ const state = {
   lastCompletionFeedback: null,
   personalizationProfile: null,
   summaryEmphasis: null,
+  lastIntelligenceRefresh: null,
 };
 
 // Initialise all domain modules with shared state and api

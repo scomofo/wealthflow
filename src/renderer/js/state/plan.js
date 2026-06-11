@@ -1,4 +1,6 @@
 // Plan domain: monthly reports, recommended actions, workflows, export/import, AI categorize
+import { getIntelligenceRefreshPlan } from '../utils/intelligence-refresh.js';
+
 let state, api;
 export function initPlan(s, a) { state = s; api = a; }
 
@@ -126,6 +128,30 @@ export async function loadPersonalizationContext() {
 export async function evaluateProactiveNudges() {
   state.proactiveNudges = await api.evaluateProactiveNudges();
   return state.proactiveNudges;
+}
+
+export async function refreshCommandCenterIntelligence(reason = 'manual') {
+  const plan = getIntelligenceRefreshPlan(reason);
+
+  if (plan.includes('nextBestActions')) {
+    state.nextBestActions = await api.generateNextBestActions();
+  }
+  if (plan.includes('personalization')) {
+    await loadPersonalizationContext();
+  }
+  if (plan.includes('proactiveNudges')) {
+    state.proactiveNudges = await api.evaluateProactiveNudges();
+  }
+  if (plan.includes('engagementProgress')) {
+    state.engagementProgress = await api.getEngagementProgress();
+  }
+
+  state.lastIntelligenceRefresh = {
+    reason,
+    refreshed_at: new Date().toISOString(),
+    plan,
+  };
+  return state.lastIntelligenceRefresh;
 }
 
 // Engagement

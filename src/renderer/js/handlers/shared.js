@@ -296,7 +296,7 @@ export async function handleSharedAction(action, btn, ctx) {
       await ctx.State.completeNextBestAction(btn.dataset.id);
       if (nba) await ctx.State.recordInteraction('complete', nba.category || 'other');
       if (isFirstAction) await ctx.State.updateSettings({ first_action_completed: true });
-      await ctx.State.refreshEngagementProgress();
+      await ctx.State.refreshCommandCenterIntelligence('action_completed');
 
       const feedback = await ctx.State.getCompletionFeedback({
         isFirstAction,
@@ -333,7 +333,7 @@ export async function handleSharedAction(action, btn, ctx) {
       const nbaD = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
       await ctx.State.dismissNextBestAction(btn.dataset.id);
       if (nbaD) await ctx.State.recordInteraction('dismiss', nbaD.category || 'other');
-      try { await ctx.State.refreshEngagementProgress(); } catch (_) { /* non-critical */ }
+      try { await ctx.State.refreshCommandCenterIntelligence('action_dismissed'); } catch (_) { /* non-critical */ }
       ctx.showToast('Action dismissed', 'info');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
@@ -347,7 +347,7 @@ export async function handleSharedAction(action, btn, ctx) {
       const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
       await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
       if (nbaS) await ctx.State.recordInteraction('snooze', nbaS.category || 'other');
-      try { await ctx.State.refreshEngagementProgress(); } catch (_) { /* non-critical */ }
+      try { await ctx.State.refreshCommandCenterIntelligence('action_snoozed'); } catch (_) { /* non-critical */ }
       ctx.showToast('Action snoozed for 7 days', 'info');
       ctx.appState.activeModal = null;
       ctx.appState.editData = null;
@@ -409,6 +409,14 @@ export async function handleSharedAction(action, btn, ctx) {
   }
 }
 
+async function refreshAfterFinancialSave(State) {
+  try {
+    await State.refreshCommandCenterIntelligence('financial_data_changed');
+  } catch (_) {
+    /* non-critical */
+  }
+}
+
 export async function handleSaveModal(type, ctx) {
   const { State, showToast, showActionToast, uid, appState, render, fmt,
     clearFieldErrors, validateRequired, validateAmount, showFieldError,
@@ -461,6 +469,7 @@ export async function handleSaveModal(type, ctx) {
         await addXP(10, ctx);
         showToast('Transaction added');
       }
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'budget': {
@@ -475,6 +484,7 @@ export async function handleSaveModal(type, ctx) {
         await State.addBudget({ id: uid(), category: bcat, amount: +amt, color: color || '#6366f1' });
         showToast('Budget added');
       }
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'goal': {
@@ -501,6 +511,7 @@ export async function handleSaveModal(type, ctx) {
         await addXP(25, ctx);
         showToast('Goal added');
       }
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'debt': {
@@ -526,6 +537,7 @@ export async function handleSaveModal(type, ctx) {
         await State.addDebt({ ...debtData, id: uid() });
         showToast('Debt added');
       }
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'inv': {
@@ -551,6 +563,7 @@ export async function handleSaveModal(type, ctx) {
         await State.addInvestment({ ...invData, id: uid() });
         showToast('Investment added');
       }
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'bill': {
@@ -578,6 +591,7 @@ export async function handleSaveModal(type, ctx) {
         await State.addBill({ ...billData, id: uid() });
         showToast('Reminder added');
       }
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'tfsa-contribution':
@@ -600,6 +614,7 @@ export async function handleSaveModal(type, ctx) {
       });
       await addXP(15, ctx);
       showToast('Contribution logged');
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'contribution-room': {
@@ -615,6 +630,7 @@ export async function handleSaveModal(type, ctx) {
         notes: notes || null,
       });
       showToast('Contribution room updated');
+      await refreshAfterFinancialSave(State);
       break;
     }
     case 'resp-beneficiary': {
