@@ -328,12 +328,12 @@ export async function handleSharedAction(action, btn, ctx) {
       const nbaActions = ctx.State.getState().nextBestActions || [];
       const action = nbaActions.find(a => a.id === actionId);
       if (action) {
-        ctx.State.recordInteraction('focus_open', action.category || 'other');
+        const profile = await ctx.State.recordInteraction('focus_open', action.category || 'other');
         const { renderFocusMode } = await import('../components/focus-mode.js');
         ctx.appState.activeModal = '_custom';
         ctx.appState.editData = {
           title: 'Focus Mode',
-          body: renderFocusMode(action),
+          body: renderFocusMode(action, profile || ctx.State.getState().personalizationProfile || {}),
         };
         ctx.render();
       }

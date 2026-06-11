@@ -153,6 +153,7 @@ class WealthFlowDatabase {
       require('./migrations/009-recommended-actions'),
       require('./migrations/010-next-best-actions'),
       require('./migrations/011-personalization'),
+      require('./migrations/012-onboarding-settings'),
     ];
 
     for (const migration of migrations) {
@@ -174,8 +175,33 @@ class WealthFlowDatabase {
   // Settings
   getSettings() {
     const row = this.getOne('SELECT * FROM settings WHERE id = 1');
-    if (!row) return { id: 1, user_name: '', dark_mode: true, onboarded: false, level: 1, xp: 0, province: 'ON', profile_completed: false, last_wizard_step: 0, ai_api_key: '', ai_model: DEFAULT_AI_MODEL };
-    const settings = { ...row, dark_mode: !!row.dark_mode, onboarded: !!row.onboarded, profile_completed: !!row.profile_completed };
+    if (!row) {
+      return {
+        id: 1,
+        user_name: '',
+        dark_mode: true,
+        onboarded: false,
+        level: 1,
+        xp: 0,
+        province: 'ON',
+        profile_completed: false,
+        last_wizard_step: 0,
+        ai_api_key: '',
+        ai_model: DEFAULT_AI_MODEL,
+        monthly_income: 0,
+        monthly_expenses: 0,
+        total_debt: 0,
+        savings_buffer: 0,
+        first_action_completed: false,
+      };
+    }
+    const settings = {
+      ...row,
+      dark_mode: !!row.dark_mode,
+      onboarded: !!row.onboarded,
+      profile_completed: !!row.profile_completed,
+      first_action_completed: !!row.first_action_completed,
+    };
     settings.ai_api_key = this._decryptApiKey(settings.ai_api_key);
     return settings;
   }
@@ -183,7 +209,7 @@ class WealthFlowDatabase {
   updateSettings(data) {
     const current = this.getSettings();
     this.run(
-      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, updated_at = datetime('now') WHERE id = 1`,
+      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, updated_at = datetime('now') WHERE id = 1`,
       [
         data.user_name ?? current.user_name,
         (data.dark_mode !== undefined ? (data.dark_mode ? 1 : 0) : (current.dark_mode ? 1 : 0)),
@@ -195,6 +221,11 @@ class WealthFlowDatabase {
         data.last_wizard_step ?? current.last_wizard_step ?? 0,
         this._encryptApiKey(data.ai_api_key ?? current.ai_api_key ?? ''),
         data.ai_model ?? current.ai_model ?? DEFAULT_AI_MODEL,
+        data.monthly_income ?? current.monthly_income ?? 0,
+        data.monthly_expenses ?? current.monthly_expenses ?? 0,
+        data.total_debt ?? current.total_debt ?? 0,
+        data.savings_buffer ?? current.savings_buffer ?? 0,
+        (data.first_action_completed !== undefined ? (data.first_action_completed ? 1 : 0) : (current.first_action_completed ? 1 : 0)),
       ]
     );
     return this.getSettings();
@@ -372,13 +403,18 @@ class WealthFlowDatabase {
 
   // Computed financials
   computeFinancials() {
+    const settings = this.getSettings();
     // Exclude transfers from income/expense totals — they're not real income or spending
-    const income = this.getScalar("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE amount > 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
-    const expenses = this.getScalar("SELECT COALESCE(SUM(ABS(amount)), 0) FROM transactions WHERE amount < 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
+    const transactionIncome = this.getScalar("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE amount > 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
+    const transactionExpenses = this.getScalar("SELECT COALESCE(SUM(ABS(amount)), 0) FROM transactions WHERE amount < 0 AND deleted_at IS NULL AND category != 'Transfer'") || 0;
+    const income = transactionIncome || settings.monthly_income || 0;
+    const expenses = transactionExpenses || settings.monthly_expenses || 0;
     const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
-    const totalDebt = this.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts WHERE deleted_at IS NULL') || 0;
+    const debtTotal = this.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts WHERE deleted_at IS NULL') || 0;
+    const totalDebt = debtTotal || settings.total_debt || 0;
     const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments WHERE deleted_at IS NULL') || 0;
-    const totalSaved = this.getScalar('SELECT COALESCE(SUM(current), 0) FROM goals WHERE deleted_at IS NULL') || 0;
+    const goalSavings = this.getScalar('SELECT COALESCE(SUM(current), 0) FROM goals WHERE deleted_at IS NULL') || 0;
+    const totalSaved = goalSavings || settings.savings_buffer || 0;
     const catRows = this.getAll(
       'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL GROUP BY category ORDER BY total DESC'
     );
@@ -811,6 +847,13 @@ class WealthFlowDatabase {
   // Next Best Actions
   listNextBestActions(statusFilter) {
     if (statusFilter) {
+      if (statusFilter === 'open') {
+        const today = new Date().toISOString().slice(0, 10);
+        this.run(
+          "UPDATE next_best_actions SET status = 'open', snoozed_until = NULL WHERE status = 'snoozed' AND snoozed_until IS NOT NULL AND snoozed_until <= ? AND deleted_at IS NULL",
+          [today]
+        );
+      }
       return this.getAll("SELECT * FROM next_best_actions WHERE status = ? AND deleted_at IS NULL ORDER BY score DESC", [statusFilter]);
     }
     return this.getAll("SELECT * FROM next_best_actions WHERE deleted_at IS NULL ORDER BY score DESC");

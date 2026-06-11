@@ -104,7 +104,22 @@ export async function snoozeNextBestAction(id, untilDate) {
 
 // Personalization
 export async function recordInteraction(eventType, category) {
-  return api.recordInteraction(eventType, category);
+  state.personalizationProfile = await api.recordInteraction(eventType, category);
+  if (api.getSummaryEmphasis) state.summaryEmphasis = await api.getSummaryEmphasis();
+  return state.personalizationProfile;
+}
+
+export async function loadPersonalizationContext() {
+  if (api.getPersonalizationProfile) {
+    state.personalizationProfile = await api.getPersonalizationProfile();
+  }
+  if (api.getSummaryEmphasis) {
+    state.summaryEmphasis = await api.getSummaryEmphasis();
+  }
+  return {
+    profile: state.personalizationProfile,
+    summaryEmphasis: state.summaryEmphasis,
+  };
 }
 
 // Proactive

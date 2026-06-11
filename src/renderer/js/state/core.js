@@ -27,6 +27,8 @@ const state = {
   nextBestActions: [],
   proactiveNudges: [],
   engagementProgress: null,
+  personalizationProfile: null,
+  summaryEmphasis: null,
 };
 
 // Initialise all domain modules with shared state and api
