@@ -278,8 +278,12 @@ export async function handleSharedAction(action, btn, ctx) {
     case 'generate-next-best-actions': {
       ctx.showToast('Refreshing actions...', 'info');
       try {
-        await ctx.State.refreshCommandCenterIntelligence('manual');
+        const result = await ctx.State.refreshCommandCenterIntelligence('manual');
         ctx.render();
+        if (result?.errors?.length) {
+          const count = result.errors.length;
+          ctx.showToast(`Some command center intelligence could not refresh (${count} ${count === 1 ? 'issue' : 'issues'}).`, 'error');
+        }
       } catch (err) {
         ctx.showToast('Failed to refresh: ' + err.message, 'error');
       }

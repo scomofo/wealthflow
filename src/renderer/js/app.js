@@ -336,8 +336,9 @@ async function init() {
 
   await State.loadAll();
   try { await State.snapshotNetWorth(); } catch (e) { /* ignore */ }
-  try { await State.refreshCommandCenterIntelligence('manual'); } catch (_) { /* non-blocking */ }
   try { await State.processRecurringBills(); } catch (e) { /* ignore */ }
+  // Per-step command-center refresh errors are captured in lastIntelligenceRefresh.errors.
+  try { await State.refreshCommandCenterIntelligence('manual'); } catch (_) { /* non-blocking */ }
 
   try {
     const s = State.getState();
