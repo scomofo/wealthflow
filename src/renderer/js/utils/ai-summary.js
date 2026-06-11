@@ -85,6 +85,3 @@ function summarizeAction(action) {
   return title.toLowerCase();
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { generateAISummary };
-}
