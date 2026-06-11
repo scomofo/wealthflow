@@ -10,6 +10,7 @@ import { renderAISummary } from '../components/ai-summary.js';
 import { generateAISummary } from '../utils/ai-summary.js';
 import { buildDashboardAISummary } from '../utils/dashboard-intelligence.js';
 import { renderProactiveBanner } from '../components/proactive-banner.js';
+import { renderProgressStrip } from '../components/progress-strip.js';
 
 export function setShowAllActions(val) { /* no-op: panel handles its own display */ }
 
@@ -75,6 +76,8 @@ export function renderDashboard(state, F, workflowCtx) {
 
     ${renderFinancialSnapshotBar(state, F)}
 
+    ${renderProgressStrip(state.engagementProgress)}
+
     ${renderNextBestActionsPanel(state.nextBestActions || [])}
 
     <div class="card dashboard-section">
@@ -113,18 +116,6 @@ export function renderDashboard(state, F, workflowCtx) {
         </div>` : ''}
       </div>
     </div>
-
-    ${(() => {
-      const ep = state.engagementProgress;
-      if (!ep || !ep.message) return '';
-      const colors = { strong: 'var(--green)', building: 'var(--accent)', low: 'var(--sub)' };
-      const icons = { strong: 'check-circle', building: 'trending-up', low: 'activity' };
-      const m = ep.momentum || { state: 'low' };
-      return '<div class="card progress-strip" style="display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:14px">'
-        + icon(icons[m.state] || 'activity', 16, colors[m.state] || 'var(--sub)')
-        + '<div style="font-size:12px;color:' + (colors[m.state] || 'var(--sub)') + '">' + ep.message + '</div>'
-        + '</div>';
-    })()}
 
     <div class="grid3" style="margin-top:14px">
       <button class="card" style="text-align:left;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;background:var(--bg-soft);border-color:var(--border-soft)" data-action="import-csv">
