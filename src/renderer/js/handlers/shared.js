@@ -111,7 +111,7 @@ export async function handleSharedAction(action, btn, ctx) {
           await State.addBudget({ id: uid(), category: cat, amount: defaultAmounts[cat] || 300, color: '#6366f1' });
         }
       }
-      try { await State.generateNextBestActions(); } catch (_) { /* non-blocking */ }
+      try { await State.refreshCommandCenterIntelligence('onboarding_completed'); } catch (_) { /* non-blocking */ }
       render();
       return true;
     }
@@ -125,7 +125,7 @@ export async function handleSharedAction(action, btn, ctx) {
       for (const cat of checkedCats2) {
         await State.addBudget({ id: uid(), category: cat, amount: defaultAmounts2[cat] || 300, color: '#6366f1' });
       }
-      try { await State.generateNextBestActions(); } catch (_) { /* non-blocking */ }
+      try { await State.refreshCommandCenterIntelligence('onboarding_completed'); } catch (_) { /* non-blocking */ }
       render();
       return true;
     }

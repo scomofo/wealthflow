@@ -19,6 +19,16 @@ jest.mock('../src/renderer/js/utils/proactive-routing.js', () => ({
 const { handleSharedAction } = require('../src/renderer/js/handlers/shared.js');
 
 describe('handleSharedAction refresh actions', () => {
+  beforeEach(() => {
+    global.document = {
+      querySelectorAll: jest.fn(() => []),
+    };
+  });
+
+  afterEach(() => {
+    delete global.document;
+  });
+
   test('surfaces command center partial refresh errors and still renders', async () => {
     const ctx = {
       State: {
@@ -42,5 +52,48 @@ describe('handleSharedAction refresh actions', () => {
       expect.stringContaining('Some command center intelligence could not refresh'),
       'error',
     );
+  });
+
+  test('refreshes command center intelligence after sample onboarding setup', async () => {
+    const ctx = {
+      State: {
+        updateSettings: jest.fn().mockResolvedValue(),
+        seedSampleData: jest.fn().mockResolvedValue(),
+        getState: jest.fn(() => ({ budgets: [] })),
+        refreshCommandCenterIntelligence: jest.fn().mockResolvedValue({}),
+      },
+      uid: jest.fn(() => 'id-1'),
+      render: jest.fn(),
+      SAMPLE_DATA: { transactions: [] },
+    };
+
+    const handled = await handleSharedAction('start-sample', {}, ctx);
+
+    expect(handled).toBe(true);
+    expect(ctx.State.updateSettings).toHaveBeenCalledWith({ last_wizard_step: 4 });
+    expect(ctx.State.seedSampleData).toHaveBeenCalledWith(ctx.SAMPLE_DATA);
+    expect(ctx.State.refreshCommandCenterIntelligence).toHaveBeenCalledWith('onboarding_completed');
+    expect(ctx.render).toHaveBeenCalledTimes(1);
+  });
+
+  test('refreshes command center intelligence after empty onboarding setup', async () => {
+    const ctx = {
+      State: {
+        updateSettings: jest.fn().mockResolvedValue(),
+        loadAll: jest.fn().mockResolvedValue(),
+        addBudget: jest.fn().mockResolvedValue(),
+        refreshCommandCenterIntelligence: jest.fn().mockResolvedValue({}),
+      },
+      uid: jest.fn(() => 'id-1'),
+      render: jest.fn(),
+    };
+
+    const handled = await handleSharedAction('start-empty', {}, ctx);
+
+    expect(handled).toBe(true);
+    expect(ctx.State.updateSettings).toHaveBeenCalledWith({ last_wizard_step: 4 });
+    expect(ctx.State.loadAll).toHaveBeenCalledTimes(1);
+    expect(ctx.State.refreshCommandCenterIntelligence).toHaveBeenCalledWith('onboarding_completed');
+    expect(ctx.render).toHaveBeenCalledTimes(1);
   });
 });
