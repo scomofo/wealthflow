@@ -64,4 +64,33 @@ describe('WealthFlowDatabase onboarding settings', () => {
     expect(financials.totalSaved).toBe(1500);
     expect(financials.savingsRate).toBe(36);
   });
+
+  test('uses real zero totals instead of onboarding fallback when rows exist', () => {
+    database.updateSettings({
+      monthly_income: 5000,
+      monthly_expenses: 3200,
+      total_debt: 12000,
+      savings_buffer: 1500,
+    });
+    database.run(
+      'INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
+      ['tx-zero-income', 'Groceries', -200, 'Food', '2026-06-11']
+    );
+    database.run(
+      'INSERT INTO debts (id, name, balance, rate, min_payment, type) VALUES (?, ?, ?, ?, ?, ?)',
+      ['debt-zero', 'Paid debt', 0, 19.99, 0, 'credit_card']
+    );
+    database.run(
+      'INSERT INTO goals (id, name, target, current) VALUES (?, ?, ?, ?)',
+      ['goal-zero', 'Emergency fund', 1000, 0]
+    );
+
+    const financials = database.computeFinancials();
+
+    expect(financials.income).toBe(0);
+    expect(financials.expenses).toBe(200);
+    expect(financials.totalDebt).toBe(0);
+    expect(financials.totalSaved).toBe(0);
+    expect(financials.savingsRate).toBe(0);
+  });
 });

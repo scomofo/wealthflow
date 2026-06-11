@@ -7,6 +7,10 @@ module.exports = {
       .replace(/import\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"];?/g, (_, names, path) => {
         return 'const {' + names.trim() + "} = require('" + path + "');";
       })
+      .replace(/export\s+async\s+function\s+(\w+)/g, (_, name) => {
+        exports.push(name);
+        return 'async function ' + name;
+      })
       .replace(/export\s+function\s+(\w+)/g, (_, name) => {
         exports.push(name);
         return 'function ' + name;

@@ -1,4 +1,6 @@
 // Plan domain: monthly reports, recommended actions, workflows, export/import, AI categorize
+import { getIntelligenceRefreshPlan } from '../utils/intelligence-refresh.js';
+
 let state, api;
 export function initPlan(s, a) { state = s; api = a; }
 
@@ -126,6 +128,64 @@ export async function loadPersonalizationContext() {
 export async function evaluateProactiveNudges() {
   state.proactiveNudges = await api.evaluateProactiveNudges();
   return state.proactiveNudges;
+}
+
+function getRefreshApiMethod(methodName) {
+  if (!api || typeof api[methodName] !== 'function') {
+    throw new Error(`api.${methodName} is not available`);
+  }
+  return api[methodName].bind(api);
+}
+
+function toRefreshError(step, error) {
+  return {
+    step,
+    message: error?.message || String(error),
+  };
+}
+
+async function runRefreshStep(step, errors, refresh) {
+  try {
+    await refresh();
+  } catch (error) {
+    errors.push(toRefreshError(step, error));
+  }
+}
+
+export async function refreshCommandCenterIntelligence(reason = 'manual') {
+  const plan = getIntelligenceRefreshPlan(reason);
+  const errors = [];
+
+  if (plan.includes('nextBestActions')) {
+    await runRefreshStep('nextBestActions', errors, async () => {
+      state.nextBestActions = await getRefreshApiMethod('generateNextBestActions')();
+    });
+  }
+  if (plan.includes('personalization')) {
+    await runRefreshStep('personalization', errors, async () => {
+      await loadPersonalizationContext();
+    });
+  }
+  if (plan.includes('proactiveNudges')) {
+    await runRefreshStep('proactiveNudges', errors, async () => {
+      state.proactiveNudges = await getRefreshApiMethod('evaluateProactiveNudges')();
+    });
+  }
+  if (plan.includes('engagementProgress')) {
+    await runRefreshStep('engagementProgress', errors, async () => {
+      state.engagementProgress = await getRefreshApiMethod('getEngagementProgress')();
+    });
+  }
+
+  state.lastIntelligenceRefresh = {
+    reason,
+    refreshed_at: new Date().toISOString(),
+    plan,
+  };
+  if (errors.length > 0) {
+    state.lastIntelligenceRefresh.errors = errors;
+  }
+  return state.lastIntelligenceRefresh;
 }
 
 // Engagement

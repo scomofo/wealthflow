@@ -1,5 +1,6 @@
 import { icon } from '../icons.js';
 import { h } from '../helpers.js';
+import { buildActionBecause } from '../utils/action-reasoning.js';
 
 function priorityMeta(priority) {
   switch ((priority || '').toLowerCase()) {
@@ -11,7 +12,7 @@ function priorityMeta(priority) {
 }
 
 export function renderNextBestActionsPanel(actions = [], options = {}) {
-  const { loading = false, stale = false } = options;
+  const { loading = false, stale = false, financials = {} } = options;
   const visible = (actions || []).slice(0, 3);
 
   const header = `
@@ -42,6 +43,7 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
   const cards = visible.map(a => {
     const meta = priorityMeta(a.priority);
     const rationale = a.rationale || a.description || '';
+    const because = buildActionBecause(a, financials);
     return `
       <div class="card action-card" style="margin-bottom:10px">
         <div class="nba-row">
@@ -52,6 +54,7 @@ export function renderNextBestActionsPanel(actions = [], options = {}) {
             <div class="nba-copy">
               <div style="font-size:14px;font-weight:700;line-height:1.4">${h(a.title || 'Recommended action')}</div>
               ${rationale ? `<div class="nba-rationale">${h(rationale)}</div>` : ''}
+              ${because ? `<div class="nba-because">${h(because)}</div>` : ''}
               ${a.impact_text ? `<div class="nba-impact"><span class="nba-impact-label">Impact:</span> ${h(a.impact_text)}</div>` : ''}
             </div>
           </div>

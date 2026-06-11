@@ -99,22 +99,30 @@ class PersonalizationEngine {
       delta = Math.max(-5, Math.min(10, delta));
 
       return { ...a, score: a.score + delta, personalizedDelta: delta };
-    }).sort((a, b) => b.score - a.score);
+    }).sort((a, b) => {
+      const aUrgent = (a.priority || '').toLowerCase() === 'urgent';
+      const bUrgent = (b.priority || '').toLowerCase() === 'urgent';
+
+      if (aUrgent && !bUrgent) return -1;
+      if (!aUrgent && bUrgent) return 1;
+      return b.score - a.score;
+    });
   }
 
   // Choose summary emphasis based on profile and financial state
   chooseSummaryEmphasis(profile, financials) {
-    // Financial state signals take priority over behavior
     const f = financials || {};
-    const highDebt = (f.totalDebt || 0) > 10000;
+    const totalDebt = f.totalDebt || 0;
+    const highDebt = totalDebt > 10000;
+    const materialDebt = totalDebt > 25000;
     const lowCashflow = (f.savingsRate || 0) < 10;
     const strongCashflow = (f.savingsRate || 0) > 25;
 
+    if (materialDebt) return 'debt_reduction';
     if (highDebt && lowCashflow) return 'debt_reduction';
     if (strongCashflow) return 'savings_growth';
     if (lowCashflow) return 'cashflow_improvement';
 
-    // Fall back to behavior-based
     if (profile.primaryFocus === 'debt') return 'debt_reduction';
     if (profile.primaryFocus === 'investing') return 'savings_growth';
     if (profile.primaryFocus === 'budget') return 'spending_control';

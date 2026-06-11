@@ -1,12 +1,14 @@
 import { icon } from '../icons.js';
 import { h } from '../helpers.js';
 import { getFocusStepsForAction } from '../utils/focus-steps.js';
+import { buildActionBecause } from '../utils/action-reasoning.js';
 
 export function renderFocusMode(action, personalizationProfile = {}, options = {}) {
   const rationale = action.rationale || action.description || '';
   const steps = getFocusStepsForAction(action, personalizationProfile);
   const completionFeedback = options.completionFeedback || null;
   const nextAction = options.nextAction || null;
+  const because = options.because || buildActionBecause(action, options.financials || {});
 
   return `
     <div class="focus-mode">
@@ -16,6 +18,13 @@ export function renderFocusMode(action, personalizationProfile = {}, options = {
         <span class="priority-pill priority-${(action.priority || 'medium').toLowerCase()}">${action.priority || 'Medium'}</span>
       </div>
       <div class="focus-mode-subtitle">One clear next step</div>
+
+      ${because ? `
+      <div class="focus-mode-reason">
+        <div class="focus-mode-reason-label">Because</div>
+        <div>${h(because.replace(/^Because\s+/i, ''))}</div>
+      </div>
+      ` : ''}
 
       ${completionFeedback ? `
       <div class="focus-mode-complete">
