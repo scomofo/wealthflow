@@ -1212,4 +1212,3 @@ Plan complete and saved to `docs/superpowers/plans/2026-06-11-intelligent-comman
 **1. Subagent-Driven (recommended)** - Dispatch a fresh subagent per task, review between tasks, fast iteration.
 
 **2. Inline Execution** - Execute tasks in this session using executing-plans, with checkpoints after each task group.
-

@@ -84,4 +84,3 @@ function summarizeAction(action) {
   if (cat === 'planning') return 'completing your financial profile';
   return title.toLowerCase();
 }
-
