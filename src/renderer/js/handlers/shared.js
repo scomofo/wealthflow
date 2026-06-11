@@ -278,7 +278,7 @@ export async function handleSharedAction(action, btn, ctx) {
     case 'generate-next-best-actions': {
       ctx.showToast('Refreshing actions...', 'info');
       try {
-        await ctx.State.generateNextBestActions();
+        await ctx.State.refreshCommandCenterIntelligence('manual');
         ctx.render();
       } catch (err) {
         ctx.showToast('Failed to refresh: ' + err.message, 'error');
