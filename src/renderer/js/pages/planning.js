@@ -1,9 +1,12 @@
 // Financial Planning & Forecasting Page
-import { fmt } from '../helpers.js';
+import { fmt, h } from '../helpers.js';
 import { estimateCPPBenefit, estimateOASBenefit, optimizeRRSPvsTFSA, calculateSmithManoeuvre } from '../canadian/calculators.js';
+import { CATEGORIES } from '../canadian/constants.js';
+import { renderDecisionCard } from '../components/ai-decision-card.js';
 import { stat } from '../components/stat-card.js';
 import { progress } from '../components/progress-bar.js';
 import { icon } from '../icons.js';
+import { evaluateAffordability } from '../utils/affordability.js';
 
 let planInputs = {
   // Debt payoff
@@ -43,14 +46,57 @@ let planInputs = {
   smith_years: 25,
   // CPP enhancements
   cpp_child_rearing_years: 0,
+  // Affordability check
+  affordabilityName: '',
+  affordabilityAmount: '',
+  affordabilityFrequency: 'one_time',
+  affordabilityCategory: 'Other',
+  affordabilityTiming: 'now',
 };
 
+let affordabilityResult = null;
+
+const AFFORDABILITY_SELECT_FIELDS = new Set([
+  'affordabilityFrequency',
+  'affordabilityCategory',
+  'affordabilityTiming',
+]);
+
+const AFFORDABILITY_TEXT_FIELDS = new Set([
+  'affordabilityName',
+  'affordabilityAmount',
+]);
+
 export function updatePlanInput(field, value) {
-  if (field === 'mortgage_frequency') {
+  if (
+    field === 'mortgage_frequency' ||
+    AFFORDABILITY_SELECT_FIELDS.has(field) ||
+    AFFORDABILITY_TEXT_FIELDS.has(field)
+  ) {
     planInputs[field] = value;
   } else {
     planInputs[field] = parseFloat(value) || 0;
   }
+
+  if (field?.startsWith('affordability')) {
+    affordabilityResult = null;
+  }
+}
+
+export function runAffordabilityCheck(state, financials) {
+  affordabilityResult = evaluateAffordability({
+    purchase: {
+      name: planInputs.affordabilityName,
+      amount: planInputs.affordabilityAmount,
+      frequency: planInputs.affordabilityFrequency,
+      category: planInputs.affordabilityCategory,
+      timing: planInputs.affordabilityTiming,
+    },
+    financials,
+    state,
+  });
+
+  return affordabilityResult;
 }
 
 export function renderPlanning(state) {
@@ -70,6 +116,7 @@ export function renderPlanning(state) {
         ${icon('lightbulb', 14)} Decide: Debt vs Investing
       </button>
     </div>
+    ${renderAffordabilityCard()}
     <div class="grid2">
       <div class="card">
         <div style="font-weight:600;font-size:14px;margin-bottom:14px">${icon('credit-card', 16)} Debt Payoff Simulator</div>
@@ -115,6 +162,69 @@ export function renderPlanning(state) {
         <div style="font-weight:600;font-size:14px;margin-bottom:14px">${icon('home', 16)} Smith Manoeuvre</div>
         ${renderSmithManoeuvre()}
       </div>
+    </div>`;
+}
+
+function renderAffordabilityCard() {
+  const {
+    affordabilityName,
+    affordabilityAmount,
+    affordabilityFrequency,
+    affordabilityCategory,
+    affordabilityTiming,
+  } = planInputs;
+
+  const categoryOptions = CATEGORIES.map(category => `
+    <option value="${h(category)}" ${affordabilityCategory === category ? 'selected' : ''}>${h(category)}</option>
+  `).join('');
+
+  return `
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px">
+        <div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:3px">${icon('shopping-bag', 16)} Can I afford this?</div>
+          <div style="font-size:12px;color:var(--sub)">Check a purchase against your cashflow and buffer before committing.</div>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--accent)14;color:var(--accent);white-space:nowrap">Decision</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px">
+        <div>
+          <div class="input-label">Purchase</div>
+          <input class="input-field plan-input" data-field="affordabilityName" type="text" value="${h(affordabilityName)}" placeholder="New laptop">
+        </div>
+        <div>
+          <div class="input-label">Amount</div>
+          <input class="input-field plan-input" data-field="affordabilityAmount" type="number" value="${h(affordabilityAmount)}" min="0" step="25" placeholder="1200">
+        </div>
+        <div>
+          <div class="input-label">Frequency</div>
+          <select class="input-field plan-input" data-field="affordabilityFrequency">
+            <option value="one_time" ${affordabilityFrequency === 'one_time' ? 'selected' : ''}>One-time</option>
+            <option value="monthly" ${affordabilityFrequency === 'monthly' ? 'selected' : ''}>Monthly</option>
+          </select>
+        </div>
+        <div>
+          <div class="input-label">Category</div>
+          <select class="input-field plan-input" data-field="affordabilityCategory">
+            ${categoryOptions}
+          </select>
+        </div>
+        <div>
+          <div class="input-label">Timing</div>
+          <select class="input-field plan-input" data-field="affordabilityTiming">
+            <option value="now" ${affordabilityTiming === 'now' ? 'selected' : ''}>Now</option>
+            <option value="this_month" ${affordabilityTiming === 'this_month' ? 'selected' : ''}>This month</option>
+            <option value="next_month" ${affordabilityTiming === 'next_month' ? 'selected' : ''}>Next month</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:${affordabilityResult ? '12px' : '0'}">
+        <button class="btn btn-primary" data-action="run-affordability-check">
+          ${icon('check-circle', 14)} Check affordability
+        </button>
+        <div style="font-size:11px;color:var(--sub)">Uses your current income, expenses, savings, and debt.</div>
+      </div>
+      ${affordabilityResult ? renderDecisionCard(affordabilityResult) : ''}
     </div>`;
 }
 
