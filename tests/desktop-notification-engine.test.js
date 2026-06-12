@@ -3,6 +3,11 @@ const {
 } = require('../src/main/desktop-notification-engine');
 
 const BASE_NOW = new Date('2026-06-12T15:00:00.000Z');
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function isoMsBefore(now, ms) {
+  return new Date(now.getTime() - ms).toISOString();
+}
 
 function makeLocalClockWithUtcMonthRollover() {
   return {
@@ -93,13 +98,14 @@ describe('DesktopNotificationEngine', () => {
       'WealthFlow: Action needed',
       'Reduce Food spending by $160 this month'
     );
+    expect(notifier.show).toHaveBeenCalledTimes(1);
     expect(
       db.profile.desktop_notifications_shown['nba:budget_overrun_food_2026_06']
     ).toBe('2026-06-12T15:00:00.000Z');
   });
 
   test('skips inactive and low-value next best actions before falling back to bills', () => {
-    const { result } = send({
+    const { result, notifier } = send({
       nextBestActions: [
         { status: 'done', priority: 'urgent', score: 100, title: 'Done action' },
         {
@@ -138,6 +144,7 @@ describe('DesktopNotificationEngine', () => {
       body: '1 bill(s) due: Rent',
       reason: 'bills_due_soon',
     });
+    expect(notifier.show).toHaveBeenCalledTimes(1);
   });
 
   test('sends high-priority saved recommendation when no stronger candidate exists', () => {
@@ -260,8 +267,34 @@ describe('DesktopNotificationEngine', () => {
     expect(notifier.show).not.toHaveBeenCalled();
   });
 
+  test('does not record cooldown when notification delivery fails', () => {
+    const { result, db, notifier } = send({
+      notifier: {
+        show: () => {
+          throw new Error('notification failed');
+        },
+      },
+      nextBestActions: [
+        {
+          status: 'open',
+          priority: 'urgent',
+          title: 'Take urgent action',
+          action_key: 'urgent_action',
+        },
+      ],
+    });
+
+    expect(result).toEqual({
+      sent: false,
+      reason: 'notification_failed',
+      error: 'notification failed',
+    });
+    expect(notifier.show).toHaveBeenCalledTimes(1);
+    expect(db.updatePersonalizationProfile).not.toHaveBeenCalled();
+  });
+
   test('skips cooled-down candidate and sends next eligible candidate', () => {
-    const { result } = send({
+    const { result, notifier } = send({
       profile: {
         desktop_notifications_shown: {
           'nba:urgent_action': '2026-06-12T14:30:00.000Z',
@@ -290,6 +323,7 @@ describe('DesktopNotificationEngine', () => {
       key: 'saved:saved-1',
       reason: 'saved_recommendation',
     });
+    expect(notifier.show).toHaveBeenCalledTimes(1);
   });
 
   test('returns cooldown when every candidate is inside cooldown', () => {
@@ -310,6 +344,99 @@ describe('DesktopNotificationEngine', () => {
     });
 
     expect(result).toEqual({ sent: false, reason: 'cooldown' });
+  });
+
+  test('enforces bills due soon 24 hour cooldown boundary', () => {
+    const justInside = send({
+      profile: {
+        desktop_notifications_shown: {
+          bills_due_soon: isoMsBefore(BASE_NOW, DAY_MS - 1),
+        },
+      },
+      bills: [{ title: 'Rent' }],
+    });
+    const justOutside = send({
+      profile: {
+        desktop_notifications_shown: {
+          bills_due_soon: isoMsBefore(BASE_NOW, DAY_MS + 1),
+        },
+      },
+      bills: [{ title: 'Rent' }],
+    });
+
+    expect(justInside.result).toEqual({ sent: false, reason: 'cooldown' });
+    expect(justInside.notifier.show).not.toHaveBeenCalled();
+    expect(justOutside.result).toMatchObject({
+      sent: true,
+      key: 'bills_due_soon',
+      reason: 'bills_due_soon',
+    });
+    expect(justOutside.notifier.show).toHaveBeenCalledTimes(1);
+  });
+
+  test('enforces saved recommendation 72 hour cooldown boundary', () => {
+    const savedActions = [
+      {
+        id: 'saved-1',
+        status: 'pending',
+        priority: 'high',
+        title: 'Review your TFSA contribution plan',
+      },
+    ];
+    const justInside = send({
+      profile: {
+        desktop_notifications_shown: {
+          'saved:saved-1': isoMsBefore(BASE_NOW, 3 * DAY_MS - 1),
+        },
+      },
+      savedActions,
+    });
+    const justOutside = send({
+      profile: {
+        desktop_notifications_shown: {
+          'saved:saved-1': isoMsBefore(BASE_NOW, 3 * DAY_MS + 1),
+        },
+      },
+      savedActions,
+    });
+
+    expect(justInside.result).toEqual({ sent: false, reason: 'cooldown' });
+    expect(justInside.notifier.show).not.toHaveBeenCalled();
+    expect(justOutside.result).toMatchObject({
+      sent: true,
+      key: 'saved:saved-1',
+      reason: 'saved_recommendation',
+    });
+    expect(justOutside.notifier.show).toHaveBeenCalledTimes(1);
+  });
+
+  test('enforces month-end review 7 day cooldown boundary', () => {
+    const now = new Date('2026-06-30T15:00:00.000Z');
+    const justInside = send({
+      now,
+      profile: {
+        desktop_notifications_shown: {
+          'month_end_review:2026-06': isoMsBefore(now, 7 * DAY_MS - 1),
+        },
+      },
+    });
+    const justOutside = send({
+      now,
+      profile: {
+        desktop_notifications_shown: {
+          'month_end_review:2026-06': isoMsBefore(now, 7 * DAY_MS + 1),
+        },
+      },
+    });
+
+    expect(justInside.result).toEqual({ sent: false, reason: 'cooldown' });
+    expect(justInside.notifier.show).not.toHaveBeenCalled();
+    expect(justOutside.result).toMatchObject({
+      sent: true,
+      key: 'month_end_review:2026-06',
+      reason: 'month_end_review',
+    });
+    expect(justOutside.notifier.show).toHaveBeenCalledTimes(1);
   });
 
   test('returns sent when cooldown recording fails after notification delivery', () => {
