@@ -9,11 +9,21 @@
 import { exportJSON, exportCSV, importFile, applyImport, applyHoldingsImport, checkDuplicates, aiCategorizeImport, saveImportHistory, exportPDF, reconcileAfterImport } from '../utils/export-import.js';
 import { exportToQIF } from '../utils/qif-export.js';
 import { renderImportModal } from '../components/import-modal.js';
+import { runAffordabilityCheck } from '../pages/planning.js';
 
 export async function handlePlanAction(action, btn, ctx) {
-  const { State, render, showToast, uid, appState, getSection, fmt } = ctx;
+  const { State, render, showToast, appState } = ctx;
 
   switch (action) {
+    case 'run-affordability-check': {
+      const financials = await State.computeFinancials();
+      const result = runAffordabilityCheck(State.getState(), financials);
+      appState.activeWorkflowResult = result;
+      showToast('Affordability checked', 'success');
+      render();
+      return true;
+    }
+
     case 'generate-monthly-report': {
       try {
         showToast('Generating monthly report...', 'info');
