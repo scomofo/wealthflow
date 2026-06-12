@@ -835,3 +835,35 @@ Prepare the final handoff with:
 - The full Jest result.
 - Touched-file ESLint result.
 - A note that `AGENTS.md` was left untouched if it remains untracked.
+
+---
+
+### Task 7: Preserve Saved Zero Estimates In Onboarding UI
+
+**Files:**
+- Modify: `src/renderer/js/components/onboarding-stepper.js`
+- Test: `tests/onboarding-stepper.test.js`
+
+- [ ] **Step 1: Add component regression tests**
+
+Add tests proving saved zero estimates render as `0` when onboarding profile context exists, while untouched default zero estimates stay visually blank.
+
+- [ ] **Step 2: Implement an explicit numeric display helper**
+
+Add a helper that returns `''` for default zero settings with no onboarding profile signal, but returns `'0'` for real saved zeroes once focus, non-starter confidence, completion, or onboarded context exists.
+
+- [ ] **Step 3: Run verification**
+
+Run:
+
+```powershell
+npm test -- tests/onboarding-stepper.test.js
+npm test -- tests/database-settings.test.js tests/onboarding-utils.test.js tests/shared-action-refresh.test.js tests/onboarding-stepper.test.js
+```
+
+- [ ] **Step 4: Commit**
+
+```powershell
+git add src/renderer/js/components/onboarding-stepper.js tests/onboarding-stepper.test.js docs/superpowers/plans/2026-06-11-guided-onboarding-profile-v1.md
+git commit -m "Preserve saved onboarding zero estimates"
+```

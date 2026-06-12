@@ -30,6 +30,22 @@ function logoBlock() {
   return `<div class="side-logo" style="width:52px;height:52px;border-radius:12px;font-size:22px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">W</div>`;
 }
 
+function hasOnboardingProfileSignal(settings) {
+  return Boolean(
+    settings?.onboarding_focus ||
+    settings?.onboarding_completed_at ||
+    settings?.onboarded ||
+    (settings?.onboarding_confidence && settings.onboarding_confidence !== 'starter')
+  );
+}
+
+function onboardingNumberValue(settings, field) {
+  const value = settings?.[field];
+  if (value === undefined || value === null || value === '') return '';
+  if (Number(value) === 0 && !hasOnboardingProfileSignal(settings)) return '';
+  return String(value);
+}
+
 function renderStep0() {
   return `
     <div style="text-align:center">
@@ -61,6 +77,10 @@ function renderStep1(settings) {
     `<option value="${p.code}" ${(settings?.province || 'AB') === p.code ? 'selected' : ''}>${p.name}</option>`
   ).join('');
   const selectedFocus = settings?.onboarding_focus || '';
+  const monthlyIncomeValue = onboardingNumberValue(settings, 'monthly_income');
+  const monthlyExpensesValue = onboardingNumberValue(settings, 'monthly_expenses');
+  const totalDebtValue = onboardingNumberValue(settings, 'total_debt');
+  const savingsBufferValue = onboardingNumberValue(settings, 'savings_buffer');
   const focusOptions = ONBOARDING_FOCUS_OPTIONS.map(option => `
     <label style="display:flex;align-items:center;gap:7px;padding:8px;border:1px solid ${selectedFocus === option.value ? 'var(--accent)' : 'var(--border)'};border-radius:6px;cursor:pointer;background:${selectedFocus === option.value ? 'var(--abg)' : 'transparent'}">
       <input type="radio" name="ob-focus" value="${h(option.value)}" ${selectedFocus === option.value ? 'checked' : ''} style="margin:0">
@@ -84,23 +104,23 @@ function renderStep1(settings) {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
             <div class="input-label">Monthly Income</div>
-            <input class="input-field" id="ob-income" type="number" placeholder="e.g. 5000" value="${h(String(settings?.monthly_income || ''))}" min="0">
+            <input class="input-field" id="ob-income" type="number" placeholder="e.g. 5000" value="${h(monthlyIncomeValue)}" min="0">
             <div style="font-size:10px;color:var(--muted);margin-top:2px">Use your after-tax monthly take-home if possible</div>
           </div>
           <div>
             <div class="input-label">Major Monthly Expenses</div>
-            <input class="input-field" id="ob-expenses" type="number" placeholder="e.g. 3000" value="${h(String(settings?.monthly_expenses || ''))}" min="0">
+            <input class="input-field" id="ob-expenses" type="number" placeholder="e.g. 3000" value="${h(monthlyExpensesValue)}" min="0">
             <div style="font-size:10px;color:var(--muted);margin-top:2px">A rough estimate is fine</div>
           </div>
         </div>
         <div>
           <div class="input-label">Total Debt <span style="color:var(--sub);font-weight:400">(optional)</span></div>
-          <input class="input-field" id="ob-debt" type="number" placeholder="e.g. 15000" value="${h(String(settings?.total_debt || ''))}" min="0">
+          <input class="input-field" id="ob-debt" type="number" placeholder="e.g. 15000" value="${h(totalDebtValue)}" min="0">
           <div style="font-size:10px;color:var(--muted);margin-top:2px">Optional — helps with payoff guidance</div>
         </div>
         <div style="margin-bottom:10px">
           <div class="input-label">Savings / Cash Buffer</div>
-          <input class="input-field" id="ob-savings" type="number" placeholder="e.g. 3000" value="${h(String(settings?.savings_buffer || ''))}" min="0">
+          <input class="input-field" id="ob-savings" type="number" placeholder="e.g. 3000" value="${h(savingsBufferValue)}" min="0">
           <div style="font-size:10px;color:var(--muted);margin-top:2px">Optional — useful for emergency fund decisions</div>
         </div>
         <div>
@@ -126,7 +146,7 @@ function renderStep1(settings) {
     </div>`;
 }
 
-function renderStep2(settings) {
+function renderStep2() {
   const cats = CATEGORIES.filter(c =>
     c !== 'Income' && c !== 'Investment Income' && c !== 'Government Benefits' && c !== 'GST/HST'
   );
