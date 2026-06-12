@@ -4,7 +4,11 @@
 import { icon } from '../icons.js';
 import { h } from '../helpers.js';
 import { PROVINCES, CATEGORIES } from '../canadian/constants.js';
-import { selectOnboardingActions } from '../utils/onboarding.js';
+import {
+  getOnboardingConfidenceSummary,
+  ONBOARDING_FOCUS_OPTIONS,
+  selectOnboardingActions,
+} from '../utils/onboarding.js';
 
 const OB_DEFAULT_BUDGETS = ['Food/Groceries', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Housing'];
 
@@ -56,6 +60,13 @@ function renderStep1(settings) {
   const provOptions = PROVINCES.map(p =>
     `<option value="${p.code}" ${(settings?.province || 'AB') === p.code ? 'selected' : ''}>${p.name}</option>`
   ).join('');
+  const selectedFocus = settings?.onboarding_focus || '';
+  const focusOptions = ONBOARDING_FOCUS_OPTIONS.map(option => `
+    <label style="display:flex;align-items:center;gap:7px;padding:8px;border:1px solid ${selectedFocus === option.value ? 'var(--accent)' : 'var(--border)'};border-radius:6px;cursor:pointer;background:${selectedFocus === option.value ? 'var(--abg)' : 'transparent'}">
+      <input type="radio" name="ob-focus" value="${h(option.value)}" ${selectedFocus === option.value ? 'checked' : ''} style="margin:0">
+      <span style="font-size:12px;line-height:1.25">${h(option.label)}</span>
+    </label>
+  `).join('');
 
   return `
     <div>
@@ -91,6 +102,12 @@ function renderStep1(settings) {
           <div class="input-label">Savings / Cash Buffer</div>
           <input class="input-field" id="ob-savings" type="number" placeholder="e.g. 3000" value="${h(String(settings?.savings_buffer || ''))}" min="0">
           <div style="font-size:10px;color:var(--muted);margin-top:2px">Optional — useful for emergency fund decisions</div>
+        </div>
+        <div>
+          <div class="input-label">What should WealthFlow help with first?</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            ${focusOptions}
+          </div>
         </div>
         <div>
           <div class="input-label">Claude API Key <span style="color:var(--sub);font-weight:400">(optional)</span></div>
@@ -156,6 +173,7 @@ function renderStep3() {
 
 function renderStep4(state) {
   const displayActions = selectOnboardingActions(state);
+  const confidence = getOnboardingConfidenceSummary(state?.settings || {});
 
   const actionCards = displayActions.map((a, i) => `
     <div class="onboard-value-card${i === 0 ? ' onboard-highlight' : ''}" style="display:flex;align-items:flex-start;gap:10px">
@@ -171,8 +189,11 @@ function renderStep4(state) {
   return `
     <div style="text-align:center">
       <div style="font-size:17px;font-weight:700;margin-bottom:4px">Here are your top priorities right now</div>
-      <div style="font-size:12px;color:var(--sub);margin-top:6px;margin-bottom:16px">
-        We generated these from the information you just entered
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:11px;color:var(--accent);font-weight:700;margin:4px 0 8px">
+        ${h(confidence.label)} profile
+      </div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:16px">
+        ${h(confidence.explanation)}
       </div>
       <div style="text-align:left;margin-bottom:20px">
         ${actionCards}
