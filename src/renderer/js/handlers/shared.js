@@ -13,6 +13,21 @@ import {
   getNextActionAfterCompletion,
 } from '../utils/action-momentum.js';
 import { findRelatedActionForNudge, getNudgeFallbackRoute } from '../utils/proactive-routing.js';
+import {
+  calculateOnboardingConfidence,
+  normalizeOnboardingFocus,
+} from '../utils/onboarding.js';
+
+function readOnboardingInput(id) {
+  return document.getElementById(id)?.value ?? '';
+}
+
+function readNonNegativeNumber(value) {
+  const trimmed = String(value ?? '').trim();
+  if (trimmed === '') return null;
+  const numeric = Number(trimmed);
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : null;
+}
 
 export async function handleSharedAction(action, btn, ctx) {
   const { State, render, showToast, showActionToast, uid, appState, navigate, getSection,
@@ -64,18 +79,39 @@ export async function handleSharedAction(action, btn, ctx) {
       const updates = {};
       if (obStep === 1) {
         // Quick Financial Setup — save all fields from single screen
-        const name = document.getElementById('ob-name')?.value?.trim();
+        const name = readOnboardingInput('ob-name').trim();
         updates.user_name = name || s.user_name || 'User';
-        updates.province = document.getElementById('ob-province')?.value || 'AB';
-        const income = document.getElementById('ob-income')?.value;
-        if (income && +income > 0) updates.monthly_income = +income;
-        const expenses = document.getElementById('ob-expenses')?.value;
-        if (expenses && +expenses > 0) updates.monthly_expenses = +expenses;
-        const debt = document.getElementById('ob-debt')?.value;
-        if (debt && +debt > 0) updates.total_debt = +debt;
-        const savings = document.getElementById('ob-savings')?.value;
-        if (savings && +savings >= 0) updates.savings_buffer = +savings;
-        const key = document.getElementById('ob-api-key')?.value?.trim();
+        updates.province = readOnboardingInput('ob-province') || 'AB';
+
+        const income = readOnboardingInput('ob-income');
+        const parsedIncome = readNonNegativeNumber(income);
+        if (parsedIncome !== null) updates.monthly_income = parsedIncome;
+
+        const expenses = readOnboardingInput('ob-expenses');
+        const parsedExpenses = readNonNegativeNumber(expenses);
+        if (parsedExpenses !== null) updates.monthly_expenses = parsedExpenses;
+
+        const debt = readOnboardingInput('ob-debt');
+        const parsedDebt = readNonNegativeNumber(debt);
+        if (parsedDebt !== null) updates.total_debt = parsedDebt;
+
+        const savings = readOnboardingInput('ob-savings');
+        const parsedSavings = readNonNegativeNumber(savings);
+        if (parsedSavings !== null) updates.savings_buffer = parsedSavings;
+
+        const focus = normalizeOnboardingFocus(
+          document.querySelector?.('input[name="ob-focus"]:checked')?.value
+        );
+        updates.onboarding_focus = focus;
+        updates.onboarding_confidence = calculateOnboardingConfidence({
+          onboarding_focus: focus,
+          monthly_income: parsedIncome,
+          monthly_expenses: parsedExpenses,
+          total_debt: parsedDebt,
+          savings_buffer: parsedSavings,
+        });
+
+        const key = readOnboardingInput('ob-api-key').trim();
         if (key) updates.ai_api_key = key;
       }
       // Step 2 (budget categories) is saved by start-sample / start-empty
@@ -94,7 +130,10 @@ export async function handleSharedAction(action, btn, ctx) {
     }
 
     case 'ob-complete': {
-      await State.updateSettings({ onboarded: true });
+      await State.updateSettings({
+        onboarded: true,
+        onboarding_completed_at: new Date().toISOString(),
+      });
       render();
       return true;
     }
