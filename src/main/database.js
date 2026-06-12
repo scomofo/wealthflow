@@ -154,6 +154,7 @@ class WealthFlowDatabase {
       require('./migrations/010-next-best-actions'),
       require('./migrations/011-personalization'),
       require('./migrations/012-onboarding-settings'),
+      require('./migrations/013-guided-onboarding-profile'),
     ];
 
     for (const migration of migrations) {
@@ -193,6 +194,9 @@ class WealthFlowDatabase {
         total_debt: 0,
         savings_buffer: 0,
         first_action_completed: false,
+        onboarding_focus: null,
+        onboarding_confidence: 'starter',
+        onboarding_completed_at: null,
       };
     }
     const settings = {
@@ -203,13 +207,16 @@ class WealthFlowDatabase {
       first_action_completed: !!row.first_action_completed,
     };
     settings.ai_api_key = this._decryptApiKey(settings.ai_api_key);
+    settings.onboarding_focus = settings.onboarding_focus || null;
+    settings.onboarding_confidence = settings.onboarding_confidence || 'starter';
+    settings.onboarding_completed_at = settings.onboarding_completed_at || null;
     return settings;
   }
 
   updateSettings(data) {
     const current = this.getSettings();
     this.run(
-      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, updated_at = datetime('now') WHERE id = 1`,
+      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, onboarding_focus = ?, onboarding_confidence = ?, onboarding_completed_at = ?, updated_at = datetime('now') WHERE id = 1`,
       [
         data.user_name ?? current.user_name,
         (data.dark_mode !== undefined ? (data.dark_mode ? 1 : 0) : (current.dark_mode ? 1 : 0)),
@@ -226,6 +233,9 @@ class WealthFlowDatabase {
         data.total_debt ?? current.total_debt ?? 0,
         data.savings_buffer ?? current.savings_buffer ?? 0,
         (data.first_action_completed !== undefined ? (data.first_action_completed ? 1 : 0) : (current.first_action_completed ? 1 : 0)),
+        data.onboarding_focus !== undefined ? data.onboarding_focus : current.onboarding_focus,
+        data.onboarding_confidence ?? current.onboarding_confidence ?? 'starter',
+        data.onboarding_completed_at !== undefined ? data.onboarding_completed_at : current.onboarding_completed_at,
       ]
     );
     return this.getSettings();

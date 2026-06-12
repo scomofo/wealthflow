@@ -48,6 +48,43 @@ describe('WealthFlowDatabase onboarding settings', () => {
     expect(settings.first_action_completed).toBe(true);
   });
 
+  test('persists guided onboarding profile fields', () => {
+    database.updateSettings({
+      onboarding_focus: 'build_savings',
+      onboarding_confidence: 'high',
+      onboarding_completed_at: '2026-06-11T18:00:00.000Z',
+    });
+
+    const settings = database.getSettings();
+
+    expect(settings.onboarding_focus).toBe('build_savings');
+    expect(settings.onboarding_confidence).toBe('high');
+    expect(settings.onboarding_completed_at).toBe('2026-06-11T18:00:00.000Z');
+  });
+
+  test('persists explicit zero onboarding estimates', () => {
+    database.updateSettings({
+      monthly_income: 5000,
+      monthly_expenses: 3200,
+      total_debt: 12000,
+      savings_buffer: 1500,
+    });
+
+    database.updateSettings({
+      monthly_income: 0,
+      monthly_expenses: 0,
+      total_debt: 0,
+      savings_buffer: 0,
+    });
+
+    const settings = database.getSettings();
+
+    expect(settings.monthly_income).toBe(0);
+    expect(settings.monthly_expenses).toBe(0);
+    expect(settings.total_debt).toBe(0);
+    expect(settings.savings_buffer).toBe(0);
+  });
+
   test('uses onboarding financial fields as computeFinancials fallback', () => {
     database.updateSettings({
       monthly_income: 5000,
