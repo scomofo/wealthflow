@@ -867,3 +867,16 @@ npm test -- tests/database-settings.test.js tests/onboarding-utils.test.js tests
 git add src/renderer/js/components/onboarding-stepper.js tests/onboarding-stepper.test.js docs/superpowers/plans/2026-06-11-guided-onboarding-profile-v1.md
 git commit -m "Preserve saved onboarding zero estimates"
 ```
+
+---
+
+### Task 8: Final Review Edge-Case Hardening
+
+**Files:**
+- Modify: `src/renderer/js/components/onboarding-stepper.js`
+- Modify: `src/renderer/js/utils/onboarding.js`
+- Test: `tests/onboarding-stepper.test.js`
+- Test: `tests/onboarding-utils.test.js`
+
+- [ ] Tighten zero-estimate display so focus, onboarded, or completion metadata alone does not make untouched default `0` values render as explicit `0`; use non-starter onboarding confidence as the pragmatic saved-estimate signal.
+- [ ] Make confidence estimate detection numeric-aware so direct utility calls ignore invalid and negative raw estimate strings while preserving typed `0` as present.

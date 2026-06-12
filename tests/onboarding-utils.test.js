@@ -99,6 +99,24 @@ describe('calculateOnboardingConfidence', () => {
     })).toBe('starter');
   });
 
+  test('ignores negative and invalid raw estimate strings when calculating confidence', () => {
+    expect(calculateOnboardingConfidence({
+      onboarding_focus: 'plan_month',
+      monthly_income: '-1',
+      monthly_expenses: 'abc',
+      total_debt: '',
+      savings_buffer: '',
+    })).toBe('starter');
+
+    expect(calculateOnboardingConfidence({
+      onboarding_focus: '',
+      monthly_income: '-1',
+      monthly_expenses: 'abc',
+      total_debt: 'NaN',
+      savings_buffer: '',
+    })).toBe('starter');
+  });
+
   test('returns starter when inputs are null', () => {
     expect(calculateOnboardingConfidence(null)).toBe('starter');
   });

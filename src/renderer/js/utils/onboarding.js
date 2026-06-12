@@ -52,8 +52,12 @@ function getOpenOnboardingActions(state) {
     .slice(0, 3);
 }
 
-function hasTypedValue(value) {
-  return value !== undefined && value !== null && String(value).trim() !== '';
+function hasPresentEstimate(value) {
+  if (value === undefined || value === null) return false;
+  const trimmed = String(value).trim();
+  if (trimmed === '') return false;
+  const numeric = Number(trimmed);
+  return Number.isFinite(numeric) && numeric >= 0;
 }
 
 export function normalizeOnboardingFocus(focus) {
@@ -67,10 +71,10 @@ export function normalizeOnboardingConfidence(confidence) {
 export function calculateOnboardingConfidence(inputs = {}) {
   const values = inputs || {};
   const focus = normalizeOnboardingFocus(values.onboarding_focus);
-  const hasIncome = hasTypedValue(values.monthly_income);
-  const hasExpenses = hasTypedValue(values.monthly_expenses);
-  const hasDebt = hasTypedValue(values.total_debt);
-  const hasSavings = hasTypedValue(values.savings_buffer);
+  const hasIncome = hasPresentEstimate(values.monthly_income);
+  const hasExpenses = hasPresentEstimate(values.monthly_expenses);
+  const hasDebt = hasPresentEstimate(values.total_debt);
+  const hasSavings = hasPresentEstimate(values.savings_buffer);
   const estimateCount = [hasIncome, hasExpenses, hasDebt, hasSavings].filter(Boolean).length;
 
   if (focus && hasIncome && hasExpenses && (hasDebt || hasSavings)) return 'high';

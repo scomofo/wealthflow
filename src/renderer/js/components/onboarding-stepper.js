@@ -32,9 +32,6 @@ function logoBlock() {
 
 function hasOnboardingProfileSignal(settings) {
   return Boolean(
-    settings?.onboarding_focus ||
-    settings?.onboarding_completed_at ||
-    settings?.onboarded ||
     (settings?.onboarding_confidence && settings.onboarding_confidence !== 'starter')
   );
 }

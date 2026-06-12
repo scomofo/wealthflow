@@ -47,6 +47,23 @@ describe('renderOnboardingStepper', () => {
     expect(html).toContain('id="ob-savings" type="number" placeholder="e.g. 3000" value=""');
   });
 
+  test('keeps starter profile zero estimates visually blank when focus is selected', () => {
+    const html = renderOnboardingStepper(1, {
+      province: 'AB',
+      onboarding_focus: 'plan_month',
+      onboarding_confidence: 'starter',
+      monthly_income: 0,
+      monthly_expenses: 0,
+      total_debt: 0,
+      savings_buffer: 0,
+    }, {});
+
+    expect(html).toContain('id="ob-income" type="number" placeholder="e.g. 5000" value=""');
+    expect(html).toContain('id="ob-expenses" type="number" placeholder="e.g. 3000" value=""');
+    expect(html).toContain('id="ob-debt" type="number" placeholder="e.g. 15000" value=""');
+    expect(html).toContain('id="ob-savings" type="number" placeholder="e.g. 3000" value=""');
+  });
+
   test('renders confidence summary on instant value step', () => {
     const html = renderOnboardingStepper(4, {}, {
       settings: {
