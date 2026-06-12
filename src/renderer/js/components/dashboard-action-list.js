@@ -5,6 +5,7 @@ const WORKFLOW_LABELS = {
   tfsa_rrsp_optimizer: 'TFSA vs RRSP Optimizer',
   debt_vs_investing: 'Debt vs Investing',
   monthly_action_planner: 'Monthly Action Plan',
+  affordability_check: 'Can I Afford This?',
 };
 
 export function renderDashboardActionList(actions = []) {
