@@ -211,6 +211,7 @@ contextBridge.exposeInMainWorld('wealthflow', {
 
   // Desktop notifications
   showNotification: (title, body) => ipcRenderer.invoke('app:show-notification', title, body),
+  sendProactiveDesktopNotification: () => ipcRenderer.invoke('notifications:send-proactive-desktop'),
 
   // Bills due soon
   getBillsDueSoon: (days) => ipcRenderer.invoke('db:bills:due-soon', days),
