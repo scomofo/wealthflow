@@ -4,6 +4,16 @@ const {
 
 const BASE_NOW = new Date('2026-06-12T15:00:00.000Z');
 
+function makeLocalClockWithUtcMonthRollover() {
+  return {
+    getFullYear: () => 2026,
+    getMonth: () => 5,
+    getDate: () => 30,
+    getTime: () => new Date('2026-07-01T05:30:00.000Z').getTime(),
+    toISOString: () => '2026-07-01T05:30:00.000Z',
+  };
+}
+
 function makeNotifier(overrides = {}) {
   const supported = overrides.supported !== undefined ? overrides.supported : true;
 
@@ -151,6 +161,27 @@ describe('DesktopNotificationEngine', () => {
     });
   });
 
+  test('uses saved recommendation fallback body when title is blank', () => {
+    const { result } = send({
+      savedActions: [
+        {
+          id: 'saved-1',
+          status: 'pending',
+          priority: 'high',
+          title: '   ',
+        },
+      ],
+    });
+
+    expect(result).toMatchObject({
+      sent: true,
+      key: 'saved:saved-1',
+      title: 'WealthFlow: Saved action waiting',
+      body: 'Review your saved recommendation.',
+      reason: 'saved_recommendation',
+    });
+  });
+
   test('sends month-end review in last five days of month', () => {
     const { result } = send({
       now: new Date('2026-06-27T15:00:00.000Z'),
@@ -161,6 +192,35 @@ describe('DesktopNotificationEngine', () => {
       key: 'month_end_review:2026-06',
       title: 'WealthFlow: Month-end review',
       body: 'Review your spending, goals, and next actions before the month closes.',
+      reason: 'month_end_review',
+    });
+  });
+
+  test('only sends month-end review during the last five calendar dates', () => {
+    const june25 = send({
+      now: new Date('2026-06-25T15:00:00.000Z'),
+    });
+    const june26 = send({
+      now: new Date('2026-06-26T15:00:00.000Z'),
+    });
+
+    expect(june25.result).toEqual({ sent: false, reason: 'none' });
+    expect(june25.notifier.show).not.toHaveBeenCalled();
+    expect(june26.result).toMatchObject({
+      sent: true,
+      key: 'month_end_review:2026-06',
+      reason: 'month_end_review',
+    });
+  });
+
+  test('uses local month for month-end review key', () => {
+    const { result } = send({
+      now: makeLocalClockWithUtcMonthRollover(),
+    });
+
+    expect(result).toMatchObject({
+      sent: true,
+      key: 'month_end_review:2026-06',
       reason: 'month_end_review',
     });
   });

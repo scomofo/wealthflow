@@ -37,6 +37,12 @@ function compareActionImportance(a, b) {
   return toNumber(b.score) - toNumber(a.score);
 }
 
+function localYearMonth(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
 class DesktopNotificationEngine {
   constructor(database, notifier = createElectronNotifier(), options = {}) {
     this.database = database;
@@ -228,13 +234,13 @@ class DesktopNotificationEngine {
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     const daysLeft = endOfMonth.getDate() - now.getDate();
 
-    if (daysLeft > 5) {
+    if (daysLeft >= 5) {
       return [];
     }
 
     return [
       {
-        key: `month_end_review:${now.toISOString().slice(0, 7)}`,
+        key: `month_end_review:${localYearMonth(now)}`,
         title: 'WealthFlow: Month-end review',
         body: 'Review your spending, goals, and next actions before the month closes.',
         reason: 'month_end_review',
