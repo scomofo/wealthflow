@@ -1,8 +1,7 @@
 // Tax Season Summary / T1 Prep Helper
-import { fmt, h } from '../helpers.js';
+import { fmt } from '../helpers.js';
 import { icon } from '../icons.js';
-import { calculateFederalTax, calculateProvincialTax, calculateDividendTaxCredit } from '../canadian/formatters.js';
-import { RRSP } from '../canadian/constants.js';
+import { calculateFederalTax, calculateProvincialTax } from '../canadian/formatters.js';
 
 export function renderTaxSeason(state) {
   const txs = state.transactions || [];

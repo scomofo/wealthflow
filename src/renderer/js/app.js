@@ -11,10 +11,10 @@ import { h, fmt, uid, validateRequired, validateAmount, showFieldError, clearFie
 import { SAMPLE_DATA, PROVINCES, CATEGORIES } from './canadian/constants.js';
 import * as State from './state/core.js';
 import { navigate, setOnNavigate, getSection } from './router.js';
-import { renderSidebar, setExpandedGroup } from './components/sidebar.js';
+import { renderSidebar } from './components/sidebar.js';
 import { renderHeader } from './components/header.js';
 import { renderModal } from './components/modal.js';
-import { renderAiPanel, addUserMsg, clearAiHistory, startStreaming, endStreaming, handleStreamError, setupStreamListeners, cleanupStreamListeners, isAiStreaming } from './components/ai-panel.js';
+import { renderAiPanel, addUserMsg, clearAiHistory, startStreaming, endStreaming, handleStreamError, setupStreamListeners, isAiStreaming } from './components/ai-panel.js';
 import { showToast, showActionToast, handleToastAction, renderToasts, setOnToastChange } from './components/toast.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderBudget } from './pages/budget.js';
@@ -29,14 +29,12 @@ import { renderTaxCalculator, updateTaxInput, initTaxInputs } from './pages/tax-
 import { renderPlanning, updatePlanInput } from './pages/planning.js';
 import { renderSettings } from './pages/settings-page.js';
 import { renderAdvisorWizard, initWizard, setWizardStep, getWizardStep, updateWizardDraft, getWizardDraft } from './pages/advisor-wizard.js';
-import { computeRiskScore, GOAL_TYPES, DOCUMENT_TYPES } from './canadian/advisor-constants.js';
+import { computeRiskScore, DOCUMENT_TYPES } from './canadian/advisor-constants.js';
 import { renderTaxSeason } from './pages/tax-season.js';
 import { renderResidence } from './pages/residence.js';
 import { renderImportModal } from './components/import-modal.js';
 import { renderRecurringModal } from './components/recurring-modal.js';
 import { detectRecurringPayments } from './utils/recurring-detector.js';
-import { renderDecisionCard } from './components/ai-decision-card.js';
-import { renderActionList } from './components/ai-action-list.js';
 import { renderOnboardingStepper } from './components/onboarding-stepper.js';
 
 // Handler modules
@@ -214,7 +212,7 @@ async function render() {
   else if (section === 'investments') page.innerHTML = renderPageSafe(renderInvestments, state);
   else if (section === 'analytics') {
     page.innerHTML = renderPageSafe(renderAnalytics, state, F);
-    try { initCharts(state, F); } catch (e) { /* charts optional */ }
+    try { initCharts(state, F); } catch (_) { /* charts optional */ }
   }
   else if (section === 'bills') page.innerHTML = renderPageSafe(renderBills, state);
   else if (section === 'registered') page.innerHTML = renderPageSafe(renderRegisteredAccounts, state);
@@ -324,7 +322,7 @@ function bindEvents() {
 
 // --- Initialize ---
 async function init() {
-  window.onerror = (msg, source, line, col, error) => {
+  window.onerror = (msg, source, line, col, _error) => {
     if (window.wealthflow?.log) window.wealthflow.log('error', `Uncaught error: ${msg}`, { source, line, col });
     showToast('An unexpected error occurred', 'error');
   };
@@ -335,8 +333,8 @@ async function init() {
   };
 
   await State.loadAll();
-  try { await State.snapshotNetWorth(); } catch (e) { /* ignore */ }
-  try { await State.processRecurringBills(); } catch (e) { /* ignore */ }
+  try { await State.snapshotNetWorth(); } catch (_) { /* ignore */ }
+  try { await State.processRecurringBills(); } catch (_) { /* ignore */ }
   // Per-step command-center refresh errors are captured in lastIntelligenceRefresh.errors.
   try { await State.refreshCommandCenterIntelligence('manual'); } catch (_) { /* non-blocking */ }
 
@@ -349,7 +347,7 @@ async function init() {
         showToast(`Found ${untracked.length} recurring payment(s). Review in Bills.`, 'info');
       }
     }
-  } catch (e) { /* recurring detection not critical */ }
+  } catch (_) { /* recurring detection not critical */ }
 
   const state = State.getState();
   if (state.settings?.theme_mode === 'auto') {
@@ -369,7 +367,7 @@ async function init() {
         const names = dueBills.map(b => b.title).join(', ');
         window.wealthflow.showNotification('Bills Due Soon', `${dueBills.length} bill(s) due: ${names}`);
       }
-    } catch (e) { /* notifications not critical */ }
+    } catch (_) { /* notifications not critical */ }
   }
 }
 

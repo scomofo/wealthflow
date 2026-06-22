@@ -7,7 +7,7 @@ import { addXP } from './shared.js';
 
 export async function handleHomeAction(action, btn, ctx) {
   const { State, render, showToast, uid, appState, navigate,
-    setWizardStep, getWizardStep, updateWizardDraft, getWizardDraft,
+    setWizardStep, getWizardStep,
   } = ctx;
 
   switch (action) {

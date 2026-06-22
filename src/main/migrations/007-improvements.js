@@ -15,7 +15,7 @@ module.exports = {
     for (const table of tables) {
       try {
         db.run(`ALTER TABLE ${table} ADD COLUMN deleted_at TEXT DEFAULT NULL`);
-      } catch (e) {
+      } catch (_) {
         // Column may already exist
       }
     }

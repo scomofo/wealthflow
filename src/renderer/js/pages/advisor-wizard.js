@@ -1,5 +1,5 @@
 import { icon } from '../icons.js';
-import { h, fmt, uid } from '../helpers.js';
+import { h, fmt } from '../helpers.js';
 import { PROVINCES } from '../canadian/constants.js';
 import {
   MARITAL_STATUSES, CITIZENSHIP_STATUSES, EMPLOYMENT_STATUSES,
@@ -58,7 +58,7 @@ function field(label, id, value, type = 'text', extra = '') {
   </div>`;
 }
 
-function selectField(label, id, options, selected) {
+function selectField(label, id, options, _selected) {
   return `<div class="plan-field">
     <div class="input-label">${label}</div>
     <select class="input-field wizard-input" data-step="${STEPS[currentStep].key}" data-field="${id}">
@@ -84,7 +84,7 @@ function renderStepPersonal(profile) {
     </div>
     ${+p.dependents_count > 0 ? `<div class="plan-field" style="margin-top:10px">
       <div class="input-label">Dependents Ages (comma-separated)</div>
-      <input class="input-field wizard-input" data-step="personal" data-field="dependents_ages" value="${h(typeof p.dependents_ages === 'string' ? p.dependents_ages.replace(/[\[\]]/g, '') : (Array.isArray(p.dependents_ages) ? p.dependents_ages.join(', ') : ''))}">
+      <input class="input-field wizard-input" data-step="personal" data-field="dependents_ages" value="${h(typeof p.dependents_ages === 'string' ? p.dependents_ages.replace(/[[\]]/g, '') : (Array.isArray(p.dependents_ages) ? p.dependents_ages.join(', ') : ''))}">
     </div>` : ''}`;
 }
 
@@ -110,7 +110,6 @@ function renderStepEmployment(profile) {
 function renderStepGoals(profile) {
   const goals = profile.goals || [];
   const selectedTypes = goals.map(g => g.goal_type);
-  const draft = getWizardDraft('goals');
 
   return `
     <div style="font-size:12px;color:var(--sub);margin-bottom:14px">Select the financial goals that matter most to you. Click to toggle, then set details.</div>
@@ -125,7 +124,7 @@ function renderStepGoals(profile) {
     </div>
     ${goals.length > 0 ? `
       <div style="font-weight:600;font-size:14px;margin-bottom:10px">Goal Details</div>
-      ${goals.map((g, i) => {
+      ${goals.map((g, _i) => {
         const gt = GOAL_TYPES.find(t => t.code === g.goal_type);
         return `<div class="goal-detail card" style="padding:14px;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
