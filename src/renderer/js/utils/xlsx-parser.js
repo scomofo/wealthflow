@@ -69,7 +69,6 @@ export function parseXLSX(buffer) {
         value = isMatch[1];
       } else if (vMatch) {
         const isSharedString = attrs.includes('t="s"');
-        const isStr = attrs.includes('t="str"');
         if (isSharedString) {
           value = sharedStrings[parseInt(vMatch[1])] || vMatch[1];
         } else {
@@ -110,7 +109,6 @@ function inflateEntry(buf, entry) {
   // In Electron renderer, we can use the pako-like approach or native
   try {
     // Try using a synchronous inflate if available
-    const ds = new DecompressionStream('deflate-raw');
     // DecompressionStream is async — we need a sync workaround for Electron
     // Actually in modern Electron/Chromium, we can do this:
     throw new Error('use_fallback');

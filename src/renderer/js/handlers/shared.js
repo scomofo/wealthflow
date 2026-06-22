@@ -6,7 +6,6 @@
 // Also: handleSaveModal(), addXP()
 
 import { setExpandedGroup } from '../components/sidebar.js';
-import { renderImportModal } from '../components/import-modal.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
 import {
   buildCompletionToast,
@@ -30,14 +29,9 @@ function readNonNegativeNumber(value) {
 }
 
 export async function handleSharedAction(action, btn, ctx) {
-  const { State, render, showToast, showActionToast, uid, appState, navigate, getSection,
-    addUserMsg, clearAiHistory, startStreaming, endStreaming, handleStreamError, isAiStreaming,
-    renderModal, renderToasts, renderTransactions, renderTaxCalculator, renderPlanning,
-    renderAdvisorWizard, renderRecurringModal, SAMPLE_DATA, CATEGORIES,
-    clearFieldErrors, validateRequired, validateAmount, showFieldError, fmt, h,
-    handleToastAction, computeRiskScore, DOCUMENT_TYPES, PROVINCES,
-    setTxFilter, nextTxPage, setRegTab, setLastPriceRefresh, updateTaxInput, initTaxInputs,
-    updatePlanInput, initWizard, setWizardStep, getWizardStep, updateWizardDraft, getWizardDraft,
+  const { State, render, showToast, uid, appState, navigate, getSection,
+    addUserMsg, clearAiHistory, startStreaming, handleStreamError, isAiStreaming,
+    SAMPLE_DATA, handleToastAction,
   } = ctx;
 
   switch (action) {
@@ -461,9 +455,8 @@ async function refreshAfterFinancialSave(State) {
 }
 
 export async function handleSaveModal(type, ctx) {
-  const { State, showToast, showActionToast, uid, appState, render, fmt,
+  const { State, showToast, showActionToast, uid, appState, render,
     clearFieldErrors, validateRequired, validateAmount, showFieldError,
-    computeRiskScore,
   } = ctx;
   const editData = appState.editData;
 

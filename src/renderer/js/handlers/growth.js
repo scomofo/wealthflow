@@ -5,7 +5,7 @@
 import { addXP } from './shared.js';
 
 export async function handleGrowthAction(action, btn, ctx) {
-  const { State, render, showToast, uid, appState, navigate, fmt,
+  const { State, render, showToast, appState, navigate, fmt,
     setRegTab, setLastPriceRefresh,
   } = ctx;
 
@@ -35,7 +35,7 @@ export async function handleGrowthAction(action, btn, ctx) {
         setLastPriceRefresh(new Date().toISOString());
         showToast(msg);
         render();
-      } catch (err) {
+      } catch (_) {
         showToast('Failed to refresh prices', 'error');
       }
       return true;

@@ -1,6 +1,6 @@
 import { icon } from '../icons.js';
 import { CATS } from '../helpers.js';
-import { CANADIAN_BANKS, INVESTMENT_TYPES, ACCOUNT_TYPES, PROVINCES, CATEGORY_COLORS } from '../canadian/constants.js';
+import { CANADIAN_BANKS, INVESTMENT_TYPES, ACCOUNT_TYPES, CATEGORY_COLORS } from '../canadian/constants.js';
 
 const sel = (options, value) => options.map(o => {
   const v = typeof o === 'string' ? o : o.code || o.value;

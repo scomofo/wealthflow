@@ -31,7 +31,7 @@ export function initTaxInputs(province) {
   }
 }
 
-export function renderTaxCalculator(state) {
+export function renderTaxCalculator(_state) {
   const province = taxInputs.province;
   const grossIncome = taxInputs.employment + taxInputs.other;
 
@@ -214,7 +214,7 @@ function resultCard(label, value, color) {
     </div>`;
 }
 
-function renderBrackets(brackets, income, totalTax) {
+function renderBrackets(brackets, income, _totalTax) {
   return brackets.map((b, i) => {
     const bracketSize = b.max === Infinity ? income - b.min : b.max - b.min;
     const taxableInBracket = Math.max(0, Math.min(income, b.max === Infinity ? income : b.max) - b.min);

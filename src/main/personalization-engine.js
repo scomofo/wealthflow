@@ -1,5 +1,3 @@
-const { logger } = require('./logger');
-
 function applyTimeDecay(count, lastUpdated) {
   if (!lastUpdated || !count) return count || 0;
   const ageDays = (Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24);

@@ -127,8 +127,6 @@ function getMappedRole(header, mapping) {
 }
 
 function buildPreviewRow(row, mapping, index, duplicates) {
-  const MONTH_ABBR = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
-
   let dateVal = mapping.date ? row[mapping.date] : null;
   let descVal = mapping.description ? row[mapping.description] : '';
   let amount = null;
@@ -164,7 +162,7 @@ function buildPreviewRow(row, mapping, index, duplicates) {
   };
 }
 
-function computeStats(rows, mapping, duplicates, errors) {
+function computeStats(rows, mapping, duplicates, _errors) {
   let errorCount = 0;
   let duplicateCount = duplicates ? duplicates.filter(Boolean).length : 0;
 

@@ -75,7 +75,7 @@ export function renderBills(state) {
               const hasBillDue = dueBills.some(b => b.type === 'bill');
               const hasIncomeDue = dueBills.some(b => b.type === 'income');
               const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-              const isOverdue = dueBills.some(b => dayStr < todayStr);
+              const isOverdue = dueBills.some(_b => dayStr < todayStr);
               return `<div style="padding:7px;min-height:65px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);background:${d === today ? 'var(--abg)' : 'transparent'}">
                 <div style="display:flex;align-items:center;gap:3px;margin-bottom:2px">
                   <span style="font-size:11.5px;font-weight:${d === today ? 700 : 400};color:${d === today ? 'var(--accent)' : 'var(--text)'}">${d}</span>
