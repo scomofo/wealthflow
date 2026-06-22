@@ -20,6 +20,14 @@ class AiService {
   }
 
   _watchKnowledgeBase() {
+    // Hot-reload is a dev-only convenience. In a packaged build the knowledge
+    // files live inside app.asar, which fs.watch cannot watch (ENOENT), so skip it.
+    try {
+      if (require('electron').app?.isPackaged) return;
+    } catch {
+      // electron unavailable (e.g. outside the main process) — fall through to dev behavior
+    }
+
     const kbDir = path.join(__dirname, '../knowledge');
     if (!fs.existsSync(kbDir)) return;
 
