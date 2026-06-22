@@ -17,7 +17,7 @@ const COLUMN_ROLES = [
 export function renderImportModal(data) {
   if (!data) return '';
 
-  const { headers, rows, mapping, filePath, fileType, duplicates, errors, useAI, aiLoading, processing, detectedBank } = data;
+  const { headers, rows, mapping, filePath, fileType, duplicates, useAI, aiLoading, processing, detectedBank } = data;
   const filename = filePath ? filePath.split(/[\\/]/).pop() : 'Unknown file';
 
   // Build preview rows (first 8)
@@ -25,7 +25,7 @@ export function renderImportModal(data) {
   const mappedPreview = previewRows.map((row, i) => buildPreviewRow(row, mapping, i, duplicates));
 
   // Count importable rows
-  const stats = computeStats(rows, mapping, duplicates, errors);
+  const stats = computeStats(rows, mapping, duplicates);
 
   return `<div class="modal-overlay" data-action="close-import-modal">
     <div class="import-modal" onclick="event.stopPropagation()">
@@ -162,7 +162,7 @@ function buildPreviewRow(row, mapping, index, duplicates) {
   };
 }
 
-function computeStats(rows, mapping, duplicates, _errors) {
+function computeStats(rows, mapping, duplicates) {
   let errorCount = 0;
   let duplicateCount = duplicates ? duplicates.filter(Boolean).length : 0;
 

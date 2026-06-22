@@ -34,7 +34,6 @@ module.exports = [
   },
   {
     files: ['src/renderer/**/*.js'],
-    ignores: ['src/renderer/js/lib/**'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

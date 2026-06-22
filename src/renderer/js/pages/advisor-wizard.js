@@ -58,7 +58,7 @@ function field(label, id, value, type = 'text', extra = '') {
   </div>`;
 }
 
-function selectField(label, id, options, _selected) {
+function selectField(label, id, options) {
   return `<div class="plan-field">
     <div class="input-label">${label}</div>
     <select class="input-field wizard-input" data-step="${STEPS[currentStep].key}" data-field="${id}">
@@ -75,10 +75,10 @@ function renderStepPersonal(profile) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       ${field('Full Name', 'full_name', p.full_name)}
       ${field('Date of Birth', 'date_of_birth', p.date_of_birth, 'date')}
-      ${selectField('Marital Status', 'marital_status', selectOpts(MARITAL_STATUSES, p.marital_status), p.marital_status)}
+      ${selectField('Marital Status', 'marital_status', selectOpts(MARITAL_STATUSES, p.marital_status))}
       ${field('Number of Dependents', 'dependents_count', p.dependents_count, 'number', 'min="0"')}
-      ${selectField('Province / Territory', 'province', selectOpts(PROVINCES, p.province), p.province)}
-      ${selectField('Citizenship Status', 'citizenship_status', selectOpts(CITIZENSHIP_STATUSES, p.citizenship_status), p.citizenship_status)}
+      ${selectField('Province / Territory', 'province', selectOpts(PROVINCES, p.province))}
+      ${selectField('Citizenship Status', 'citizenship_status', selectOpts(CITIZENSHIP_STATUSES, p.citizenship_status))}
       ${field('Email', 'email', p.email, 'email')}
       ${field('Phone', 'phone', p.phone, 'tel')}
     </div>
@@ -92,10 +92,10 @@ function renderStepEmployment(profile) {
   const e = { ...profile.employment, ...getWizardDraft('employment') };
   return `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      ${selectField('Employment Status', 'employment_status', selectOpts(EMPLOYMENT_STATUSES, e.employment_status), e.employment_status)}
+      ${selectField('Employment Status', 'employment_status', selectOpts(EMPLOYMENT_STATUSES, e.employment_status))}
       ${field('Employer Name', 'employer_name', e.employer_name)}
       ${field('Annual Gross Income ($)', 'annual_gross_income', e.annual_gross_income, 'number', 'min="0" step="1000"')}
-      ${selectField('Expected Income Change', 'expected_income_change', selectOpts(INCOME_CHANGE_OPTIONS, e.expected_income_change), e.expected_income_change)}
+      ${selectField('Expected Income Change', 'expected_income_change', selectOpts(INCOME_CHANGE_OPTIONS, e.expected_income_change))}
     </div>
     <div style="margin-top:18px;font-weight:600;font-size:14px;margin-bottom:10px">Other Income Sources</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
@@ -124,7 +124,7 @@ function renderStepGoals(profile) {
     </div>
     ${goals.length > 0 ? `
       <div style="font-weight:600;font-size:14px;margin-bottom:10px">Goal Details</div>
-      ${goals.map((g, _i) => {
+      ${goals.map(g => {
         const gt = GOAL_TYPES.find(t => t.code === g.goal_type);
         return `<div class="goal-detail card" style="padding:14px;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
@@ -218,7 +218,7 @@ function renderStepAssets(profile) {
         <div class="input-label">RRSP Contribution Room ($)</div>
         <input class="input-field wizard-input" data-step="assets" data-field="rrsp_room" type="number" min="0" value="${reg.rrsp_room || ''}">
       </div>
-      ${selectField('RESP Status', 'resp_status', selectOpts(RESP_STATUSES, reg.resp_status), reg.resp_status)}
+      ${selectField('RESP Status', 'resp_status', selectOpts(RESP_STATUSES, reg.resp_status))}
       <div class="plan-field">
         <div class="input-label" style="margin-bottom:8px">FHSA Eligible?</div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
@@ -229,7 +229,7 @@ function renderStepAssets(profile) {
     </div>
     <div style="font-weight:600;font-size:14px;margin-bottom:6px">Property</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px">
-      ${selectField('Property Status', 'property_status', selectOpts(PROPERTY_STATUSES, reg.property_status), reg.property_status)}
+      ${selectField('Property Status', 'property_status', selectOpts(PROPERTY_STATUSES, reg.property_status))}
       <div class="plan-field">
         <div class="input-label">Home Value ($)</div>
         <input class="input-field wizard-input" data-step="assets" data-field="home_value" type="number" min="0" value="${reg.home_value || ''}">
@@ -262,7 +262,7 @@ function renderStepInsurance(profile) {
   return `
     <div style="font-weight:600;font-size:14px;margin-bottom:10px">Life Insurance</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
-      ${selectField('Life Insurance Type', 'life_insurance_type', selectOpts(LIFE_INSURANCE_TYPES, ins.life_insurance_type), ins.life_insurance_type)}
+      ${selectField('Life Insurance Type', 'life_insurance_type', selectOpts(LIFE_INSURANCE_TYPES, ins.life_insurance_type))}
       <div class="plan-field">
         <div class="input-label">Coverage Amount ($)</div>
         <input class="input-field wizard-input" data-step="insurance" data-field="life_insurance_amount" type="number" min="0" value="${ins.life_insurance_amount || ''}">
@@ -270,7 +270,7 @@ function renderStepInsurance(profile) {
     </div>
     <div style="font-weight:600;font-size:14px;margin-bottom:10px">Other Insurance</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
-      ${selectField('Disability Insurance', 'disability_insurance', selectOpts(DISABILITY_OPTIONS, ins.disability_insurance), ins.disability_insurance)}
+      ${selectField('Disability Insurance', 'disability_insurance', selectOpts(DISABILITY_OPTIONS, ins.disability_insurance))}
       <div class="plan-field">
         <div class="input-label" style="margin-bottom:8px">Critical Illness Insurance</div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
@@ -288,7 +288,7 @@ function renderStepInsurance(profile) {
     </div>
     <div style="font-weight:600;font-size:14px;margin-bottom:10px">Estate Planning</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      ${selectField('Will Status', 'will_status', selectOpts(WILL_STATUSES, ins.will_status), ins.will_status)}
+      ${selectField('Will Status', 'will_status', selectOpts(WILL_STATUSES, ins.will_status))}
       <div class="plan-field">
         <div class="input-label" style="margin-bottom:8px">Power of Attorney</div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
