@@ -2,6 +2,7 @@
   "name": "wealthflow",
   "version": "1.0.0",
   "description": "WealthFlow - Canadian Personal Finance Desktop App",
+  "author": "Scott Morley",
   "main": "src/main/main.js",
   "scripts": {
     "start": "node start.js",
