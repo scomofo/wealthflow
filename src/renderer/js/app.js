@@ -362,11 +362,7 @@ async function init() {
 
   if (state.settings?.bill_notifications !== 0) {
     try {
-      const dueBills = await window.wealthflow.getBillsDueSoon(state.settings?.bill_notify_days || 3);
-      if (dueBills.length > 0) {
-        const names = dueBills.map(b => b.title).join(', ');
-        window.wealthflow.showNotification('Bills Due Soon', `${dueBills.length} bill(s) due: ${names}`);
-      }
+      await window.wealthflow.sendProactiveDesktopNotification();
     } catch (_) { /* notifications not critical */ }
   }
 }

@@ -400,6 +400,20 @@ function registerIpcHandlers(database, aiService) {
 
   safeHandle('proactive:evaluate', () => proactiveEngine.evaluate());
 
+  // Proactive desktop notifications
+  const {
+    DesktopNotificationEngine,
+    createElectronNotifier,
+  } = require('./desktop-notification-engine');
+  const desktopNotificationEngine = new DesktopNotificationEngine(
+    database,
+    createElectronNotifier()
+  );
+
+  safeHandle('notifications:send-proactive-desktop', () => {
+    return desktopNotificationEngine.send();
+  });
+
   // Engagement
   const { EngagementEngine } = require('./engagement-engine');
   const engagementEngine = new EngagementEngine(database);
