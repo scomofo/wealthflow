@@ -147,6 +147,69 @@ describe('DesktopNotificationEngine', () => {
     expect(notifier.show).toHaveBeenCalledTimes(1);
   });
 
+  test('filters out null/undefined rows so falsy entries are neither counted nor dereferenced', () => {
+    const { result, notifier } = send({
+      nextBestActions: [null],
+      bills: [null, { title: 'Hydro' }, undefined],
+      savedActions: [null],
+    });
+
+    expect(result).toMatchObject({
+      sent: true,
+      key: 'bills_due_soon',
+      body: '1 bill(s) due: Hydro',
+      reason: 'bills_due_soon',
+    });
+    expect(notifier.show).toHaveBeenCalledTimes(1);
+  });
+
+  test('suppresses the aggregate bills candidate when a bill-due action already covers it', () => {
+    const { result, notifier } = send({
+      nextBestActions: [
+        {
+          status: 'open',
+          priority: 'high',
+          score: 90,
+          title: 'Hydro is due in 2 days ($120)',
+          action_key: 'bill_due_42',
+          category: 'bills',
+        },
+      ],
+      bills: [{ title: 'Hydro' }],
+    });
+
+    expect(result).toMatchObject({
+      sent: true,
+      key: 'nba:bill_due_42',
+      reason: 'next_best_action',
+    });
+    expect(notifier.show).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not re-notify the same bill via the aggregate after the bill action is on cooldown', () => {
+    const { result, notifier } = send({
+      profile: {
+        desktop_notifications_shown: {
+          'nba:bill_due_42': isoMsBefore(BASE_NOW, DAY_MS / 2),
+        },
+      },
+      nextBestActions: [
+        {
+          status: 'open',
+          priority: 'high',
+          score: 90,
+          title: 'Hydro is due in 2 days ($120)',
+          action_key: 'bill_due_42',
+          category: 'bills',
+        },
+      ],
+      bills: [{ title: 'Hydro' }],
+    });
+
+    expect(result).toEqual({ sent: false, reason: 'cooldown' });
+    expect(notifier.show).not.toHaveBeenCalled();
+  });
+
   test('sends high-priority saved recommendation when no stronger candidate exists', () => {
     const { result } = send({
       savedActions: [

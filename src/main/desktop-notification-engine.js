@@ -31,6 +31,11 @@ function isHighValueAction(action) {
   return priority === 'urgent' || priority === 'high' || toNumber(action.score) >= 70;
 }
 
+function isBillAction(action) {
+  if (cleanText(action.category, '').toLowerCase() === 'bills') return true;
+  return String(action.action_key || '').startsWith('bill_due');
+}
+
 function compareActionImportance(a, b) {
   const priorityDiff = priorityValue(a.priority) - priorityValue(b.priority);
   if (priorityDiff !== 0) return priorityDiff;
@@ -61,9 +66,15 @@ class DesktopNotificationEngine {
     }
 
     const profile = this._profile();
+    // Bill-due next-best-actions already cover individual bills (and carry their
+    // own cooldown keys), so suppress the aggregate "bills due soon" candidate
+    // when any are present — otherwise the same bill can notify twice across
+    // relaunches via two different cooldown keys.
+    const nextBestActions = this._nextBestActionCandidates();
+    const billsCoveredByActions = nextBestActions.some((candidate) => candidate.coversBills);
     const candidates = [
-      ...this._nextBestActionCandidates(),
-      ...this._billCandidates(settings),
+      ...nextBestActions,
+      ...(billsCoveredByActions ? [] : this._billCandidates(settings)),
       ...this._savedRecommendationCandidates(),
       ...this._monthEndCandidates(),
     ];
@@ -146,7 +157,9 @@ class DesktopNotificationEngine {
         return [];
       }
       const result = this.database[methodName](...args);
-      return Array.isArray(result) ? result : [];
+      // Guard against null/undefined holes from corrupted rows or odd query
+      // results so downstream property access can't throw.
+      return Array.isArray(result) ? result.filter(Boolean) : [];
     } catch {
       return [];
     }
@@ -180,6 +193,7 @@ class DesktopNotificationEngine {
         title: 'WealthFlow: Action needed',
         body: cleanText(action.title, 'Review your top financial action.'),
         reason: 'next_best_action',
+        coversBills: isBillAction(action),
         cooldownMs: DAY_MS,
       }));
   }
