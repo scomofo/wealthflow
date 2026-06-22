@@ -58,7 +58,7 @@ function field(label, id, value, type = 'text', extra = '') {
   </div>`;
 }
 
-function selectField(label, id, options, _selected) {
+function selectField(label, id, options) {
   return `<div class="plan-field">
     <div class="input-label">${label}</div>
     <select class="input-field wizard-input" data-step="${STEPS[currentStep].key}" data-field="${id}">
@@ -124,7 +124,7 @@ function renderStepGoals(profile) {
     </div>
     ${goals.length > 0 ? `
       <div style="font-weight:600;font-size:14px;margin-bottom:10px">Goal Details</div>
-      ${goals.map((g, _i) => {
+      ${goals.map(g => {
         const gt = GOAL_TYPES.find(t => t.code === g.goal_type);
         return `<div class="goal-detail card" style="padding:14px;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">

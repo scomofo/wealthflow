@@ -162,7 +162,7 @@ function buildPreviewRow(row, mapping, index, duplicates) {
   };
 }
 
-function computeStats(rows, mapping, duplicates, _errors) {
+function computeStats(rows, mapping, duplicates) {
   let errorCount = 0;
   let duplicateCount = duplicates ? duplicates.filter(Boolean).length : 0;
 
