@@ -866,10 +866,12 @@ class WealthFlowDatabase {
     if (statusFilter) {
       if (statusFilter === 'open') {
         const today = new Date().toISOString().slice(0, 10);
-        this.run(
+        this.db.run(
           "UPDATE next_best_actions SET status = 'open', snoozed_until = NULL WHERE status = 'snoozed' AND snoozed_until IS NOT NULL AND snoozed_until <= ? AND deleted_at IS NULL",
           [today]
         );
+        // Only schedule a disk save when an expired snooze was actually cleared
+        if (this.db.getRowsModified() > 0) this._deferSave();
       }
       return this.getAll("SELECT * FROM next_best_actions WHERE status = ? AND deleted_at IS NULL ORDER BY score DESC", [statusFilter]);
     }

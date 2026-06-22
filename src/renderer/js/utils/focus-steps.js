@@ -38,6 +38,8 @@ const DEFAULT_STEPS = [
 ];
 
 export function getFocusStepsForAction(action, profile = {}) {
+  // A default param doesn't cover an explicit null — guard before property access
+  profile = profile || {};
   const cat = (action?.category || '').toLowerCase();
   const base = CATEGORY_STEPS[cat] || DEFAULT_STEPS;
 
