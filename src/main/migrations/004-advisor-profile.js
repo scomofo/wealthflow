@@ -105,7 +105,7 @@ module.exports = {
     `);
 
     // Add profile tracking columns to settings
-    try { db.run('ALTER TABLE settings ADD COLUMN profile_completed INTEGER DEFAULT 0'); } catch (e) { /* column may exist */ }
-    try { db.run('ALTER TABLE settings ADD COLUMN last_wizard_step INTEGER DEFAULT 0'); } catch (e) { /* column may exist */ }
+    try { db.run('ALTER TABLE settings ADD COLUMN profile_completed INTEGER DEFAULT 0'); } catch (_) { /* column may exist */ }
+    try { db.run('ALTER TABLE settings ADD COLUMN last_wizard_step INTEGER DEFAULT 0'); } catch (_) { /* column may exist */ }
   }
 };

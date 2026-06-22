@@ -3,7 +3,6 @@ import { fmt, h } from '../helpers.js';
 import { estimateCPPBenefit, estimateOASBenefit, optimizeRRSPvsTFSA, calculateSmithManoeuvre } from '../canadian/calculators.js';
 import { CATEGORIES } from '../canadian/constants.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
-import { stat } from '../components/stat-card.js';
 import { progress } from '../components/progress-bar.js';
 import { icon } from '../icons.js';
 import { evaluateAffordability } from '../utils/affordability.js';
@@ -313,7 +312,6 @@ function renderSavingsTimeline(goals) {
       const monthsToGoal = monthly > 0 ? Math.ceil(remaining / monthly) : Infinity;
       const targetDate = new Date();
       targetDate.setMonth(targetDate.getMonth() + monthsToGoal);
-      const pct = g.target > 0 ? Math.round((g.current / g.target) * 100) : 0;
       const deadlineDate = g.deadline ? new Date(g.deadline) : null;
       const onTrack = deadlineDate ? targetDate <= deadlineDate : true;
 
@@ -412,15 +410,13 @@ function renderMortgageAmortization() {
   const semiAnnualRate = annualRate / 2;
   const effectiveAnnualRate = Math.pow(1 + semiAnnualRate, 2) - 1;
 
-  let paymentsPerYear, periodRate, totalPayments;
+  let paymentsPerYear, periodRate;
   if (mortgage_frequency === 'biweekly' || mortgage_frequency === 'accelerated_biweekly') {
     paymentsPerYear = 26;
     periodRate = Math.pow(1 + effectiveAnnualRate, 1 / 26) - 1;
-    totalPayments = mortgage_years * 26;
   } else {
     paymentsPerYear = 12;
     periodRate = Math.pow(1 + effectiveAnnualRate, 1 / 12) - 1;
-    totalPayments = mortgage_years * 12;
   }
 
   // Calculate monthly payment first (always needed for biweekly)

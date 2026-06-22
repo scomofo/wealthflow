@@ -38,7 +38,6 @@ class ProactiveEngine {
     const bills = this.database.listBills();
     const debts = this.database.listDebts();
     const contributionRoom = this.database.listContributionRoom();
-    const settings = this.database.getSettings();
     const today = new Date().toISOString().slice(0, 10);
     const catSpending = financials.catSpending || {};
 

@@ -1,6 +1,5 @@
 import { icon } from '../icons.js';
 import { fmt, h } from '../helpers.js';
-import { stat } from '../components/stat-card.js';
 import { renderNextBestActionsPanel } from '../components/next-best-actions-panel.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
 import { renderActionList } from '../components/ai-action-list.js';
@@ -12,7 +11,7 @@ import { buildDashboardAISummary } from '../utils/dashboard-intelligence.js';
 import { renderProactiveBanner } from '../components/proactive-banner.js';
 import { renderProgressStrip } from '../components/progress-strip.js';
 
-export function setShowAllActions(val) { /* no-op: panel handles its own display */ }
+export function setShowAllActions(_val) { /* no-op: panel handles its own display */ }
 
 const BADGE_DEFS = [
   { id: 'first-steps',   emoji: '🚀', label: 'First Steps',   check: (s, c) => (c.transactions || 0) >= 1 },
@@ -20,7 +19,7 @@ const BADGE_DEFS = [
   { id: 'goal-setter',   emoji: '🎯', label: 'Goal Setter',    check: (s, c) => (c.goals || 0) >= 1 },
   { id: 'debt-aware',    emoji: '💪', label: 'Debt Aware',     check: (s, c) => (c.debts || 0) >= 1 },
   { id: 'investor',      emoji: '📈', label: 'Investor',       check: (s, c) => (c.investments || 0) >= 1 },
-  { id: 'level-5',       emoji: '⭐', label: 'Level 5',        check: (s, c) => (s.level || 1) >= 5 },
+  { id: 'level-5',       emoji: '⭐', label: 'Level 5',        check: (s, _c) => (s.level || 1) >= 5 },
   { id: 'data-rich',     emoji: '📚', label: 'Data Rich',      check: (s, c) => (c.transactions || 0) >= 10 },
   { id: 'diversified',   emoji: '🌐', label: 'Diversified',    check: (s, c) => (c.investments || 0) >= 3 },
 ];

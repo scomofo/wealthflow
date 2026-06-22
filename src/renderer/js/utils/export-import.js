@@ -3,7 +3,7 @@ import { uid } from '../helpers.js';
 import { parseCSV, generateCSV, autoMapColumns, autoCategorize } from './csv-parser.js';
 import { parseOFX, isOFX } from './ofx-parser.js';
 import { generateMonthlyReportHTML } from './pdf-report.js';
-import { detectBank, applyBankPreset, listBankPresets } from './bank-presets.js';
+import { detectBank, listBankPresets } from './bank-presets.js';
 import * as State from '../state/core.js';
 
 const api = window.wealthflow;
@@ -445,7 +445,7 @@ export async function reconcileAfterImport(importedTransactions, detectedBank) {
   // --- 2. Recalculate budget spending from latest transactions ---
   // Budgets are computed from transactions, so no direct update needed.
   // But we can trigger a net worth snapshot since data changed.
-  try { await State.snapshotNetWorth(); } catch {}
+  try { await State.snapshotNetWorth(); } catch { /* best-effort: snapshot is non-critical */ }
 
   // --- 3. Check if any imported payments match savings goals ---
   // Look for transactions with descriptions matching goal names

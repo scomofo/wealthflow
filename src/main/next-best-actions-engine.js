@@ -85,7 +85,7 @@ class NextBestActionsEngine {
       const profile = pe.buildProfile();
       const openActions = db.listNextBestActions('open');
       return pe.applyActionWeighting(openActions, profile);
-    } catch (err) {
+    } catch (_) {
       return db.listNextBestActions('open');
     }
   }
