@@ -61,7 +61,7 @@ class AiService {
         const status = error.status || error.statusCode;
 
         // Non-retryable errors: throw immediately
-        if (status === 400 || status === 401 || status === 403) {
+        if (error.nonRetryable || status === 400 || status === 401 || status === 403) {
           throw error;
         }
 
@@ -236,6 +236,7 @@ Use the knowledge base and financial data above to provide personalized, specifi
         });
 
         let response = '';
+        let timedOut = false;
 
         stream.on('text', (text) => {
           response += text;
@@ -244,10 +245,30 @@ Use the knowledge base and financial data above to provide personalized, specifi
           }
         });
 
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('AI response timed out after 60 seconds')), 60000)
-        );
-        await Promise.race([stream.finalMessage(), timeoutPromise]);
+        // Abort the stream itself on timeout — racing a rejecting timer
+        // against the stream left it running in the background, so chunks
+        // kept arriving (and getting sent to the renderer) after the
+        // "timed out" error had already been shown.
+        const timeoutTimer = setTimeout(() => {
+          timedOut = true;
+          stream.abort();
+        }, 60000);
+
+        try {
+          await stream.finalMessage();
+        } catch (err) {
+          if (timedOut) {
+            const timeoutError = new Error('AI response timed out after 60 seconds');
+            // A slow/hung request retried three times at 60s each is worse
+            // than just failing once — don't let _withRetry retry this.
+            timeoutError.nonRetryable = true;
+            throw timeoutError;
+          }
+          throw err;
+        } finally {
+          clearTimeout(timeoutTimer);
+        }
+
         return response;
       });
 
