@@ -1,6 +1,7 @@
 import { icon } from '../icons.js';
-import { CATS } from '../helpers.js';
+import { CATS, h } from '../helpers.js';
 import { CANADIAN_BANKS, INVESTMENT_TYPES, ACCOUNT_TYPES, CATEGORY_COLORS } from '../canadian/constants.js';
+import { ASSET_TYPES, DOCUMENT_TYPES } from '../canadian/advisor-constants.js';
 
 const sel = (options, value) => options.map(o => {
   const v = typeof o === 'string' ? o : o.code || o.value;
@@ -294,6 +295,32 @@ export function getModalConfig(type, data) {
         </div>
         <label for="m-notes" class="input-label">Notes</label>
         <textarea class="input-field" id="m-notes" rows="2" style="margin-bottom:4px">${d.notes || ''}</textarea>`,
+    },
+    'deposit-goal': {
+      title: 'Deposit to Goal',
+      html: `
+        <p style="margin:0 0 14px;color:var(--sub);font-size:13px">Add funds to <strong>${h(d.name || '')}</strong></p>
+        <label for="m-deposit-amt" class="input-label">Deposit amount ($)</label>
+        <input class="input-field" id="m-deposit-amt" type="number" placeholder="0.00" step="0.01" min="0" style="margin-bottom:4px">`,
+    },
+    'wizard-asset': {
+      title: 'Add Asset',
+      html: `
+        <label for="m-asset-type" class="input-label">Asset Type</label>
+        <select class="input-field" id="m-asset-type" style="margin-bottom:12px">${sel(ASSET_TYPES, d.asset_type)}</select>
+        <label for="m-asset-desc" class="input-label">Description</label>
+        <input class="input-field" id="m-asset-desc" placeholder="e.g. TD Chequing" value="${h(d.description || '')}" style="margin-bottom:12px">
+        <label for="m-asset-bal" class="input-label">Current Balance ($)</label>
+        <input class="input-field" id="m-asset-bal" type="number" step="0.01" value="${d.balance || ''}" style="margin-bottom:4px">`,
+    },
+    'wizard-doc': {
+      title: 'Document Details',
+      html: `
+        <p style="margin:0 0 14px;color:var(--sub);font-size:13px;word-break:break-word">${h(d.originalName || '')}</p>
+        <label for="m-doc-type" class="input-label">Document Type</label>
+        <select class="input-field" id="m-doc-type" style="margin-bottom:12px">${sel(DOCUMENT_TYPES, d.doc_type)}</select>
+        <label for="m-doc-notes" class="input-label">Notes (optional)</label>
+        <textarea class="input-field" id="m-doc-notes" rows="2" style="margin-bottom:4px"></textarea>`,
     },
   };
   return configs[type] || null;

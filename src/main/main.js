@@ -6,6 +6,20 @@ let mainWindow;
 let database;
 let aiService;
 
+// Two instances writing to the same sql.js-backed wealthflow.db would silently
+// clobber each other (last save wins), so only one instance may run at a time.
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -35,6 +49,11 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  // app.quit() above does not synchronously prevent whenReady() from
+  // resolving, so this guard is what actually stops a second instance
+  // from initializing its own database/window before it exits.
+  if (!gotSingleInstanceLock) return;
+
   logger.init('info');
   logger.info('WealthFlow starting');
 

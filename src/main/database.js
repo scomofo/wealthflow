@@ -4,6 +4,7 @@ const fs = require('fs');
 const { app } = require('electron');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
+const { logger } = require('./logger');
 
 class WealthFlowDatabase {
   constructor() {
@@ -33,10 +34,16 @@ class WealthFlowDatabase {
     }
 
     this.dbPath = path.join(app.getPath('userData'), 'wealthflow.db');
+    this._backupPath = this.dbPath + '.bak';
+    this._tmpPath = this.dbPath + '.tmp';
     try {
       if (fs.existsSync(this.dbPath)) {
-        const buffer = fs.readFileSync(this.dbPath);
-        this.db = new SQL.Database(buffer);
+        this.db = this._openWithBackupFallback(this.dbPath, SQL);
+      } else if (fs.existsSync(this._backupPath)) {
+        // The primary file is missing but a backup from a prior save survived —
+        // recover from it instead of silently starting a fresh, empty database.
+        logger.warn('wealthflow.db missing but a backup exists — recovering from backup', { backupPath: this._backupPath });
+        this.db = this._openWithBackupFallback(this._backupPath, SQL);
       } else {
         this.db = new SQL.Database();
       }
@@ -48,10 +55,53 @@ class WealthFlowDatabase {
     this.save();
   }
 
+  // Opens `primaryPath`, falling back to `.bak` if the primary file is
+  // truncated/corrupt (e.g. a crash mid-write before atomic saves existed).
+  // sql.js does not validate the file header on construction — a corrupt
+  // buffer only throws once a statement actually runs against it — so a
+  // trivial query is required to detect corruption here.
+  _openWithBackupFallback(primaryPath, SQL) {
+    const tryOpen = (p) => {
+      const database = new SQL.Database(fs.readFileSync(p));
+      database.exec('SELECT 1');
+      return database;
+    };
+    try {
+      return tryOpen(primaryPath);
+    } catch (err) {
+      if (fs.existsSync(this._backupPath) && primaryPath !== this._backupPath) {
+        logger.error('Database file is corrupt — recovering from backup', { primaryPath, error: err.message });
+        return tryOpen(this._backupPath);
+      }
+      throw err;
+    }
+  }
+
+  // Atomically replaces wealthflow.db with the current in-memory state:
+  // write to a temp file in the same directory, fsync it, then rename it
+  // over the live file (rename is atomic at the filesystem level, so a
+  // crash mid-save can never leave a truncated/corrupt wealthflow.db).
+  // The previous good copy is kept as `.bak` so a corrupt primary file can
+  // still be recovered from on the next launch.
   save() {
     if (!this.db || !this.dbPath) return;
-    const data = this.db.export();
-    fs.writeFileSync(this.dbPath, Buffer.from(data));
+    const data = Buffer.from(this.db.export());
+    try {
+      if (fs.existsSync(this.dbPath)) {
+        fs.copyFileSync(this.dbPath, this._backupPath);
+      }
+      const fd = fs.openSync(this._tmpPath, 'w');
+      try {
+        fs.writeSync(fd, data);
+        fs.fsyncSync(fd);
+      } finally {
+        fs.closeSync(fd);
+      }
+      fs.renameSync(this._tmpPath, this.dbPath);
+    } catch (err) {
+      try { if (fs.existsSync(this._tmpPath)) fs.unlinkSync(this._tmpPath); } catch { /* best-effort cleanup */ }
+      throw err;
+    }
   }
 
   run(sql, params = []) {
@@ -63,7 +113,11 @@ class WealthFlowDatabase {
     if (this._saveTimer) return;
     this._saveTimer = setTimeout(() => {
       this._saveTimer = null;
-      this.save();
+      try {
+        this.save();
+      } catch (err) {
+        logger.error('Deferred database save failed', { error: err.message, stack: err.stack });
+      }
     }, 100);
   }
 
@@ -412,20 +466,38 @@ class WealthFlowDatabase {
   }
 
   // Computed financials
-  computeFinancials() {
+  // income/expenses/savingsRate/catSpending are scoped to a single calendar
+  // month (default: the current month) — every caller (budgets, the rule
+  // engines, the AI prompts) treats these fields as "this month", so the
+  // query must actually be windowed rather than summing all-time history.
+  // totalDebt/totalInv/totalSaved/netWorth are point-in-time balances and
+  // stay all-time by design.
+  computeFinancials(monthAnchor) {
     const settings = this.getSettings();
+    const anchor = monthAnchor || new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+
     // Exclude transfers from income/expense totals — they're not real income or spending
+    const anyTxStats = this.getOne(
+      "SELECT COUNT(*) as total_count FROM transactions WHERE deleted_at IS NULL AND category != 'Transfer'"
+    );
+    const hasAnyTransactions = (anyTxStats?.total_count || 0) > 0;
+
     const txStats = this.getOne(
       "SELECT " +
       "COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as income, " +
       "COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0) as expenses, " +
       "COUNT(*) as total_count " +
       "FROM transactions " +
-      "WHERE deleted_at IS NULL AND category != 'Transfer'"
+      "WHERE deleted_at IS NULL AND category != 'Transfer' AND substr(date, 1, 7) = ?",
+      [anchor]
     );
-    const hasTransactions = (txStats?.total_count || 0) > 0;
-    const income = hasTransactions ? txStats.income : (settings.monthly_income || 0);
-    const expenses = hasTransactions ? txStats.expenses : (settings.monthly_expenses || 0);
+    const hasMonthTransactions = (txStats?.total_count || 0) > 0;
+
+    // No transactions have ever been imported — fall back to the
+    // onboarding-provided monthly estimate. Once real transactions exist,
+    // a month with no activity is genuinely $0, not the stale onboarding figure.
+    const income = hasAnyTransactions ? (hasMonthTransactions ? txStats.income : 0) : (settings.monthly_income || 0);
+    const expenses = hasAnyTransactions ? (hasMonthTransactions ? txStats.expenses : 0) : (settings.monthly_expenses || 0);
     const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
     const debtStats = this.getOne('SELECT COALESCE(SUM(balance), 0) as total, COUNT(*) as total_count FROM debts WHERE deleted_at IS NULL');
     const totalDebt = (debtStats?.total_count || 0) > 0 ? debtStats.total : (settings.total_debt || 0);
@@ -433,7 +505,8 @@ class WealthFlowDatabase {
     const goalStats = this.getOne('SELECT COALESCE(SUM(current), 0) as total, COUNT(*) as total_count FROM goals WHERE deleted_at IS NULL');
     const totalSaved = (goalStats?.total_count || 0) > 0 ? goalStats.total : (settings.savings_buffer || 0);
     const catRows = this.getAll(
-      'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL GROUP BY category ORDER BY total DESC'
+      'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL AND substr(date, 1, 7) = ? GROUP BY category ORDER BY total DESC',
+      [anchor]
     );
     const catSpending = {};
     for (const row of catRows) catSpending[row.category] = row.total;
@@ -973,7 +1046,11 @@ class WealthFlowDatabase {
       this._saveTimer = null;
     }
     if (this.db) {
-      this.save();
+      try {
+        this.save();
+      } catch (err) {
+        logger.error('Final database save on close failed', { error: err.message, stack: err.stack });
+      }
       this.db.close();
     }
   }

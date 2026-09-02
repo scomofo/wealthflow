@@ -16,6 +16,13 @@ jest.mock('electron', () => ({
 
 const { WealthFlowDatabase } = require('../src/main/database.js');
 
+// computeFinancials() windows income/expenses to the current calendar month,
+// so a transaction meant to count toward "this month" needs a date that is
+// actually within it rather than a hardcoded literal.
+function thisMonthDate(day = '11') {
+  return new Date().toISOString().slice(0, 7) + '-' + day;
+}
+
 describe('WealthFlowDatabase onboarding settings', () => {
   let database;
 
@@ -111,7 +118,7 @@ describe('WealthFlowDatabase onboarding settings', () => {
     });
     database.run(
       'INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['tx-zero-income', 'Groceries', -200, 'Food', '2026-06-11']
+      ['tx-zero-income', 'Groceries', -200, 'Food', thisMonthDate()]
     );
     database.run(
       'INSERT INTO debts (id, name, balance, rate, min_payment, type) VALUES (?, ?, ?, ?, ?, ?)',

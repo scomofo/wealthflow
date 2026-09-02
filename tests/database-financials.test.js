@@ -16,6 +16,21 @@ jest.mock('electron', () => ({
 
 const { WealthFlowDatabase } = require('../src/main/database.js');
 
+// computeFinancials() windows income/expenses to the current calendar month
+// by default, so tests that want "this month" data must use a date that is
+// actually within the current month rather than a hardcoded literal.
+function thisMonthDate(day = '01') {
+  return new Date().toISOString().slice(0, 7) + '-' + day;
+}
+
+// A date guaranteed to fall outside the current month, for testing the
+// window itself (14 months back always differs from "now" in both month and year).
+function otherMonthDate() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 14);
+  return d.toISOString().slice(0, 10);
+}
+
 function flushPendingSave(database) {
   if (database._saveTimer) {
     clearTimeout(database._saveTimer);
@@ -46,7 +61,7 @@ describe('WealthFlowDatabase computeFinancials zero-vs-absent', () => {
   test('uses DB totals once rows exist, even when the total is legitimately 0', () => {
     database.addDebt({ id: 'd1', name: 'Visa', balance: 0, rate: 19.99, min_payment: 0, type: 'credit' });
     database.addGoal({ id: 'g1', name: 'Emergency fund', target: 5000, current: 0 });
-    database.addTransaction({ id: 't1', description: 'Salary', amount: 4200, category: 'Income', date: '2026-06-01' });
+    database.addTransaction({ id: 't1', description: 'Salary', amount: 4200, category: 'Income', date: thisMonthDate() });
 
     const financials = database.computeFinancials();
 
@@ -54,6 +69,26 @@ describe('WealthFlowDatabase computeFinancials zero-vs-absent', () => {
     expect(financials.totalSaved).toBe(0); // goal at 0 — not the stale 1500
     expect(financials.income).toBe(4200); // real transactions — not the onboarding 5000
     expect(financials.expenses).toBe(0); // transactions exist with no spending — not 3200
+  });
+
+  test('windows income/expenses to the current calendar month, not all-time', () => {
+    database.addTransaction({ id: 't1', description: 'Old salary', amount: 9000, category: 'Income', date: otherMonthDate() });
+    database.addTransaction({ id: 't2', description: 'This month salary', amount: 4200, category: 'Income', date: thisMonthDate() });
+    database.addTransaction({ id: 't3', description: 'Old rent', amount: -2000, category: 'Rent/Mortgage', date: otherMonthDate() });
+
+    const financials = database.computeFinancials();
+
+    expect(financials.income).toBe(4200); // only the current-month transaction counts
+    expect(financials.expenses).toBe(0); // last month's rent must not bleed into this month
+  });
+
+  test('a month with real transactions elsewhere but none this month is $0, not the stale onboarding estimate', () => {
+    database.addTransaction({ id: 't1', description: 'Old salary', amount: 9000, category: 'Income', date: otherMonthDate() });
+
+    const financials = database.computeFinancials();
+
+    expect(financials.income).toBe(0);
+    expect(financials.expenses).toBe(0);
   });
 
   test('falls back to onboarding values when no rows exist', () => {

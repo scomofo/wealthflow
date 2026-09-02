@@ -730,6 +730,42 @@ export async function handleSaveModal(type, ctx) {
       showToast(editData?.address ? 'Residence updated' : 'Residence added');
       break;
     }
+    case 'deposit-goal': {
+      clearFieldErrors();
+      const amt = document.getElementById('m-deposit-amt')?.value;
+      const amtErr = validateAmount(amt, 'Deposit amount');
+      if (amtErr) { showFieldError('m-deposit-amt', amtErr); return; }
+      if (editData) {
+        await State.updateGoal({ ...editData, current: editData.current + +amt });
+        await addXP(15, ctx);
+        showToast(`Deposited ${ctx.fmt(+amt)} to ${editData.name}`);
+      }
+      break;
+    }
+    case 'wizard-asset': {
+      const assetType = document.getElementById('m-asset-type')?.value;
+      const desc = document.getElementById('m-asset-desc')?.value;
+      const bal = document.getElementById('m-asset-bal')?.value;
+      await State.addAdvisorAsset({
+        id: uid(), asset_type: assetType || 'other',
+        description: desc || '', balance: +(bal || 0),
+      });
+      showToast('Asset added');
+      break;
+    }
+    case 'wizard-doc': {
+      const pending = editData;
+      if (!pending) break;
+      const docType = document.getElementById('m-doc-type')?.value || 'other';
+      const notes = document.getElementById('m-doc-notes')?.value || '';
+      await State.copyDocumentFile(pending.srcPath, pending.destFilename);
+      await State.addAdvisorDocument({
+        id: uid(), filename: pending.destFilename, original_name: pending.originalName,
+        doc_type: docType, notes, file_size: 0,
+      });
+      showToast('Document uploaded');
+      break;
+    }
   }
 }
 
