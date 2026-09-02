@@ -6,6 +6,16 @@ const { app } = require('electron');
 const { DEFAULT_AI_MODEL } = require('./constants');
 const { logger } = require('./logger');
 
+// The decrypted API key must never leave the main process — not to the
+// renderer over IPC, and not into an exported JSON backup. This produces a
+// short, low-entropy hint ("configured, ends in ...1234") that lets the UI
+// show key state without exposing anything usable.
+function maskApiKey(key) {
+  if (!key) return '';
+  if (key.length <= 8) return '••••';
+  return key.slice(0, 6) + '…' + key.slice(-4);
+}
+
 class WealthFlowDatabase {
   constructor() {
     this.db = null;
@@ -123,17 +133,24 @@ class WealthFlowDatabase {
 
   _decryptApiKey(encrypted) {
     if (!encrypted) return '';
-    try {
-      const { safeStorage } = require('electron');
-      if (safeStorage.isEncryptionAvailable() && encrypted.startsWith('enc:')) {
-        const buffer = Buffer.from(encrypted.slice(4), 'base64');
-        return safeStorage.decryptString(buffer);
+    if (encrypted.startsWith('enc:')) {
+      try {
+        const { safeStorage } = require('electron');
+        if (safeStorage.isEncryptionAvailable()) {
+          const buffer = Buffer.from(encrypted.slice(4), 'base64');
+          return safeStorage.decryptString(buffer);
+        }
+      } catch (err) {
+        logger.error('Failed to decrypt stored API key', { error: err.message });
       }
-    } catch { /* fallback to plaintext */ }
-    // Legacy plaintext key - flag for re-encryption on next save
-    if (!encrypted.startsWith('enc:')) {
-      this._reEncryptNeeded = encrypted;
+      // Ciphertext that can't currently be decrypted (safeStorage unavailable,
+      // OS keychain reset, different OS user) is never a usable API key.
+      // Returning it as-is would send garbage to Anthropic as the key, and —
+      // worse — would get silently re-encrypted as if it were plaintext the
+      // next time settings are saved, permanently corrupting it.
+      return '';
     }
+    // Legacy plaintext key from before encryption was added.
     return encrypted;
   }
 
@@ -269,6 +286,18 @@ class WealthFlowDatabase {
 
   updateSettings(data) {
     const current = this.getSettings();
+
+    // When the caller isn't changing the key, preserve exactly what's
+    // stored rather than routing it back through decrypt+encrypt: that
+    // round-trip would silently corrupt an undecryptable ciphertext (see
+    // _decryptApiKey) or double-encrypt a value that's already ciphertext.
+    // The one case worth upgrading in place is a legacy plaintext key now
+    // that encryption is available.
+    const currentRawKey = (this.getOne('SELECT ai_api_key FROM settings WHERE id = 1')?.ai_api_key) || '';
+    const apiKeyToStore = data.ai_api_key !== undefined
+      ? this._encryptApiKey(data.ai_api_key)
+      : (currentRawKey && !currentRawKey.startsWith('enc:') ? this._encryptApiKey(currentRawKey) : currentRawKey);
+
     this.run(
       `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, onboarding_focus = ?, onboarding_confidence = ?, onboarding_completed_at = ?, updated_at = datetime('now') WHERE id = 1`,
       [
@@ -280,7 +309,7 @@ class WealthFlowDatabase {
         data.province ?? current.province,
         (data.profile_completed !== undefined ? (data.profile_completed ? 1 : 0) : (current.profile_completed ? 1 : 0)),
         data.last_wizard_step ?? current.last_wizard_step ?? 0,
-        this._encryptApiKey(data.ai_api_key ?? current.ai_api_key ?? ''),
+        apiKeyToStore,
         data.ai_model ?? current.ai_model ?? DEFAULT_AI_MODEL,
         data.monthly_income ?? current.monthly_income ?? 0,
         data.monthly_expenses ?? current.monthly_expenses ?? 0,
@@ -732,8 +761,10 @@ class WealthFlowDatabase {
 
   // Export all data
   exportAllData() {
+    // The decrypted API key must never end up in a JSON backup file.
+    const { ai_api_key, ...safeSettings } = this.getSettings();
     return {
-      settings: this.getSettings(),
+      settings: { ...safeSettings, hasApiKey: !!ai_api_key, apiKeyMasked: maskApiKey(ai_api_key) },
       transactions: this.listTransactions(),
       budgets: this.listBudgets(),
       goals: this.listGoals(),
@@ -1056,4 +1087,4 @@ class WealthFlowDatabase {
   }
 }
 
-module.exports = { WealthFlowDatabase };
+module.exports = { WealthFlowDatabase, maskApiKey };

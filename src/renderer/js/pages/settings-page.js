@@ -11,8 +11,8 @@ const AI_MODELS = [
 
 export function renderSettings(state) {
   const s = state.settings || {};
-  const hasKey = !!s.ai_api_key;
-  const maskedKey = hasKey ? s.ai_api_key.slice(0, 10) + '...' + s.ai_api_key.slice(-4) : '';
+  const hasKey = !!s.hasApiKey;
+  const maskedKey = s.apiKeyMasked || '';
 
   return `
     <div style="max-width:600px">

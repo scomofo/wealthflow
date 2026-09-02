@@ -4,6 +4,7 @@ const path = require('path');
 const { logger } = require('./logger');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
+const { maskApiKey } = require('./database');
 
 function safeHandle(channel, handler) {
   ipcMain.handle(channel, async (...args) => {
@@ -36,7 +37,12 @@ function registerIpcHandlers(database, aiService) {
   }
 
   // Settings
-  safeHandle('db:settings:get', () => database.getSettings());
+  // The decrypted API key never leaves the main process — the renderer only
+  // gets whether one is configured and a masked hint, never the plaintext.
+  safeHandle('db:settings:get', () => {
+    const { ai_api_key, ...safeSettings } = database.getSettings();
+    return { ...safeSettings, hasApiKey: !!ai_api_key, apiKeyMasked: maskApiKey(ai_api_key) };
+  });
   safeHandle('db:settings:update', (_, data) => {
     validate(data, 'object', 'settings');
     return database.updateSettings(data);

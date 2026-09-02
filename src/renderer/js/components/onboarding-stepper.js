@@ -128,7 +128,7 @@ function renderStep1(settings) {
         </div>
         <div>
           <div class="input-label">Claude API Key <span style="color:var(--sub);font-weight:400">(optional)</span></div>
-          <input class="input-field" id="ob-api-key" type="password" placeholder="sk-ant-..." value="${h(settings?.ai_api_key || '')}">
+          <input class="input-field" id="ob-api-key" type="password" placeholder="${settings?.hasApiKey ? `Key saved (${h(settings.apiKeyMasked || '')}) — enter to replace` : 'sk-ant-...'}">
           <div style="color:var(--sub);font-size:11px;margin-top:3px">Powers the AI financial advisor. Add later in Settings if you prefer.</div>
         </div>
       </div>

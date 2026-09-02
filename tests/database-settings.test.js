@@ -28,7 +28,12 @@ describe('WealthFlowDatabase onboarding settings', () => {
 
   beforeEach(async () => {
     const dbPath = path.join(tempRoot, 'wealthflow.db');
-    if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+    // Clean up .bak/.tmp too — init() now recovers from a leftover backup
+    // if only dbPath is removed, which would leak state between tests
+    // instead of starting from a truly fresh database.
+    for (const p of [dbPath, dbPath + '.bak', dbPath + '.tmp']) {
+      if (fs.existsSync(p)) fs.unlinkSync(p);
+    }
     database = new WealthFlowDatabase();
     await database.init();
   });
