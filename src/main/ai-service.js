@@ -212,9 +212,14 @@ Use the knowledge base and financial data above to provide personalized, specifi
 
     this.conversationHistory.push({ role: 'user', content: userMessage });
 
-    // Keep last 20 messages to stay within context limits
-    if (this.conversationHistory.length > 20) {
-      this.conversationHistory = this.conversationHistory.slice(-20);
+    // Keep roughly the last 20 messages to stay within context limits.
+    // Messages always alternate user/assistant starting with user, so
+    // trimming must remove whole (user, assistant) pairs from the front —
+    // slicing to a fixed window can strip an odd number of entries and
+    // leave history starting with an assistant turn, which the API
+    // rejects (400) on every subsequent call until history is cleared.
+    while (this.conversationHistory.length > 20) {
+      this.conversationHistory.splice(0, 2);
     }
 
     try {

@@ -1,5 +1,5 @@
 // PDF Report Generator for WealthFlow
-import { fmt } from '../helpers.js';
+import { fmt, h } from '../helpers.js';
 
 export function generateMonthlyReportHTML(state, F, monthStr) {
   const now = monthStr || new Date().toISOString().slice(0, 7);
@@ -29,6 +29,7 @@ export function generateMonthlyReportHTML(state, F, monthStr) {
 <html>
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1a1a2e; line-height: 1.6; }
   h1 { color: #d4a843; margin-bottom: 4px; font-size: 28px; }
@@ -77,7 +78,7 @@ export function generateMonthlyReportHTML(state, F, monthStr) {
   <table>
     <tr><th>Category</th><th class="right">Amount</th><th class="right">% of Total</th></tr>
     ${catSorted.map(([cat, val]) => `
-      <tr><td>${cat}</td><td class="right">${fmt(val)}</td><td class="right">${expenses > 0 ? Math.round((val / expenses) * 100) : 0}%</td></tr>
+      <tr><td>${h(cat)}</td><td class="right">${fmt(val)}</td><td class="right">${expenses > 0 ? Math.round((val / expenses) * 100) : 0}%</td></tr>
     `).join('')}
     ${catSorted.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:#aaa">No expenses this month</td></tr>' : ''}
   </table>
@@ -87,10 +88,10 @@ export function generateMonthlyReportHTML(state, F, monthStr) {
     <tr><th>Category</th><th class="right">Budget</th><th class="right">Spent</th><th style="width:120px">Progress</th><th class="right">%</th></tr>
     ${budgets.map(b => `
       <tr>
-        <td>${b.category}</td>
+        <td>${h(b.category)}</td>
         <td class="right">${fmt(b.amount)}</td>
         <td class="right ${b.pct > 100 ? 'red' : ''}">${fmt(b.spent)}</td>
-        <td><div class="budget-bar"><div class="budget-fill" style="width:${Math.min(b.pct, 100)}%;background:${b.pct > 100 ? '#ef4444' : b.color || '#10b981'}"></div></div></td>
+        <td><div class="budget-bar"><div class="budget-fill" style="width:${Math.min(b.pct, 100)}%;background:${h(b.pct > 100 ? '#ef4444' : b.color || '#10b981')}"></div></div></td>
         <td class="right ${b.pct > 100 ? 'red' : ''}">${b.pct}%</td>
       </tr>
     `).join('')}
@@ -102,9 +103,9 @@ export function generateMonthlyReportHTML(state, F, monthStr) {
     <tr><th>Date</th><th>Description</th><th>Category</th><th class="right">Amount</th></tr>
     ${txs.sort((a, b) => b.date.localeCompare(a.date)).map(t => `
       <tr>
-        <td>${t.date}</td>
-        <td>${t.description}</td>
-        <td>${t.category}</td>
+        <td>${h(t.date)}</td>
+        <td>${h(t.description)}</td>
+        <td>${h(t.category)}</td>
         <td class="right ${t.amount >= 0 ? 'green' : 'red'}">${fmt(t.amount)}</td>
       </tr>
     `).join('')}
