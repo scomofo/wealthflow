@@ -114,7 +114,7 @@ function renderErrorScreen(error) {
       <div style="font-size:48px;margin-bottom:16px">&#9888;</div>
       <div style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--red,#ef4444)">Something went wrong</div>
       <div style="color:var(--sub);font-size:13px;margin-bottom:20px;word-break:break-word">${h(error)}</div>
-      <button class="btn btn-primary" onclick="location.reload()" style="justify-content:center;width:100%">Reload App</button>
+      <button class="btn btn-primary" data-action="reload-app" style="justify-content:center;width:100%">Reload App</button>
     </div>
   </div>`;
 }
@@ -279,6 +279,11 @@ function bindEvents() {
 
   // Click dispatcher — tries each handler in order
   el.addEventListener('click', async (e) => {
+    // A click inside the modal content (but not on one of its own
+    // data-action buttons) must not fall through to the overlay's own
+    // data-action="close-modal" — this check is what prevents that,
+    // rather than an inline stopPropagation handler on the modal content
+    // element (CSP's script-src 'self' blocks inline event handlers).
     const modalInner = e.target.closest('.modal, .import-modal');
     const btn = e.target.closest('[data-action]');
 

@@ -35,6 +35,10 @@ export async function handleSharedAction(action, btn, ctx) {
   } = ctx;
 
   switch (action) {
+    case 'reload-app':
+      location.reload();
+      return true;
+
     case 'toggle-side':
       appState.sideOpen = !appState.sideOpen;
       render();

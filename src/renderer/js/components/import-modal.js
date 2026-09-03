@@ -28,7 +28,7 @@ export function renderImportModal(data) {
   const stats = computeStats(rows, mapping, duplicates);
 
   return `<div class="modal-overlay" data-action="close-import-modal">
-    <div class="import-modal" onclick="event.stopPropagation()">
+    <div class="import-modal">
       <div class="modal-head">
         <div class="modal-title">${icon('upload', 18)} Import Transactions</div>
         <button style="background:none;border:none;color:var(--sub);cursor:pointer" data-action="close-import-modal">${icon('x', 18)}</button>
