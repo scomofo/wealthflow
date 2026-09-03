@@ -314,14 +314,16 @@ function registerIpcHandlers(database, aiService) {
         sandbox: true,
       }
     });
-    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
-    const pdfData = await win.webContents.printToPDF({
-      marginsType: 1,
-      pageSize: 'Letter',
-      printBackground: true,
-    });
-    win.close();
-    return pdfData;
+    try {
+      await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+      return await win.webContents.printToPDF({
+        marginsType: 1,
+        pageSize: 'Letter',
+        printBackground: true,
+      });
+    } finally {
+      if (!win.isDestroyed()) win.close();
+    }
   });
 
   // Advisor Profile

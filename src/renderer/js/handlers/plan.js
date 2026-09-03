@@ -234,19 +234,24 @@ export async function handlePlanChange(e, ctx) {
         mr.innerHTML = renderImportModal(appState.importModalData);
       }
       aiCategorizeImport(appState.importModalData.rows, appState.importModalData.mapping).then(cats => {
+        // The import modal may have been closed (appState.importModalData
+        // set to null) while this AI call was in flight — bail out rather
+        // than throw trying to set a property on null.
+        if (!appState.importModalData) return;
         appState.importModalData.aiCategories = cats;
         appState.importModalData.aiLoading = false;
         const mr2 = document.getElementById('modal-root');
-        if (mr2 && appState.importModalData) {
+        if (mr2) {
           // Trusted render function — all content is escaped
           mr2.innerHTML = renderImportModal(appState.importModalData);
         }
       }).catch(() => {
+        if (!appState.importModalData) return;
         appState.importModalData.useAI = false;
         appState.importModalData.aiLoading = false;
         showToast('AI categorization failed');
         const mr2 = document.getElementById('modal-root');
-        if (mr2 && appState.importModalData) {
+        if (mr2) {
           // Trusted render function — all content is escaped
           mr2.innerHTML = renderImportModal(appState.importModalData);
         }
@@ -271,9 +276,13 @@ export async function handlePlanChange(e, ctx) {
     }
     // Re-check duplicates with new mapping
     checkDuplicates(appState.importModalData.rows, appState.importModalData.mapping).then(dupes => {
+      // The import modal may have been closed while this duplicate check
+      // was in flight — bail out rather than throw setting a property on
+      // null.
+      if (!appState.importModalData) return;
       appState.importModalData.duplicates = dupes;
       const modalRoot = document.getElementById('modal-root');
-      if (modalRoot && appState.importModalData) {
+      if (modalRoot) {
         // Trusted render function — all content is escaped
         modalRoot.innerHTML = renderImportModal(appState.importModalData);
       }
