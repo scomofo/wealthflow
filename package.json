@@ -19,7 +19,10 @@
     "sql.js": "^1.11.0"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
     "@eslint/js": "^10.0.1",
+    "babel-jest": "^30.5.1",
     "electron": "^34.0.0",
     "electron-builder": "^25.0.0",
     "eslint": "^10.0.3",
