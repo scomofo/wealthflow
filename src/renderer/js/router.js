@@ -55,8 +55,15 @@ export const ALL_ROUTES = [
 export function getSection() { return currentSection; }
 
 export function navigate(section) {
-  currentSection = section;
-  if (onNavigate) onNavigate(section);
+  // An unrecognized section used to be accepted as-is: app.js's render
+  // dispatch is an if/else chain with no trailing else, so a typo'd or
+  // stale data-nav value left the previously rendered page in place
+  // (stale/blank) while getCurrentLabel() below still fell back to
+  // "Dashboard" — the sidebar/header said one thing, the page showed
+  // another. Falling back to 'dashboard' here keeps both in sync.
+  const isValid = ALL_ROUTES.some(([id]) => id === section);
+  currentSection = isValid ? section : 'dashboard';
+  if (onNavigate) onNavigate(currentSection);
 }
 
 export function setOnNavigate(fn) { onNavigate = fn; }

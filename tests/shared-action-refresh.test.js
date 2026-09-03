@@ -140,6 +140,44 @@ describe('handleSharedAction refresh actions', () => {
     expect(ctx.render).toHaveBeenCalledTimes(1);
   });
 
+  test('defaults an unset province to ON, matching the default used everywhere else', async () => {
+    // Regression test for finding L9: this fallback used to be 'AB',
+    // disagreeing with the 'ON' default used by the DB schema, seed data,
+    // and every tax calculator — a user who skipped the province field
+    // during onboarding silently got a different default province than
+    // the rest of the app assumes.
+    const elements = {
+      'ob-name': { value: 'Alex' },
+      'ob-province': { value: '' },
+      'ob-income': { value: '0' },
+      'ob-expenses': { value: '0' },
+      'ob-debt': { value: '0' },
+      'ob-savings': { value: '' },
+      'ob-api-key': { value: '' },
+    };
+    global.document = {
+      getElementById: jest.fn((id) => elements[id] || null),
+      querySelector: jest.fn((selector) => (
+        selector === 'input[name="ob-focus"]:checked' ? { value: 'build_savings' } : null
+      )),
+      querySelectorAll: jest.fn(() => []),
+    };
+    const ctx = {
+      State: {
+        getState: jest.fn(() => ({ settings: { last_wizard_step: 1, user_name: '' } })),
+        updateSettings: jest.fn().mockResolvedValue(),
+      },
+      render: jest.fn(),
+    };
+
+    const handled = await handleSharedAction('ob-next', {}, ctx);
+
+    expect(handled).toBe(true);
+    expect(ctx.State.updateSettings).toHaveBeenCalledWith(
+      expect.objectContaining({ province: 'ON' })
+    );
+  });
+
   test('ignores invalid onboarding numbers when calculating confidence', async () => {
     const elements = {
       'ob-name': { value: 'Alex' },

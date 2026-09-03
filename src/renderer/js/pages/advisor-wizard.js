@@ -16,7 +16,7 @@ let currentStep = 0;
 let initialized = false;
 let stepDrafts = {};
 
-const STEPS = [
+export const STEPS = [
   { key: 'personal', label: 'Personal Info', icon: 'user' },
   { key: 'employment', label: 'Employment & Income', icon: 'briefcase' },
   { key: 'goals', label: 'Goals & Priorities', icon: 'target' },

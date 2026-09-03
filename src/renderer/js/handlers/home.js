@@ -4,6 +4,7 @@
 
 import { computeRiskScore } from '../canadian/advisor-constants.js';
 import { addXP } from './shared.js';
+import { STEPS } from '../pages/advisor-wizard.js';
 
 export async function handleHomeAction(action, btn, ctx) {
   const { State, render, showToast, uid, appState, navigate,
@@ -60,7 +61,7 @@ export async function handleHomeAction(action, btn, ctx) {
 
     case 'wizard-next': {
       const next = getWizardStep() + 1;
-      if (next < 8) {
+      if (next < STEPS.length) {
         setWizardStep(next);
         await State.updateSettings({ last_wizard_step: next });
         render();
@@ -80,7 +81,7 @@ export async function handleHomeAction(action, btn, ctx) {
 
     case 'wizard-skip': {
       const skipNext = getWizardStep() + 1;
-      if (skipNext < 8) {
+      if (skipNext < STEPS.length) {
         setWizardStep(skipNext);
         await State.updateSettings({ last_wizard_step: skipNext });
         render();
@@ -91,7 +92,7 @@ export async function handleHomeAction(action, btn, ctx) {
     case 'wizard-save-step': {
       await saveCurrentWizardStep(ctx);
       const nextStep = getWizardStep() + 1;
-      if (nextStep < 8) {
+      if (nextStep < STEPS.length) {
         setWizardStep(nextStep);
         await State.updateSettings({ last_wizard_step: nextStep });
       }

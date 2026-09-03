@@ -80,7 +80,11 @@ export async function handleSharedAction(action, btn, ctx) {
         // Quick Financial Setup — save all fields from single screen
         const name = readOnboardingInput('ob-name').trim();
         updates.user_name = name || s.user_name || 'User';
-        updates.province = readOnboardingInput('ob-province') || 'AB';
+        // 'ON' matches the default used everywhere else province falls back
+        // (DB schema, seed data, tax calculators) — this used to default to
+        // 'AB' instead, silently disagreeing with every other subsystem for
+        // anyone who skipped the province field during onboarding.
+        updates.province = readOnboardingInput('ob-province') || 'ON';
 
         const income = readOnboardingInput('ob-income');
         const parsedIncome = readNonNegativeNumber(income);
