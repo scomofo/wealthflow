@@ -36,6 +36,7 @@ import { renderImportModal } from './components/import-modal.js';
 import { renderRecurringModal } from './components/recurring-modal.js';
 import { detectRecurringPayments } from './utils/recurring-detector.js';
 import { renderOnboardingStepper } from './components/onboarding-stepper.js';
+import { createSerializedRunner } from './utils/serialize-async.js';
 
 // Handler modules
 import { handleSharedAction } from './handlers/shared.js';
@@ -157,7 +158,18 @@ async function handleUndo() {
 }
 
 // --- Render ---
-async function render() {
+// render() is called from many places without `await` (event handlers,
+// setOnNavigate's synchronous callback, keyboard shortcuts, ...), but the
+// actual render work is async (it awaits State.computeFinancials() on
+// every call, plus State.loadAdvisorProfile()/loadResidence() on some
+// sections). Without serialization, two overlapping calls could interleave
+// their destroyCharts()/initCharts() pairs — one call's initCharts()
+// creating a Chart.js instance on a canvas, then a still-in-flight earlier
+// call resuming and calling destroyCharts()/initCharts() again on the same
+// canvas, which Chart.js rejects ("Canvas is already in use").
+const render = createSerializedRunner(doRender);
+
+async function doRender() {
   const el = document.getElementById('app');
   let state, settings;
   try {

@@ -26,7 +26,7 @@ describe('initial loading state', () => {
   });
 
   test('render() replaces #app\'s entire innerHTML, so the static loader is guaranteed to be cleared on first render — not left behind under the real UI', () => {
-    const renderFnStart = appJs.indexOf('async function render()');
+    const renderFnStart = appJs.indexOf('async function doRender()');
     expect(renderFnStart).toBeGreaterThan(-1);
     const renderFnBody = appJs.slice(renderFnStart, renderFnStart + 1200);
     expect(renderFnBody).toMatch(/getElementById\(['"]app['"]\)/);
