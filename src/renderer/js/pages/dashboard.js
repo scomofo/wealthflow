@@ -62,6 +62,11 @@ export function renderDashboard(state, F, workflowCtx) {
   const earnedBadges = BADGE_DEFS.filter(b => b.check(s, state.counts || {}));
 
   // ── Render ───────────────────────────────────────────────────────────────
+  // Ordered per CLAUDE.md's dashboard hierarchy: Next Best Actions (hero),
+  // then the snapshot bar, then insights, then saved actions, then
+  // secondary/supporting content — so the user understands what to do
+  // within a few seconds instead of scrolling past gamification and quick
+  // links to find the one section that actually says what to do next.
   return `
     <div class="card dashboard-hero" style="margin-bottom:18px;padding:22px">
       <div style="font-size:18px;font-weight:700;letter-spacing:-0.5px">${monthLabel}</div>
@@ -69,15 +74,17 @@ export function renderDashboard(state, F, workflowCtx) {
       <div class="dashboard-subtitle" style="margin-top:1px">Welcome back, <b style="color:var(--text)">${h(s.user_name || 'User')}</b></div>
     </div>
 
-    ${renderAISummary(buildDashboardAISummary(state, F, generateAISummary))}
+    ${renderNextBestActionsPanel(state.nextBestActions || [], { financials: F })}
 
     ${renderProactiveBanner(state.proactiveNudges)}
 
     ${renderFinancialSnapshotBar(state, F)}
 
-    ${renderProgressStrip(state.engagementProgress)}
+    ${renderAISummary(buildDashboardAISummary(state, F, generateAISummary))}
 
-    ${renderNextBestActionsPanel(state.nextBestActions || [], { financials: F })}
+    ${renderDashboardInsightCards(state, F)}
+
+    ${renderActionList(state.recommendedActions)}
 
     <div class="card dashboard-section">
       <div style="font-weight:700;font-size:14px;margin-bottom:12px">AI Recommendations</div>
@@ -87,7 +94,6 @@ export function renderDashboard(state, F, workflowCtx) {
       ${workflowCtx?.workflowLoading ? `<div style="display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--sub);font-size:13px">${icon('loader', 14)} Analyzing your finances...</div>` : ''}
       ${workflowCtx?.activeWorkflowResult ? renderDecisionCard(workflowCtx.activeWorkflowResult) : ''}
     </div>
-    ${renderActionList(state.recommendedActions)}
 
     <div class="card dashboard-section">
       <div style="font-weight:600;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
@@ -96,7 +102,7 @@ export function renderDashboard(state, F, workflowCtx) {
       ${catHtml}
     </div>
 
-    ${renderDashboardInsightCards(state, F)}
+    ${renderProgressStrip(state.engagementProgress)}
 
     <div class="card dashboard-section">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
