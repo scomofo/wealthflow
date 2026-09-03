@@ -17,6 +17,7 @@ import {
   normalizeOnboardingFocus,
 } from '../utils/onboarding.js';
 import { todayLocalISO, formatLocalDate } from '../utils/date-utils.js';
+import { XP_PER_LEVEL } from '../utils/gamification.js';
 
 function readOnboardingInput(id) {
   return document.getElementById(id)?.value ?? '';
@@ -782,6 +783,6 @@ export async function addXP(n, ctx) {
   const { State } = ctx;
   const s = State.getState().settings;
   const newXP = s.xp + n;
-  const newLevel = Math.floor(newXP / 500) + 1;
+  const newLevel = Math.floor(newXP / XP_PER_LEVEL) + 1;
   await State.updateSettings({ xp: newXP, level: newLevel });
 }

@@ -9,7 +9,7 @@ export function renderDebts(state) {
 
   return `
     <div class="grid3">
-      ${stat('Total Debt', fmt(tot), -5.2, 'credit-card', 'var(--red)')}
+      ${stat('Total Debt', fmt(tot), null, 'credit-card', 'var(--red)')}
       ${stat('Min Payments', fmt(state.debts.reduce((s, d) => s + d.min_payment, 0)), 0, 'clock', 'var(--orange)')}
       ${stat('Avg Rate', ar.toFixed(1) + '%', 0, 'activity', 'var(--purple)')}
     </div>

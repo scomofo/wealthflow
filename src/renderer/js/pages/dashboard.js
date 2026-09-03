@@ -10,6 +10,7 @@ import { generateAISummary } from '../utils/ai-summary.js';
 import { buildDashboardAISummary } from '../utils/dashboard-intelligence.js';
 import { renderProactiveBanner } from '../components/proactive-banner.js';
 import { renderProgressStrip } from '../components/progress-strip.js';
+import { XP_PER_LEVEL } from '../utils/gamification.js';
 
 export function setShowAllActions(_val) { /* no-op: panel handles its own display */ }
 
@@ -58,7 +59,11 @@ export function renderDashboard(state, F, workflowCtx) {
   // ── Achievements strip ───────────────────────────────────────────────────
   const level = s.level || 1;
   const xp = s.xp || 0;
-  const xpForNext = level * 100;
+  // XP is a running total (addXP() in handlers/shared.js never resets it per
+  // level), so progress toward the next level is measured from where the
+  // current level started, not from raw total XP.
+  const xpIntoLevel = Math.max(0, xp - (level - 1) * XP_PER_LEVEL);
+  const xpForNext = XP_PER_LEVEL;
   const earnedBadges = BADGE_DEFS.filter(b => b.check(s, state.counts || {}));
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -111,9 +116,9 @@ export function renderDashboard(state, F, workflowCtx) {
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <div style="width:120px;max-width:120px;height:6px;border-radius:3px;background:var(--border);overflow:hidden">
-            <div style="height:100%;width:${Math.min(xp / xpForNext * 100, 100).toFixed(1)}%;background:var(--accent);border-radius:3px;transition:width 0.3s"></div>
+            <div style="height:100%;width:${Math.min(xpIntoLevel / xpForNext * 100, 100).toFixed(1)}%;background:var(--accent);border-radius:3px;transition:width 0.3s"></div>
           </div>
-          <span style="font-size:11px;color:var(--sub)">${xp} / ${xpForNext} XP</span>
+          <span style="font-size:11px;color:var(--sub)">${xpIntoLevel} / ${xpForNext} XP</span>
         </div>
         ${earnedBadges.length > 0 ? `
         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">

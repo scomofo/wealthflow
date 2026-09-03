@@ -1,13 +1,17 @@
 import { icon } from '../icons.js';
 
 export function stat(label, value, change, ic, color) {
-  const up = change >= 0;
+  // change is an optional real period-over-period percent — omit the
+  // trend badge entirely (rather than fabricate a number) when the caller
+  // has no genuine value to report.
+  const hasChange = typeof change === 'number' && !Number.isNaN(change);
+  const up = hasChange && change >= 0;
   return `<div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div class="stat-icon" style="background:${color}18">${icon(ic, 18, color)}</div>
-      <div style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--${up ? 'green' : 'red'})">
+      ${hasChange ? `<div style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--${up ? 'green' : 'red'})">
         ${icon(up ? 'arrow-up-right' : 'arrow-down-right', 14)} ${Math.abs(change)}%
-      </div>
+      </div>` : ''}
     </div>
     <div style="margin-top:12px">
       <div class="stat-label">${label}</div>
