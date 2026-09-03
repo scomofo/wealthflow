@@ -107,8 +107,21 @@ class AiService {
     }
   }
 
+  // Split into a stable, cacheable block (instructions + knowledge base,
+  // identical on every call) and a dynamic block (the user's financial
+  // data, which changes per request). The knowledge base alone runs
+  // ~90KB+ of text — resending and reprocessing it as input tokens on
+  // every single chat message was the largest cost/latency driver in this
+  // integration. cache_control on the first block lets the API reuse its
+  // already-processed state instead, as long as its content matches the
+  // previous call byte-for-byte — which it does here since the instructions
+  // and knowledge base never change mid-conversation, unlike the financial
+  // context below them.
   _buildSystemPrompt(financialContext) {
-    return `You are WealthFlow AI Advisor — an expert Canadian personal financial advisor built into the WealthFlow desktop app. You specialize in Alberta and Canadian tax law, debt management, investments, registered accounts (TFSA, RRSP, RESP, FHSA), budgeting, and financial planning.
+    return [
+      {
+        type: 'text',
+        text: `You are WealthFlow AI Advisor — an expert Canadian personal financial advisor built into the WealthFlow desktop app. You specialize in Alberta and Canadian tax law, debt management, investments, registered accounts (TFSA, RRSP, RESP, FHSA), budgeting, and financial planning.
 
 IMPORTANT RULES:
 - Always provide advice specific to Canada and Alberta when relevant
@@ -121,12 +134,17 @@ IMPORTANT RULES:
 - Format responses with clear structure: use line breaks between sections, bold key numbers
 
 KNOWLEDGE BASE (Alberta Tax Law, Debt Advice & Consumer Protection):
-${this.knowledgeBase}
-
-USER'S CURRENT FINANCIAL DATA:
+${this.knowledgeBase}`,
+        cache_control: { type: 'ephemeral' },
+      },
+      {
+        type: 'text',
+        text: `USER'S CURRENT FINANCIAL DATA:
 ${financialContext}
 
-Use the knowledge base and financial data above to provide personalized, specific advice. When the user asks about tax, debt, or financial planning, draw from the knowledge base for accurate Alberta-specific information. When they ask about their finances, reference their actual numbers.`;
+Use the knowledge base and financial data above to provide personalized, specific advice. When the user asks about tax, debt, or financial planning, draw from the knowledge base for accurate Alberta-specific information. When they ask about their finances, reference their actual numbers.`,
+      },
+    ];
   }
 
   _buildFinancialContext(data, options = {}) {
