@@ -5,6 +5,7 @@ const { app } = require('electron');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
 const { logger } = require('./logger');
+const { parseLocalDate, formatLocalDate, todayLocalISO } = require('./date-utils');
 
 // The decrypted API key must never leave the main process — not to the
 // renderer over IPC, and not into an exported JSON backup. This produces a
@@ -699,7 +700,7 @@ class WealthFlowDatabase {
   // Net worth history
   listNetWorthHistory() { return this.getAll('SELECT * FROM net_worth_history ORDER BY date ASC'); }
   snapshotNetWorth() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayLocalISO();
     const existing = this.getOne('SELECT * FROM net_worth_history WHERE date = ?', [today]);
     if (existing) return existing;
     const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments') || 0;
@@ -730,7 +731,7 @@ class WealthFlowDatabase {
 
   // Process recurring bills
   processRecurringBills() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayLocalISO();
     const overdue = this.getAll(
       'SELECT * FROM bills WHERE frequency IS NOT NULL AND auto_generate = 1 AND next_due_date <= ? AND deleted_at IS NULL', [today]
     );
@@ -757,7 +758,7 @@ class WealthFlowDatabase {
   }
 
   _calculateNextDue(fromDate, frequency) {
-    const d = new Date(fromDate);
+    const d = parseLocalDate(fromDate);
     const origDay = d.getDate();
     switch (frequency) {
       case 'weekly': d.setDate(d.getDate() + 7); break;
@@ -772,7 +773,7 @@ class WealthFlowDatabase {
         break;
       case 'annual': d.setFullYear(d.getFullYear() + 1); break;
     }
-    return d.toISOString().slice(0, 10);
+    return formatLocalDate(d);
   }
 
   // Export all data

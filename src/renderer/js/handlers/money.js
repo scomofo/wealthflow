@@ -5,9 +5,10 @@
 import { detectRecurringPayments } from '../utils/recurring-detector.js';
 import { renderRecurringModal } from '../components/recurring-modal.js';
 import { addXP } from './shared.js';
+import { parseLocalDate, formatLocalDate } from '../utils/date-utils.js';
 
 function calculateNextDue(fromDate, frequency) {
-  const d = new Date(fromDate);
+  const d = parseLocalDate(fromDate);
   switch (frequency) {
     case 'weekly': d.setDate(d.getDate() + 7); break;
     case 'biweekly': d.setDate(d.getDate() + 14); break;
@@ -15,7 +16,7 @@ function calculateNextDue(fromDate, frequency) {
     case 'quarterly': d.setMonth(d.getMonth() + 3); break;
     case 'annual': d.setFullYear(d.getFullYear() + 1); break;
   }
-  return d.toISOString().slice(0, 10);
+  return formatLocalDate(d);
 }
 
 export async function handleMoneyAction(action, btn, ctx) {

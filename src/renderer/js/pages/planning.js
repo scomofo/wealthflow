@@ -6,6 +6,7 @@ import { renderDecisionCard } from '../components/ai-decision-card.js';
 import { progress } from '../components/progress-bar.js';
 import { icon } from '../icons.js';
 import { evaluateAffordability } from '../utils/affordability.js';
+import { parseLocalDate } from '../utils/date-utils.js';
 
 let planInputs = {
   // Debt payoff
@@ -312,7 +313,7 @@ function renderSavingsTimeline(goals) {
       const monthsToGoal = monthly > 0 ? Math.ceil(remaining / monthly) : Infinity;
       const targetDate = new Date();
       targetDate.setMonth(targetDate.getMonth() + monthsToGoal);
-      const deadlineDate = g.deadline ? new Date(g.deadline) : null;
+      const deadlineDate = g.deadline ? parseLocalDate(g.deadline) : null;
       const onTrack = deadlineDate ? targetDate <= deadlineDate : true;
 
       return `<div style="margin-bottom:12px">

@@ -1,12 +1,13 @@
 import { TFSA_LIMITS, RRSP, RESP, FHSA, CPP, OAS } from './constants.js';
 import { getMarginalRate } from './formatters.js';
+import { parseLocalDate } from '../utils/date-utils.js';
 
 /**
  * Calculate current TFSA room based on known CRA room + subsequent contributions.
  * Accumulates annual limits for years between known date and now.
  */
 export function calculateCurrentTFSARoom(knownRoom, knownDate, contributions) {
-  const knownYear = new Date(knownDate).getFullYear();
+  const knownYear = parseLocalDate(knownDate).getFullYear();
   const currentYear = new Date().getFullYear();
 
   // Add annual limits for years after the known date
@@ -84,7 +85,7 @@ export function calculateCESGDetails(beneficiary) {
  * FHSA: $8,000/year, $40,000 lifetime, unused room carries forward up to $8,000.
  */
 export function calculateCurrentFHSARoom(knownRoom, knownDate, contributions) {
-  const knownYear = new Date(knownDate).getFullYear();
+  const knownYear = parseLocalDate(knownDate).getFullYear();
   const currentYear = new Date().getFullYear();
 
   // Contributions between knownDate and today are only known in aggregate
@@ -127,7 +128,7 @@ export function calculateCurrentFHSARoom(knownRoom, knownDate, contributions) {
  * Calculate GIC maturity details.
  */
 export function calculateGICMaturity(gic) {
-  const maturity = new Date(gic.maturity_date);
+  const maturity = parseLocalDate(gic.maturity_date);
   const now = new Date();
   const msPerDay = 86400000;
   const daysRemaining = Math.ceil((maturity - now) / msPerDay);

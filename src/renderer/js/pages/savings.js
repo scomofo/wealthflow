@@ -1,6 +1,7 @@
 import { icon } from '../icons.js';
 import { fmt, h } from '../helpers.js';
 import { progress } from '../components/progress-bar.js';
+import { parseLocalDate } from '../utils/date-utils.js';
 
 export function renderSavings(state) {
   const tot = state.goals.reduce((s, g) => s + g.current, 0);
@@ -15,7 +16,7 @@ export function renderSavings(state) {
     <div class="grid2">
       ${state.goals.map(g => {
         const p = Math.round(g.current / (g.target || 1) * 100);
-        const dl = g.deadline ? Math.max(0, Math.ceil((new Date(g.deadline) - new Date()) / 864e5)) : null;
+        const dl = g.deadline ? Math.max(0, Math.ceil((parseLocalDate(g.deadline) - new Date()) / 864e5)) : null;
         const mn = dl ? Math.round((g.target - g.current) / Math.max(dl / 30, 1)) : 0;
         return `<div class="card">
           <div style="display:flex;justify-content:space-between;margin-bottom:12px">

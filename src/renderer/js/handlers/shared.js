@@ -16,6 +16,7 @@ import {
   calculateOnboardingConfidence,
   normalizeOnboardingFocus,
 } from '../utils/onboarding.js';
+import { todayLocalISO, formatLocalDate } from '../utils/date-utils.js';
 
 function readOnboardingInput(id) {
   return document.getElementById(id)?.value ?? '';
@@ -385,7 +386,7 @@ export async function handleSharedAction(action, btn, ctx) {
       const card = btn.closest('.action-card');
       if (card) card.classList.add('fade-out');
       const nbaS = (ctx.State.getState().nextBestActions || []).find(a => a.id === btn.dataset.id);
-      const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+      const until = formatLocalDate(new Date(Date.now() + 7 * 86400000));
       await ctx.State.snoozeNextBestAction(btn.dataset.id, until);
       if (nbaS) await ctx.State.recordInteraction('snooze', nbaS.category || 'other');
       try { await ctx.State.refreshCommandCenterIntelligence('action_snoozed'); } catch (_) { /* non-critical */ }
@@ -481,7 +482,7 @@ export async function handleSaveModal(type, ctx) {
         description: desc,
         amount: txType === 'income' ? Math.abs(+amt) : -Math.abs(+amt),
         category: txType === 'income' ? 'Income' : cat,
-        date: date || new Date().toISOString().slice(0, 10),
+        date: date || todayLocalISO(),
         icon: 'receipt',
       };
       if (editData) {
@@ -615,7 +616,7 @@ export async function handleSaveModal(type, ctx) {
       const freq = document.getElementById('m-freq')?.value;
       const autogen = document.getElementById('m-autogen')?.checked;
       if (!title) return;
-      const billDate = date || new Date().toISOString().slice(0, 10);
+      const billDate = date || todayLocalISO();
       const billData = {
         title, amount: +(amt || 0),
         date: billDate, type: btype || 'bill',
@@ -648,7 +649,7 @@ export async function handleSaveModal(type, ctx) {
         id: uid(),
         account_type: accountType,
         amount: +amt,
-        date: date || new Date().toISOString().slice(0, 10),
+        date: date || todayLocalISO(),
         description: desc || null,
         institution: inst || null,
       });
@@ -666,7 +667,7 @@ export async function handleSaveModal(type, ctx) {
       await State.upsertContributionRoom({
         account_type: acctType,
         known_room: +room,
-        known_as_of_date: date || new Date().toISOString().slice(0, 10),
+        known_as_of_date: date || todayLocalISO(),
         notes: notes || null,
       });
       showToast('Contribution room updated');
@@ -705,7 +706,7 @@ export async function handleSaveModal(type, ctx) {
         principal: +principal,
         rate: +rate,
         term_months: +term,
-        purchase_date: purchaseDate || new Date().toISOString().slice(0, 10),
+        purchase_date: purchaseDate || todayLocalISO(),
         maturity_date: maturityDate,
         account_type: acct || 'non-registered',
         is_cashable: cashable ? 1 : 0,

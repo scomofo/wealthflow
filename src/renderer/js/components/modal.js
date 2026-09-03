@@ -2,6 +2,7 @@ import { icon } from '../icons.js';
 import { CATS, h } from '../helpers.js';
 import { CANADIAN_BANKS, INVESTMENT_TYPES, ACCOUNT_TYPES, CATEGORY_COLORS } from '../canadian/constants.js';
 import { ASSET_TYPES, DOCUMENT_TYPES } from '../canadian/advisor-constants.js';
+import { todayLocalISO } from '../utils/date-utils.js';
 
 const sel = (options, value) => options.map(o => {
   const v = typeof o === 'string' ? o : o.code || o.value;
@@ -12,7 +13,7 @@ const sel = (options, value) => options.map(o => {
 export function getModalConfig(type, data) {
   const d = data || {};
   const isEdit = !!data;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocalISO();
   const isIncome = d.amount > 0;
 
   const configs = {

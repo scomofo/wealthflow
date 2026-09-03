@@ -14,6 +14,11 @@
 // Helpers
 // ---------------------------------------------------------------------------
 
+function parseLocalDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 function fmtC(amount) {
   return '$' + Math.abs(amount).toLocaleString('en-CA', {
     minimumFractionDigits: 0,
@@ -87,8 +92,7 @@ function checkBills(state, _financials, actions) {
 
   for (const bill of state.bills) {
     if (!bill.next_due_date) continue;
-    const due = new Date(bill.next_due_date);
-    due.setHours(0, 0, 0, 0);
+    const due = parseLocalDate(bill.next_due_date);
 
     if (due < today) {
       actions.push({
@@ -139,7 +143,7 @@ function checkGoals(state, financials, actions) {
 
   for (const goal of goals) {
     if (!goal.deadline) continue;
-    const deadlineDate = new Date(goal.deadline);
+    const deadlineDate = parseLocalDate(goal.deadline);
     const now = new Date();
     const monthsLeft = Math.max(
       (deadlineDate.getFullYear() - now.getFullYear()) * 12 +

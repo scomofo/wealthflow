@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { todayLocalISO } = require('./date-utils');
 
 class ProactiveEngine {
   constructor(database) {
@@ -38,7 +39,7 @@ class ProactiveEngine {
     const bills = this.database.listBills();
     const debts = this.database.listDebts();
     const contributionRoom = this.database.listContributionRoom();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayLocalISO();
     const catSpending = financials.catSpending || {};
 
     // Load profile for cooldown checks
