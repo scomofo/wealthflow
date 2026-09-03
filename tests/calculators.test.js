@@ -85,18 +85,23 @@ function calculateTFSARoom(knownRoom, knownYear, currentYear, contributedSince) 
   return knownRoom + accumulated - contributedSince;
 }
 
-// FHSA room calculator (matching source logic with carryforward)
-function calculateFHSARoom(knownRoom, knownYear, currentYear, contributedSince) {
-  let accumulated = 0;
-  let unusedPriorYear = 0;
-  for (let y = knownYear + 1; y <= currentYear; y++) {
-    if (y >= 2023) {
-      const yearLimit = 8000 + Math.min(unusedPriorYear, 8000);
-      accumulated += yearLimit;
-      unusedPriorYear = yearLimit;
-    }
-  }
-  return Math.max(0, Math.min(40000, knownRoom + accumulated - contributedSince));
+// FHSA room: imports the real calculateCurrentFHSARoom rather than a local
+// reimplementation — a prior version of this function duplicated the
+// carryforward loop from calculators.js locally (with the same
+// double-counting bug the real function had), so it validated a fictional
+// parallel copy and passed regardless of what the real function did.
+const { calculateCurrentFHSARoom } = require('../src/renderer/js/canadian/calculators.js');
+
+// calculateCurrentFHSARoom always measures "now" as the real current date,
+// so these helpers express test scenarios in elapsed years from today
+// rather than an injectable currentYear parameter.
+function yearsAgoDate(years) {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - years);
+  return d.toISOString().slice(0, 10);
+}
+function fhsaContributionToday(amount) {
+  return { account_type: 'fhsa', amount, date: new Date().toISOString().slice(0, 10) };
 }
 
 // GIC interest (matching source compounding logic)
@@ -204,26 +209,34 @@ describe('TFSA Room Calculation', () => {
   });
 });
 
-describe('FHSA Room Calculation (Fixed)', () => {
-  test('first year room', () => {
-    // From 2023->2024: one year accumulates 8000 + min(0 unused, 8000) = 8000
-    // Total: knownRoom(8000) + accumulated(8000) = 16000
-    expect(calculateFHSARoom(8000, 2023, 2024, 0)).toBe(16000);
+describe('FHSA Room Calculation', () => {
+  test('one full year elapsed with no contributions: known room + one annual grant', () => {
+    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(1), []);
+    expect(result.currentRoom).toBe(8000 + 8000);
   });
 
-  test('with contributions', () => {
-    const room = calculateFHSARoom(8000, 2023, 2024, 6000);
-    expect(room).toBeGreaterThan(0);
-    expect(room).toBeLessThanOrEqual(40000);
+  test('room grows linearly across multiple no-contribution years, not compounding', () => {
+    // Two years elapsed, zero contributions: known room + 2 x $8,000 new
+    // annual grants = $24,000. The carry-forward bug this replaces made
+    // each year's grant compound into the next (known 8000 -> 40000 after
+    // just 2 years) instead of adding a flat $8,000 per year.
+    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(2), []);
+    expect(result.currentRoom).toBe(8000 + 8000 + 8000);
+  });
+
+  test('with contributions since the known date', () => {
+    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(1), [fhsaContributionToday(6000)]);
+    expect(result.currentRoom).toBe(8000 + 8000 - 6000);
   });
 
   test('lifetime cap respected', () => {
-    const room = calculateFHSARoom(40000, 2023, 2030, 0);
-    expect(room).toBe(40000);
+    const result = calculateCurrentFHSARoom(40000, yearsAgoDate(7), []);
+    expect(result.currentRoom).toBe(40000);
   });
 
-  test('zero room with full contributions', () => {
-    expect(calculateFHSARoom(8000, 2023, 2024, 50000)).toBe(0);
+  test('room floors at zero, never negative', () => {
+    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(1), [fhsaContributionToday(50000)]);
+    expect(result.currentRoom).toBe(0);
   });
 });
 
