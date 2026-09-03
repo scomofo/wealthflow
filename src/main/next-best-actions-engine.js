@@ -33,6 +33,7 @@ class NextBestActionsEngine {
     const bills = db.listBills();
     const goals = db.listGoals();
     const contributionRoom = db.listContributionRoom();
+    const contributions = db.listContributions();
     const settings = db.getSettings();
     const financials = db.computeFinancials();
 
@@ -42,7 +43,7 @@ class NextBestActionsEngine {
       ...this._ruleHighInterestDebt(debts),
       ...this._ruleBillsDueSoon(bills),
       ...this._ruleLowEmergencyFund(financials, debts),
-      ...this._ruleUnusedContributionRoom(contributionRoom, financials),
+      ...this._ruleUnusedContributionRoom(contributionRoom, financials, contributions),
       ...this._ruleGoalOffTrack(goals),
       ...this._ruleMissingProfile(settings),
     ];
@@ -248,7 +249,7 @@ class NextBestActionsEngine {
     return [];
   }
 
-  _ruleUnusedContributionRoom(contributionRoom, financials) {
+  _ruleUnusedContributionRoom(contributionRoom, financials, contributions = []) {
     const actions = [];
     const income = financials.income || 0;
     const expenses = financials.expenses || 0;
@@ -256,7 +257,16 @@ class NextBestActionsEngine {
     if (income <= expenses) return actions;
 
     for (const cr of contributionRoom) {
-      const room = cr.known_room ?? cr.room ?? 0;
+      const knownRoom = cr.known_room ?? cr.room ?? 0;
+      // known_room is a snapshot as of known_as_of_date — contributions
+      // logged since then reduce the room actually still available. Without
+      // this, the nudge kept citing the stale as-of figure even after the
+      // user had fully used up (or overused) that room by logging
+      // contributions, telling them they had unused room they didn't.
+      const contributedSince = contributions
+        .filter((c) => c.account_type === cr.account_type && (!cr.known_as_of_date || c.date > cr.known_as_of_date))
+        .reduce((sum, c) => sum + (c.amount || 0), 0);
+      const room = Math.max(0, knownRoom - contributedSince);
       if (room > 0) {
         let score = 60;
         if (room > 5000) score += 10;

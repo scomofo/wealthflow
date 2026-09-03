@@ -59,6 +59,7 @@ describe('NextBestActionsEngine.getRankedOpenActions', () => {
     db.listBills = jest.fn(() => []);
     db.listGoals = jest.fn(() => []);
     db.listContributionRoom = jest.fn(() => []);
+    db.listContributions = jest.fn(() => []);
     db.getSettings = jest.fn(() => ({ profile_completed: true }));
     db.computeFinancials = jest.fn(() => ({ income: 0, expenses: 0, savingsRate: 0, catSpending: {}, netWorth: 0, totalDebt: 0 }));
     db.upsertNextBestAction = jest.fn();

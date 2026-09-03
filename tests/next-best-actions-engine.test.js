@@ -16,6 +16,7 @@ function mockDb(existingActions = []) {
     listGoals: jest.fn(() => []),
     listInvestments: jest.fn(() => []),
     listContributionRoom: jest.fn(() => []),
+    listContributions: jest.fn(() => []),
     computeFinancials: jest.fn(() => ({
       income: 5000,
       expenses: 3000,
@@ -106,6 +107,44 @@ describe('NextBestActionsEngine', () => {
     expect(investAction).toBeDefined();
     expect(investAction.title).toContain('TFSA');
     expect(investAction.score).toBeGreaterThanOrEqual(60);
+  });
+
+  test('subtracts contributions logged since known_as_of_date from unused contribution room', async () => {
+    // Regression test for finding M10: known_room is a snapshot as of
+    // known_as_of_date — a $7,000 TFSA room recorded on Jan 1 that the user
+    // then fully contributed to should no longer generate a "you have
+    // unused room" nudge citing the stale $7,000 figure.
+    const db = mockDb();
+    db.listContributionRoom.mockReturnValue([
+      { account_type: 'TFSA', known_room: 7000, known_as_of_date: '2026-01-01' },
+    ]);
+    db.listContributions.mockReturnValue([
+      { account_type: 'TFSA', amount: 7000, date: '2026-02-15' },
+    ]);
+
+    const engine = new NextBestActionsEngine(db);
+    await engine.generateActions();
+
+    const upserted = db.upsertNextBestAction.mock.calls.map((c) => c[0]);
+    expect(upserted.find((a) => a.action_key === 'contribution_room_TFSA')).toBeUndefined();
+  });
+
+  test('a contribution before known_as_of_date does not reduce the reported room', async () => {
+    const db = mockDb();
+    db.listContributionRoom.mockReturnValue([
+      { account_type: 'TFSA', known_room: 7000, known_as_of_date: '2026-01-01' },
+    ]);
+    db.listContributions.mockReturnValue([
+      { account_type: 'TFSA', amount: 3000, date: '2025-06-01' }, // already reflected in known_room
+    ]);
+
+    const engine = new NextBestActionsEngine(db);
+    await engine.generateActions();
+
+    const upserted = db.upsertNextBestAction.mock.calls.map((c) => c[0]);
+    const investAction = upserted.find((a) => a.action_key === 'contribution_room_TFSA');
+    expect(investAction).toBeDefined();
+    expect(investAction.title).toContain('$7,000');
   });
 
   test('does not flag emergency fund when total saved covers a month of expenses', async () => {
