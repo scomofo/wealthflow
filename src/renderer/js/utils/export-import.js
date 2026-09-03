@@ -135,7 +135,7 @@ export async function importFile() {
 
   // Check if user has an AI API key
   const settings = State.getState().settings;
-  const hasAiKey = !!(settings && settings.ai_api_key);
+  const hasAiKey = !!(settings && settings.hasApiKey);
 
   return { headers, rows, mapping, filePath, fileType, hasAiKey, detectedBank };
 }

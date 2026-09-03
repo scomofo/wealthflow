@@ -61,6 +61,19 @@ export function endStreaming(fullText) {
   _restoreAiInput();
 }
 
+// A failed attempt's partial text was already appended to the streaming
+// message; without this, a retry's chunks would be appended after it,
+// showing the response duplicated (or doubly-prefixed) in the UI.
+export function resetStreamOnRetry() {
+  streamBuffer = '';
+  const lastMsg = aiMsgs[aiMsgs.length - 1];
+  if (lastMsg && lastMsg.streaming) {
+    lastMsg.text = '';
+  }
+  const streamEl = document.getElementById('ai-stream-msg');
+  if (streamEl) streamEl.innerHTML = '';
+}
+
 export function handleStreamError(error) {
   isStreaming = false;
   const lastMsg = aiMsgs[aiMsgs.length - 1];
@@ -88,6 +101,7 @@ export function setupStreamListeners() {
   streamCleanups.push(api.onAiStreamChunk(appendStreamChunk));
   streamCleanups.push(api.onAiStreamDone(endStreaming));
   streamCleanups.push(api.onAiStreamError(handleStreamError));
+  streamCleanups.push(api.onAiStreamRetry(resetStreamOnRetry));
 }
 
 export function cleanupStreamListeners() {

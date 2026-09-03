@@ -3,7 +3,7 @@ import { fmt, h } from '../helpers.js';
 import { progress } from '../components/progress-bar.js';
 
 export function renderBudget(state, F) {
-  const top = Object.entries(F.catSpending).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} (${fmt(v)})`).join(', ');
+  const top = Object.entries(F.catSpending).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${h(k)} (${fmt(v)})`).join(', ');
   const advice = F.savingsRate > 20
     ? 'Great savings rate! Consider boosting your TFSA or RRSP contributions.'
     : 'Try reducing discretionary spending to get savings above 20%. Even small cuts to dining out add up.';

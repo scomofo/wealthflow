@@ -87,15 +87,20 @@ export function calculateCurrentFHSARoom(knownRoom, knownDate, contributions) {
   const knownYear = new Date(knownDate).getFullYear();
   const currentYear = new Date().getFullYear();
 
-  // FHSA: $8,000/year with unused room carrying forward, but max $8,000 carryforward
-  // Each year's contribution room = annual limit + min(unused from prior year, $8,000)
+  // Contributions between knownDate and today are only known in aggregate
+  // (contributedSince, below), not broken down per year, so there is no
+  // per-year "unused amount" to carry forward here — every year in this
+  // window is being modeled as fully unused until contributedSince is
+  // subtracted at the end. Adding a running carryforward on top of that
+  // (as a prior version of this loop did) double-counted each year's
+  // grant into every later year's total, compounding room far past
+  // reality (e.g. $8k known -> $40k after 2 years instead of $24k).
+  // With no per-year usage data, the correct model is simply $8,000 of
+  // new room per year, capped by the lifetime limit below.
   let accumulatedLimits = 0;
-  let unusedPriorYear = 0;
   for (let y = knownYear + 1; y <= currentYear; y++) {
     if (y >= FHSA.START_YEAR) {
-      const yearLimit = FHSA.ANNUAL_LIMIT + Math.min(unusedPriorYear, FHSA.CARRYFORWARD_MAX);
-      accumulatedLimits += yearLimit;
-      unusedPriorYear = yearLimit; // carries forward (will be capped next iteration)
+      accumulatedLimits += FHSA.ANNUAL_LIMIT;
     }
   }
 

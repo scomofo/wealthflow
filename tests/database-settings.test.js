@@ -16,12 +16,24 @@ jest.mock('electron', () => ({
 
 const { WealthFlowDatabase } = require('../src/main/database.js');
 
+// computeFinancials() windows income/expenses to the current calendar month,
+// so a transaction meant to count toward "this month" needs a date that is
+// actually within it rather than a hardcoded literal.
+function thisMonthDate(day = '11') {
+  return new Date().toISOString().slice(0, 7) + '-' + day;
+}
+
 describe('WealthFlowDatabase onboarding settings', () => {
   let database;
 
   beforeEach(async () => {
     const dbPath = path.join(tempRoot, 'wealthflow.db');
-    if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+    // Clean up .bak/.tmp too — init() now recovers from a leftover backup
+    // if only dbPath is removed, which would leak state between tests
+    // instead of starting from a truly fresh database.
+    for (const p of [dbPath, dbPath + '.bak', dbPath + '.tmp']) {
+      if (fs.existsSync(p)) fs.unlinkSync(p);
+    }
     database = new WealthFlowDatabase();
     await database.init();
   });
@@ -111,7 +123,7 @@ describe('WealthFlowDatabase onboarding settings', () => {
     });
     database.run(
       'INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['tx-zero-income', 'Groceries', -200, 'Food', '2026-06-11']
+      ['tx-zero-income', 'Groceries', -200, 'Food', thisMonthDate()]
     );
     database.run(
       'INSERT INTO debts (id, name, balance, rate, min_payment, type) VALUES (?, ?, ?, ?, ?, ?)',
@@ -129,5 +141,35 @@ describe('WealthFlowDatabase onboarding settings', () => {
     expect(financials.totalDebt).toBe(0);
     expect(financials.totalSaved).toBe(0);
     expect(financials.savingsRate).toBe(0);
+  });
+
+  test('persists bill_notifications, bill_notify_days, theme_mode, and dashboard_widgets', () => {
+    // These columns exist since migration 008 but updateSettings()'s UPDATE
+    // statement never included them, so nothing set through it was ever
+    // actually saved — bill_notifications in particular is read as a
+    // notification master switch (app.js, desktop-notification-engine.js)
+    // that could never be turned off no matter what the UI sent.
+    database.updateSettings({
+      bill_notifications: false,
+      bill_notify_days: 5,
+      theme_mode: 'auto',
+      dashboard_widgets: '["summary","goals"]',
+    });
+
+    const settings = database.getSettings();
+    expect(settings.bill_notifications).toBe(0);
+    expect(settings.bill_notify_days).toBe(5);
+    expect(settings.theme_mode).toBe('auto');
+    expect(settings.dashboard_widgets).toBe('["summary","goals"]');
+  });
+
+  test('leaves bill_notifications, theme_mode etc. unchanged when not included in the update', () => {
+    database.updateSettings({ bill_notifications: false, theme_mode: 'light' });
+    database.updateSettings({ user_name: 'Alex' }); // unrelated update
+
+    const settings = database.getSettings();
+    expect(settings.user_name).toBe('Alex');
+    expect(settings.bill_notifications).toBe(0);
+    expect(settings.theme_mode).toBe('light');
   });
 });

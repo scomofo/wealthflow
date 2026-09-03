@@ -2,10 +2,8 @@
 // Extracted from app.js
 // Note: This is a pure refactor — no behavior changes from original app.js
 
-import { addXP } from './shared.js';
-
 export async function handleGrowthAction(action, btn, ctx) {
-  const { State, render, showToast, appState, navigate, fmt,
+  const { State, render, showToast, appState, navigate,
     setRegTab, setLastPriceRefresh,
   } = ctx;
 
@@ -75,16 +73,12 @@ export async function handleGrowthAction(action, btn, ctx) {
       return true;
 
     case 'deposit-goal': {
-      const amt = prompt('Deposit amount ($):');
-      if (amt && +amt > 0) {
-        const state = State.getState();
-        const g = state.goals.find(x => x.id === btn.dataset.id);
-        if (g) {
-          await State.updateGoal({ ...g, current: g.current + +amt });
-          await addXP(15, ctx);
-          showToast(`Deposited ${fmt(+amt)} to ${g.name}`);
-          render();
-        }
+      const state = State.getState();
+      const g = state.goals.find(x => x.id === btn.dataset.id);
+      if (g) {
+        appState.editData = g;
+        appState.activeModal = 'deposit-goal';
+        render();
       }
       return true;
     }

@@ -32,9 +32,7 @@ class NextBestActionsEngine {
     const debts = db.listDebts();
     const bills = db.listBills();
     const goals = db.listGoals();
-    const contributionRoom = db.listContributionRoom
-      ? db.listContributionRoom()
-      : db.getContributionRoom();
+    const contributionRoom = db.listContributionRoom();
     const settings = db.getSettings();
     const financials = db.computeFinancials();
 
@@ -283,7 +281,13 @@ class NextBestActionsEngine {
 
       if (monthsLeft <= 0) continue;
 
-      const remaining = (goal.target_amount || 0) - (goal.current_amount || 0);
+      // goals table columns are `target`/`current` — there is no
+      // per-goal monthly_contribution column, so monthlySavings is always
+      // 0 for real data and this only gates on remaining > 0. Kept as a
+      // >0 comparison (rather than simplified away) so this starts
+      // reflecting real contribution pace automatically if that's ever
+      // tracked per-goal in the future.
+      const remaining = (goal.target || 0) - (goal.current || 0);
       if (remaining <= 0) continue;
 
       const monthlyNeeded = remaining / monthsLeft;

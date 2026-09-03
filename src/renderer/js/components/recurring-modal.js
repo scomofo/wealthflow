@@ -26,7 +26,7 @@ export function renderRecurringModal(data) {
   const trackedPatterns = patterns.filter(p => p.alreadyTracked);
 
   return `<div class="modal-overlay" data-action="close-recurring-modal">
-    <div class="import-modal" onclick="event.stopPropagation()">
+    <div class="import-modal">
       <div class="modal-head">
         <div class="modal-title">${icon('search', 18)} Detected Recurring Payments</div>
         <button style="background:none;border:none;color:var(--sub);cursor:pointer" data-action="close-recurring-modal">${icon('x', 18)}</button>

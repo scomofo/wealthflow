@@ -151,6 +151,8 @@ describe('NextBestActionsEngine', () => {
   });
 
   test('generates goal off-track action', async () => {
+    // goals rows use `target`/`current` (see migrations/001-initial-schema.js)
+    // — there is no target_amount/current_amount/monthly_contribution column.
     const sixMonths = new Date();
     sixMonths.setMonth(sixMonths.getMonth() + 4);
     const db = mockDb();
@@ -158,9 +160,8 @@ describe('NextBestActionsEngine', () => {
       {
         id: 'g1',
         name: 'Vacation',
-        target_amount: 10000,
-        current_amount: 1000,
-        monthly_contribution: 200,
+        target: 10000,
+        current: 1000,
         deadline: sixMonths.toISOString().slice(0, 10),
       },
     ]);
@@ -173,6 +174,27 @@ describe('NextBestActionsEngine', () => {
     expect(goalAction).toBeDefined();
     expect(goalAction.title).toContain('Vacation');
     expect(goalAction.score).toBeGreaterThanOrEqual(65);
+  });
+
+  test('does not generate a goal off-track action for a goal that is already fully funded', async () => {
+    const sixMonths = new Date();
+    sixMonths.setMonth(sixMonths.getMonth() + 4);
+    const db = mockDb();
+    db.listGoals.mockReturnValue([
+      {
+        id: 'g2',
+        name: 'Fully funded',
+        target: 5000,
+        current: 5000,
+        deadline: sixMonths.toISOString().slice(0, 10),
+      },
+    ]);
+
+    const engine = new NextBestActionsEngine(db);
+    await engine.generateActions();
+
+    const upserted = db.upsertNextBestAction.mock.calls.map((c) => c[0]);
+    expect(upserted.find((a) => a.action_key === 'goal_behind_g2')).toBeUndefined();
   });
 
   test('generates missing profile action', async () => {

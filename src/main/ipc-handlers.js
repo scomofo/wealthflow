@@ -4,6 +4,7 @@ const path = require('path');
 const { logger } = require('./logger');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
+const { maskApiKey } = require('./database');
 
 function safeHandle(channel, handler) {
   ipcMain.handle(channel, async (...args) => {
@@ -16,14 +17,25 @@ function safeHandle(channel, handler) {
   });
 }
 
+// path.relative(base, target) returns a string starting with '..' (or, on
+// Windows, an absolute path on a different drive) whenever target isn't
+// actually inside base — the reliable way to test containment. A plain
+// resolved.startsWith(base) accepts a same-prefix SIBLING directory too
+// (base "…/Documents" also matches "…/Documents-evil/secret.txt").
+function isPathWithin(basePath, targetPath) {
+  const relative = path.relative(basePath, targetPath);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
 function isPathSafe(filePath) {
   const resolved = path.resolve(filePath);
-  const appData = app.getPath('userData');
-  const documents = app.getPath('documents');
-  const downloads = app.getPath('downloads');
-  const desktop = app.getPath('desktop');
-  return resolved.startsWith(appData) || resolved.startsWith(documents) ||
-         resolved.startsWith(downloads) || resolved.startsWith(desktop);
+  const allowedDirs = [
+    app.getPath('userData'),
+    app.getPath('documents'),
+    app.getPath('downloads'),
+    app.getPath('desktop'),
+  ];
+  return allowedDirs.some((dir) => isPathWithin(dir, resolved));
 }
 
 function registerIpcHandlers(database, aiService) {
@@ -36,7 +48,12 @@ function registerIpcHandlers(database, aiService) {
   }
 
   // Settings
-  safeHandle('db:settings:get', () => database.getSettings());
+  // The decrypted API key never leaves the main process — the renderer only
+  // gets whether one is configured and a masked hint, never the plaintext.
+  safeHandle('db:settings:get', () => {
+    const { ai_api_key, ...safeSettings } = database.getSettings();
+    return { ...safeSettings, hasApiKey: !!ai_api_key, apiKeyMasked: maskApiKey(ai_api_key) };
+  });
   safeHandle('db:settings:update', (_, data) => {
     validate(data, 'object', 'settings');
     return database.updateSettings(data);
@@ -249,6 +266,7 @@ function registerIpcHandlers(database, aiService) {
     return docsDir;
   });
   safeHandle('advisor:copy-file', async (_, srcPath, destFilename) => {
+    if (!isPathSafe(srcPath)) throw new Error('Access denied: path outside allowed directories');
     const stats = fs.statSync(srcPath);
     if (!stats.isFile()) throw new Error('Source must be a regular file');
     const docsDir = path.join(app.getPath('userData'), 'documents');
@@ -493,6 +511,7 @@ function registerIpcHandlers(database, aiService) {
 
   // XLSX parsing (needs Node.js zlib)
   safeHandle('file:parse-xlsx', async (_, filePath) => {
+    if (!isPathSafe(filePath)) throw new Error('Access denied: path outside allowed directories');
     const zlib = require('zlib');
     const buf = fs.readFileSync(filePath);
 
@@ -583,4 +602,4 @@ function registerIpcHandlers(database, aiService) {
   });
 }
 
-module.exports = { registerIpcHandlers };
+module.exports = { registerIpcHandlers, isPathSafe };

@@ -1,6 +1,7 @@
 import { icon } from '../icons.js';
-import { CATS } from '../helpers.js';
+import { CATS, h } from '../helpers.js';
 import { CANADIAN_BANKS, INVESTMENT_TYPES, ACCOUNT_TYPES, CATEGORY_COLORS } from '../canadian/constants.js';
+import { ASSET_TYPES, DOCUMENT_TYPES } from '../canadian/advisor-constants.js';
 
 const sel = (options, value) => options.map(o => {
   const v = typeof o === 'string' ? o : o.code || o.value;
@@ -24,7 +25,7 @@ export function getModalConfig(type, data) {
         </div>
         <input type="hidden" id="m-type" value="${isIncome ? 'income' : 'expense'}">
         <label for="m-desc" class="input-label">Description</label>
-        <input class="input-field" id="m-desc" placeholder="e.g. Tim Hortons" value="${d.description || ''}" style="margin-bottom:12px">
+        <input class="input-field" id="m-desc" placeholder="e.g. Tim Hortons" value="${h(d.description || '')}" style="margin-bottom:12px">
         <label for="m-amt" class="input-label">Amount ($)</label>
         <input class="input-field" id="m-amt" type="number" placeholder="0.00" step="0.01" value="${d.amount ? Math.abs(d.amount) : ''}" style="margin-bottom:12px">
         <label for="m-date" class="input-label">Date</label>
@@ -50,7 +51,7 @@ export function getModalConfig(type, data) {
       title: isEdit ? 'Edit Goal' : 'New Savings Goal',
       html: `
         <label for="m-name" class="input-label">Goal Name</label>
-        <input class="input-field" id="m-name" placeholder="e.g. Emergency Fund" value="${d.name || ''}" style="margin-bottom:12px">
+        <input class="input-field" id="m-name" placeholder="e.g. Emergency Fund" value="${h(d.name || '')}" style="margin-bottom:12px">
         <div style="display:flex;gap:12px;margin-bottom:12px">
           <div style="flex:1"><label for="m-target" class="input-label">Target ($)</label><input class="input-field" id="m-target" type="number" step="0.01" value="${d.target || ''}"></div>
           <div style="flex:1"><label for="m-cur" class="input-label">Saved ($)</label><input class="input-field" id="m-cur" type="number" step="0.01" value="${d.current || 0}"></div>
@@ -62,7 +63,7 @@ export function getModalConfig(type, data) {
       title: isEdit ? 'Edit Debt' : 'Add Debt',
       html: `
         <label for="m-name" class="input-label">Name</label>
-        <input class="input-field" id="m-name" placeholder="e.g. OSAP Student Loan" value="${d.name || ''}" style="margin-bottom:12px">
+        <input class="input-field" id="m-name" placeholder="e.g. OSAP Student Loan" value="${h(d.name || '')}" style="margin-bottom:12px">
         <div style="display:flex;gap:12px;margin-bottom:12px">
           <div style="flex:1"><label for="m-bal" class="input-label">Balance ($)</label><input class="input-field" id="m-bal" type="number" step="0.01" value="${d.balance || ''}"></div>
           <div style="flex:1"><label for="m-rate" class="input-label">Rate (%)</label><input class="input-field" id="m-rate" type="number" step="0.01" value="${d.rate || ''}"></div>
@@ -78,8 +79,8 @@ export function getModalConfig(type, data) {
       title: isEdit ? 'Edit Investment' : 'Add Investment',
       html: `
         <div style="display:flex;gap:12px;margin-bottom:12px">
-          <div style="flex:1"><label for="m-sym" class="input-label">Symbol</label><input class="input-field" id="m-sym" placeholder="XEQT" value="${d.symbol || ''}"></div>
-          <div style="flex:2"><label for="m-name" class="input-label">Name</label><input class="input-field" id="m-name" placeholder="iShares All-Equity ETF" value="${d.name || ''}"></div>
+          <div style="flex:1"><label for="m-sym" class="input-label">Symbol</label><input class="input-field" id="m-sym" placeholder="XEQT" value="${h(d.symbol || '')}"></div>
+          <div style="flex:2"><label for="m-name" class="input-label">Name</label><input class="input-field" id="m-name" placeholder="iShares All-Equity ETF" value="${h(d.name || '')}"></div>
         </div>
         <div style="display:flex;gap:12px;margin-bottom:12px">
           <div style="flex:1"><label for="m-sh" class="input-label">Shares</label><input class="input-field" id="m-sh" type="number" step="0.001" value="${d.shares || ''}"></div>
@@ -106,7 +107,7 @@ export function getModalConfig(type, data) {
       title: isEdit ? 'Edit Reminder' : 'Add Reminder',
       html: `
         <label for="m-title" class="input-label">Title</label>
-        <input class="input-field" id="m-title" placeholder="e.g. Rent" value="${d.title || ''}" style="margin-bottom:12px">
+        <input class="input-field" id="m-title" placeholder="e.g. Rent" value="${h(d.title || '')}" style="margin-bottom:12px">
         <div style="display:flex;gap:12px;margin-bottom:12px">
           <div style="flex:1"><label for="m-amt" class="input-label">Amount ($)</label><input class="input-field" id="m-amt" type="number" step="0.01" value="${d.amount || ''}"></div>
           <div style="flex:1"><label for="m-date" class="input-label">Date</label><input class="input-field" id="m-date" type="date" value="${d.date || ''}"></div>
@@ -263,7 +264,7 @@ export function getModalConfig(type, data) {
       title: isEdit && d.address ? 'Edit Residence' : 'Add Residence',
       html: `
         <label for="m-address" class="input-label">Address</label>
-        <input class="input-field" id="m-address" placeholder="123 Main St, Calgary, AB" value="${d.address || ''}" style="margin-bottom:12px">
+        <input class="input-field" id="m-address" placeholder="123 Main St, Calgary, AB" value="${h(d.address || '')}" style="margin-bottom:12px">
         <div style="display:flex;gap:12px;margin-bottom:12px">
           <div style="flex:1"><label for="m-purchase-price" class="input-label">Purchase Price ($)</label><input class="input-field" id="m-purchase-price" type="number" step="0.01" value="${d.purchase_price || ''}"></div>
           <div style="flex:1"><label for="m-current-value" class="input-label">Current Value ($)</label><input class="input-field" id="m-current-value" type="number" step="0.01" value="${d.current_value || ''}"></div>
@@ -293,7 +294,33 @@ export function getModalConfig(type, data) {
           </div>
         </div>
         <label for="m-notes" class="input-label">Notes</label>
-        <textarea class="input-field" id="m-notes" rows="2" style="margin-bottom:4px">${d.notes || ''}</textarea>`,
+        <textarea class="input-field" id="m-notes" rows="2" style="margin-bottom:4px">${h(d.notes || '')}</textarea>`,
+    },
+    'deposit-goal': {
+      title: 'Deposit to Goal',
+      html: `
+        <p style="margin:0 0 14px;color:var(--sub);font-size:13px">Add funds to <strong>${h(d.name || '')}</strong></p>
+        <label for="m-deposit-amt" class="input-label">Deposit amount ($)</label>
+        <input class="input-field" id="m-deposit-amt" type="number" placeholder="0.00" step="0.01" min="0" style="margin-bottom:4px">`,
+    },
+    'wizard-asset': {
+      title: 'Add Asset',
+      html: `
+        <label for="m-asset-type" class="input-label">Asset Type</label>
+        <select class="input-field" id="m-asset-type" style="margin-bottom:12px">${sel(ASSET_TYPES, d.asset_type)}</select>
+        <label for="m-asset-desc" class="input-label">Description</label>
+        <input class="input-field" id="m-asset-desc" placeholder="e.g. TD Chequing" value="${h(d.description || '')}" style="margin-bottom:12px">
+        <label for="m-asset-bal" class="input-label">Current Balance ($)</label>
+        <input class="input-field" id="m-asset-bal" type="number" step="0.01" value="${d.balance || ''}" style="margin-bottom:4px">`,
+    },
+    'wizard-doc': {
+      title: 'Document Details',
+      html: `
+        <p style="margin:0 0 14px;color:var(--sub);font-size:13px;word-break:break-word">${h(d.originalName || '')}</p>
+        <label for="m-doc-type" class="input-label">Document Type</label>
+        <select class="input-field" id="m-doc-type" style="margin-bottom:12px">${sel(DOCUMENT_TYPES, d.doc_type)}</select>
+        <label for="m-doc-notes" class="input-label">Notes (optional)</label>
+        <textarea class="input-field" id="m-doc-notes" rows="2" style="margin-bottom:4px"></textarea>`,
     },
   };
   return configs[type] || null;

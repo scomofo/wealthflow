@@ -2,7 +2,7 @@
 // Extracted from app.js — pure refactor, no behavior changes
 // Security note: all innerHTML assignments use trusted render functions that sanitize via h() helper
 
-import { computeRiskScore, DOCUMENT_TYPES } from '../canadian/advisor-constants.js';
+import { computeRiskScore } from '../canadian/advisor-constants.js';
 import { addXP } from './shared.js';
 
 export async function handleHomeAction(action, btn, ctx) {
@@ -115,15 +115,8 @@ export async function handleHomeAction(action, btn, ctx) {
     }
 
     case 'wizard-add-asset': {
-      const assetType = prompt('Asset type (chequing, savings, hisa, gic, vehicle, other):');
-      if (!assetType) return true;
-      const desc = prompt('Description (e.g. TD Chequing):');
-      const bal = prompt('Current balance ($):');
-      await State.addAdvisorAsset({
-        id: uid(), asset_type: assetType.toLowerCase(),
-        description: desc || '', balance: +(bal || 0),
-      });
-      showToast('Asset added');
+      appState.editData = null;
+      appState.activeModal = 'wizard-asset';
       render();
       return true;
     }
@@ -149,14 +142,10 @@ export async function handleHomeAction(action, btn, ctx) {
       const originalName = srcPath.split(/[\\/]/).pop();
       const ext = originalName.includes('.') ? '.' + originalName.split('.').pop() : '';
       const destFilename = uid() + ext;
-      await State.copyDocumentFile(srcPath, destFilename);
-      const docType = prompt(`Document type? (${DOCUMENT_TYPES.map(d => d.code).join(', ')}):`) || 'other';
-      const notes = prompt('Notes (optional):') || '';
-      await State.addAdvisorDocument({
-        id: uid(), filename: destFilename, original_name: originalName,
-        doc_type: docType, notes, file_size: 0,
-      });
-      showToast('Document uploaded');
+      // Defer the actual file copy + DB insert to the modal's Save action, so
+      // cancelling the modal leaves no orphaned file on disk.
+      appState.editData = { srcPath, destFilename, originalName };
+      appState.activeModal = 'wizard-doc';
       render();
       return true;
     }
@@ -202,7 +191,7 @@ export function handleHomeInput(e, ctx) {
   return false;
 }
 
-export function handleHomeChange(e, ctx) {
+export async function handleHomeChange(e, ctx) {
   const { State, render, getSection, updateWizardDraft,
     renderAdvisorWizard,
   } = ctx;
@@ -229,7 +218,12 @@ export function handleHomeChange(e, ctx) {
     const field = e.target.dataset.field;
     if (field) {
       const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-      State.updateSettings({ [field]: value });
+      // Must await before rendering dark_mode: State.updateSettings only
+      // updates the local cached settings after the IPC round-trip
+      // resolves, so a render fired immediately after (as this used to do,
+      // uncritically) would still read the pre-toggle value and apply the
+      // wrong theme for one render.
+      await State.updateSettings({ [field]: value });
       if (field === 'dark_mode') render();
     }
     return true;

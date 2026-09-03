@@ -80,9 +80,9 @@ export function renderBills(state) {
                 <div style="display:flex;align-items:center;gap:3px;margin-bottom:2px">
                   <span style="font-size:11.5px;font-weight:${d === today ? 700 : 400};color:${d === today ? 'var(--accent)' : 'var(--text)'}">${d}</span>
                   ${dueBills.length > 0 ? `<span style="display:flex;gap:2px;align-items:center">${
-                    hasBillDue ? `<span style="width:6px;height:6px;border-radius:50%;background:${isOverdue ? 'var(--red)' : '#ef4444'};display:inline-block" title="${dueBills.filter(b=>b.type==='bill').map(b=>b.title).join(', ')}"></span>` : ''
+                    hasBillDue ? `<span style="width:6px;height:6px;border-radius:50%;background:${isOverdue ? 'var(--red)' : '#ef4444'};display:inline-block" title="${h(dueBills.filter(b=>b.type==='bill').map(b=>b.title).join(', '))}"></span>` : ''
                   }${
-                    hasIncomeDue ? `<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block" title="${dueBills.filter(b=>b.type==='income').map(b=>b.title).join(', ')}"></span>` : ''
+                    hasIncomeDue ? `<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block" title="${h(dueBills.filter(b=>b.type==='income').map(b=>b.title).join(', '))}"></span>` : ''
                   }</span>` : ''}
                 </div>
                 ${evs.map(e =>

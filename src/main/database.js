@@ -4,6 +4,17 @@ const fs = require('fs');
 const { app } = require('electron');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
+const { logger } = require('./logger');
+
+// The decrypted API key must never leave the main process — not to the
+// renderer over IPC, and not into an exported JSON backup. This produces a
+// short, low-entropy hint ("configured, ends in ...1234") that lets the UI
+// show key state without exposing anything usable.
+function maskApiKey(key) {
+  if (!key) return '';
+  if (key.length <= 8) return '••••';
+  return key.slice(0, 6) + '…' + key.slice(-4);
+}
 
 class WealthFlowDatabase {
   constructor() {
@@ -33,10 +44,16 @@ class WealthFlowDatabase {
     }
 
     this.dbPath = path.join(app.getPath('userData'), 'wealthflow.db');
+    this._backupPath = this.dbPath + '.bak';
+    this._tmpPath = this.dbPath + '.tmp';
     try {
       if (fs.existsSync(this.dbPath)) {
-        const buffer = fs.readFileSync(this.dbPath);
-        this.db = new SQL.Database(buffer);
+        this.db = this._openWithBackupFallback(this.dbPath, SQL);
+      } else if (fs.existsSync(this._backupPath)) {
+        // The primary file is missing but a backup from a prior save survived —
+        // recover from it instead of silently starting a fresh, empty database.
+        logger.warn('wealthflow.db missing but a backup exists — recovering from backup', { backupPath: this._backupPath });
+        this.db = this._openWithBackupFallback(this._backupPath, SQL);
       } else {
         this.db = new SQL.Database();
       }
@@ -48,10 +65,53 @@ class WealthFlowDatabase {
     this.save();
   }
 
+  // Opens `primaryPath`, falling back to `.bak` if the primary file is
+  // truncated/corrupt (e.g. a crash mid-write before atomic saves existed).
+  // sql.js does not validate the file header on construction — a corrupt
+  // buffer only throws once a statement actually runs against it — so a
+  // trivial query is required to detect corruption here.
+  _openWithBackupFallback(primaryPath, SQL) {
+    const tryOpen = (p) => {
+      const database = new SQL.Database(fs.readFileSync(p));
+      database.exec('SELECT 1');
+      return database;
+    };
+    try {
+      return tryOpen(primaryPath);
+    } catch (err) {
+      if (fs.existsSync(this._backupPath) && primaryPath !== this._backupPath) {
+        logger.error('Database file is corrupt — recovering from backup', { primaryPath, error: err.message });
+        return tryOpen(this._backupPath);
+      }
+      throw err;
+    }
+  }
+
+  // Atomically replaces wealthflow.db with the current in-memory state:
+  // write to a temp file in the same directory, fsync it, then rename it
+  // over the live file (rename is atomic at the filesystem level, so a
+  // crash mid-save can never leave a truncated/corrupt wealthflow.db).
+  // The previous good copy is kept as `.bak` so a corrupt primary file can
+  // still be recovered from on the next launch.
   save() {
     if (!this.db || !this.dbPath) return;
-    const data = this.db.export();
-    fs.writeFileSync(this.dbPath, Buffer.from(data));
+    const data = Buffer.from(this.db.export());
+    try {
+      if (fs.existsSync(this.dbPath)) {
+        fs.copyFileSync(this.dbPath, this._backupPath);
+      }
+      const fd = fs.openSync(this._tmpPath, 'w');
+      try {
+        fs.writeSync(fd, data);
+        fs.fsyncSync(fd);
+      } finally {
+        fs.closeSync(fd);
+      }
+      fs.renameSync(this._tmpPath, this.dbPath);
+    } catch (err) {
+      try { if (fs.existsSync(this._tmpPath)) fs.unlinkSync(this._tmpPath); } catch { /* best-effort cleanup */ }
+      throw err;
+    }
   }
 
   run(sql, params = []) {
@@ -63,23 +123,34 @@ class WealthFlowDatabase {
     if (this._saveTimer) return;
     this._saveTimer = setTimeout(() => {
       this._saveTimer = null;
-      this.save();
+      try {
+        this.save();
+      } catch (err) {
+        logger.error('Deferred database save failed', { error: err.message, stack: err.stack });
+      }
     }, 100);
   }
 
   _decryptApiKey(encrypted) {
     if (!encrypted) return '';
-    try {
-      const { safeStorage } = require('electron');
-      if (safeStorage.isEncryptionAvailable() && encrypted.startsWith('enc:')) {
-        const buffer = Buffer.from(encrypted.slice(4), 'base64');
-        return safeStorage.decryptString(buffer);
+    if (encrypted.startsWith('enc:')) {
+      try {
+        const { safeStorage } = require('electron');
+        if (safeStorage.isEncryptionAvailable()) {
+          const buffer = Buffer.from(encrypted.slice(4), 'base64');
+          return safeStorage.decryptString(buffer);
+        }
+      } catch (err) {
+        logger.error('Failed to decrypt stored API key', { error: err.message });
       }
-    } catch { /* fallback to plaintext */ }
-    // Legacy plaintext key - flag for re-encryption on next save
-    if (!encrypted.startsWith('enc:')) {
-      this._reEncryptNeeded = encrypted;
+      // Ciphertext that can't currently be decrypted (safeStorage unavailable,
+      // OS keychain reset, different OS user) is never a usable API key.
+      // Returning it as-is would send garbage to Anthropic as the key, and —
+      // worse — would get silently re-encrypted as if it were plaintext the
+      // next time settings are saved, permanently corrupting it.
+      return '';
     }
+    // Legacy plaintext key from before encryption was added.
     return encrypted;
   }
 
@@ -197,6 +268,10 @@ class WealthFlowDatabase {
         onboarding_focus: null,
         onboarding_confidence: 'starter',
         onboarding_completed_at: null,
+        bill_notifications: 1,
+        bill_notify_days: 3,
+        theme_mode: 'dark',
+        dashboard_widgets: '["summary","budgets","goals","transactions","insights"]',
       };
     }
     const settings = {
@@ -215,8 +290,20 @@ class WealthFlowDatabase {
 
   updateSettings(data) {
     const current = this.getSettings();
+
+    // When the caller isn't changing the key, preserve exactly what's
+    // stored rather than routing it back through decrypt+encrypt: that
+    // round-trip would silently corrupt an undecryptable ciphertext (see
+    // _decryptApiKey) or double-encrypt a value that's already ciphertext.
+    // The one case worth upgrading in place is a legacy plaintext key now
+    // that encryption is available.
+    const currentRawKey = (this.getOne('SELECT ai_api_key FROM settings WHERE id = 1')?.ai_api_key) || '';
+    const apiKeyToStore = data.ai_api_key !== undefined
+      ? this._encryptApiKey(data.ai_api_key)
+      : (currentRawKey && !currentRawKey.startsWith('enc:') ? this._encryptApiKey(currentRawKey) : currentRawKey);
+
     this.run(
-      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, onboarding_focus = ?, onboarding_confidence = ?, onboarding_completed_at = ?, updated_at = datetime('now') WHERE id = 1`,
+      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, onboarding_focus = ?, onboarding_confidence = ?, onboarding_completed_at = ?, bill_notifications = ?, bill_notify_days = ?, theme_mode = ?, dashboard_widgets = ?, updated_at = datetime('now') WHERE id = 1`,
       [
         data.user_name ?? current.user_name,
         (data.dark_mode !== undefined ? (data.dark_mode ? 1 : 0) : (current.dark_mode ? 1 : 0)),
@@ -226,7 +313,7 @@ class WealthFlowDatabase {
         data.province ?? current.province,
         (data.profile_completed !== undefined ? (data.profile_completed ? 1 : 0) : (current.profile_completed ? 1 : 0)),
         data.last_wizard_step ?? current.last_wizard_step ?? 0,
-        this._encryptApiKey(data.ai_api_key ?? current.ai_api_key ?? ''),
+        apiKeyToStore,
         data.ai_model ?? current.ai_model ?? DEFAULT_AI_MODEL,
         data.monthly_income ?? current.monthly_income ?? 0,
         data.monthly_expenses ?? current.monthly_expenses ?? 0,
@@ -236,6 +323,10 @@ class WealthFlowDatabase {
         data.onboarding_focus !== undefined ? data.onboarding_focus : current.onboarding_focus,
         data.onboarding_confidence ?? current.onboarding_confidence ?? 'starter',
         data.onboarding_completed_at !== undefined ? data.onboarding_completed_at : current.onboarding_completed_at,
+        (data.bill_notifications !== undefined ? (data.bill_notifications ? 1 : 0) : (current.bill_notifications ?? 1)),
+        data.bill_notify_days ?? current.bill_notify_days ?? 3,
+        data.theme_mode ?? current.theme_mode ?? 'dark',
+        data.dashboard_widgets ?? current.dashboard_widgets ?? '["summary","budgets","goals","transactions","insights"]',
       ]
     );
     return this.getSettings();
@@ -370,10 +461,15 @@ class WealthFlowDatabase {
   // Bills
   listBills() { return this.getAll('SELECT * FROM bills WHERE deleted_at IS NULL ORDER BY date'); }
   addBill(b) {
+    // A non-recurring bill legitimately has no next_due_date (the renderer
+    // sends null for it) — falling back to b.date here used to give every
+    // one-off bill a due date that was already in the past by the time it
+    // was saved, making _ruleBillsDueSoon treat it as permanently overdue
+    // forever, with no way to clear it short of deleting the bill.
     this.run(
       'INSERT INTO bills (id, title, type, amount, date, recurring, frequency, category, next_due_date, auto_generate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [b.id, b.title, b.type || 'bill', b.amount || 0, b.date, b.recurring || null,
-       b.frequency || null, b.category || 'Other', b.next_due_date || b.date, b.auto_generate || 0]
+       b.frequency || null, b.category || 'Other', b.next_due_date ?? null, b.auto_generate || 0]
     );
     return b;
   }
@@ -412,20 +508,38 @@ class WealthFlowDatabase {
   }
 
   // Computed financials
-  computeFinancials() {
+  // income/expenses/savingsRate/catSpending are scoped to a single calendar
+  // month (default: the current month) — every caller (budgets, the rule
+  // engines, the AI prompts) treats these fields as "this month", so the
+  // query must actually be windowed rather than summing all-time history.
+  // totalDebt/totalInv/totalSaved/netWorth are point-in-time balances and
+  // stay all-time by design.
+  computeFinancials(monthAnchor) {
     const settings = this.getSettings();
+    const anchor = monthAnchor || new Date().toISOString().slice(0, 7); // 'YYYY-MM'
+
     // Exclude transfers from income/expense totals — they're not real income or spending
+    const anyTxStats = this.getOne(
+      "SELECT COUNT(*) as total_count FROM transactions WHERE deleted_at IS NULL AND category != 'Transfer'"
+    );
+    const hasAnyTransactions = (anyTxStats?.total_count || 0) > 0;
+
     const txStats = this.getOne(
       "SELECT " +
       "COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as income, " +
       "COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0) as expenses, " +
       "COUNT(*) as total_count " +
       "FROM transactions " +
-      "WHERE deleted_at IS NULL AND category != 'Transfer'"
+      "WHERE deleted_at IS NULL AND category != 'Transfer' AND substr(date, 1, 7) = ?",
+      [anchor]
     );
-    const hasTransactions = (txStats?.total_count || 0) > 0;
-    const income = hasTransactions ? txStats.income : (settings.monthly_income || 0);
-    const expenses = hasTransactions ? txStats.expenses : (settings.monthly_expenses || 0);
+    const hasMonthTransactions = (txStats?.total_count || 0) > 0;
+
+    // No transactions have ever been imported — fall back to the
+    // onboarding-provided monthly estimate. Once real transactions exist,
+    // a month with no activity is genuinely $0, not the stale onboarding figure.
+    const income = hasAnyTransactions ? (hasMonthTransactions ? txStats.income : 0) : (settings.monthly_income || 0);
+    const expenses = hasAnyTransactions ? (hasMonthTransactions ? txStats.expenses : 0) : (settings.monthly_expenses || 0);
     const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
     const debtStats = this.getOne('SELECT COALESCE(SUM(balance), 0) as total, COUNT(*) as total_count FROM debts WHERE deleted_at IS NULL');
     const totalDebt = (debtStats?.total_count || 0) > 0 ? debtStats.total : (settings.total_debt || 0);
@@ -433,7 +547,8 @@ class WealthFlowDatabase {
     const goalStats = this.getOne('SELECT COALESCE(SUM(current), 0) as total, COUNT(*) as total_count FROM goals WHERE deleted_at IS NULL');
     const totalSaved = (goalStats?.total_count || 0) > 0 ? goalStats.total : (settings.savings_buffer || 0);
     const catRows = this.getAll(
-      'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL GROUP BY category ORDER BY total DESC'
+      'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL AND substr(date, 1, 7) = ? GROUP BY category ORDER BY total DESC',
+      [anchor]
     );
     const catSpending = {};
     for (const row of catRows) catSpending[row.category] = row.total;
@@ -659,8 +774,10 @@ class WealthFlowDatabase {
 
   // Export all data
   exportAllData() {
+    // The decrypted API key must never end up in a JSON backup file.
+    const { ai_api_key, ...safeSettings } = this.getSettings();
     return {
-      settings: this.getSettings(),
+      settings: { ...safeSettings, hasApiKey: !!ai_api_key, apiKeyMasked: maskApiKey(ai_api_key) },
       transactions: this.listTransactions(),
       budgets: this.listBudgets(),
       goals: this.listGoals(),
@@ -881,8 +998,23 @@ class WealthFlowDatabase {
   upsertNextBestAction(a) {
     const existing = this.getOne("SELECT id FROM next_best_actions WHERE action_key = ? AND deleted_at IS NULL", [a.action_key]);
     if (existing) {
+      // A recurring condition (e.g. over budget again after being fixed)
+      // regenerates the same action_key. The 7-day post-completion filter
+      // in NextBestActionsEngine already suppresses this from even being
+      // called for 7 days after completion, so by the time we get here a
+      // previously 'done' row represents a genuinely new occurrence and
+      // should resurface — otherwise it stays stuck 'done' forever and the
+      // user never sees it again. 'dismissed' and 'snoozed' are left
+      // alone: dismissing is a deliberate "don't show this again", and an
+      // active snooze already un-snoozes itself on its own schedule.
       this.run(
-        "UPDATE next_best_actions SET title=?, description=?, rationale=?, category=?, priority=?, score=?, source_payload=?, related_entity_type=?, related_entity_id=?, impact_text=?, generated_at=datetime('now') WHERE id=?",
+        `UPDATE next_best_actions SET
+           title=?, description=?, rationale=?, category=?, priority=?, score=?,
+           source_payload=?, related_entity_type=?, related_entity_id=?, impact_text=?,
+           generated_at=datetime('now'),
+           status = CASE WHEN status = 'done' THEN 'open' ELSE status END,
+           completed_at = CASE WHEN status = 'done' THEN NULL ELSE completed_at END
+         WHERE id=?`,
         [a.title, a.description || null, a.rationale || null, a.category || null, a.priority, a.score, a.source_payload || null, a.related_entity_type || null, a.related_entity_id || null, a.impact_text || null, existing.id]
       );
       return { ...a, id: existing.id };
@@ -911,11 +1043,20 @@ class WealthFlowDatabase {
   }
 
   clearStaleNextBestActions(activeKeys) {
-    if (!activeKeys || activeKeys.length === 0) return;
-    const placeholders = activeKeys.map(() => '?').join(',');
+    const keys = activeKeys || [];
+    if (keys.length === 0) {
+      // No rule produced any candidate this run (e.g. every issue got
+      // resolved) — every currently-open action is stale, not just the
+      // ones matched by a NOT IN(...) list (which is invalid SQL when
+      // empty, hence this early branch rather than skipping the clear
+      // entirely).
+      this.run("UPDATE next_best_actions SET deleted_at = datetime('now') WHERE status = 'open' AND deleted_at IS NULL");
+      return;
+    }
+    const placeholders = keys.map(() => '?').join(',');
     this.run(
       "UPDATE next_best_actions SET deleted_at = datetime('now') WHERE status = 'open' AND action_key NOT IN (" + placeholders + ") AND deleted_at IS NULL",
-      activeKeys
+      keys
     );
   }
 
@@ -973,10 +1114,14 @@ class WealthFlowDatabase {
       this._saveTimer = null;
     }
     if (this.db) {
-      this.save();
+      try {
+        this.save();
+      } catch (err) {
+        logger.error('Final database save on close failed', { error: err.message, stack: err.stack });
+      }
       this.db.close();
     }
   }
 }
 
-module.exports = { WealthFlowDatabase };
+module.exports = { WealthFlowDatabase, maskApiKey };

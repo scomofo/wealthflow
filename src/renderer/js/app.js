@@ -113,8 +113,8 @@ function renderErrorScreen(error) {
     <div class="card" style="max-width:500px;text-align:center;padding:40px">
       <div style="font-size:48px;margin-bottom:16px">&#9888;</div>
       <div style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--red,#ef4444)">Something went wrong</div>
-      <div style="color:var(--sub);font-size:13px;margin-bottom:20px;word-break:break-word">${error}</div>
-      <button class="btn btn-primary" onclick="location.reload()" style="justify-content:center;width:100%">Reload App</button>
+      <div style="color:var(--sub);font-size:13px;margin-bottom:20px;word-break:break-word">${h(error)}</div>
+      <button class="btn btn-primary" data-action="reload-app" style="justify-content:center;width:100%">Reload App</button>
     </div>
   </div>`;
 }
@@ -127,7 +127,7 @@ function renderPageSafe(fn, ...args) {
     if (window.wealthflow?.log) window.wealthflow.log('error', `Page render error: ${name}`, err.message);
     return `<div class="card" style="padding:24px;margin:20px;text-align:center">
       <div style="font-size:16px;font-weight:600;color:var(--red,#ef4444);margin-bottom:8px">Failed to load page</div>
-      <div style="color:var(--sub);font-size:12px">${err.message}</div>
+      <div style="color:var(--sub);font-size:12px">${h(err.message)}</div>
     </div>`;
   }
 }
@@ -246,18 +246,25 @@ function bindEvents() {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
+    // Ctrl+N and Ctrl+Z are also native text-editing shortcuts (new
+    // window/undo). While focus is in a text field, let the field handle
+    // them — hijacking Ctrl+Z there replaced the user's expected "undo my
+    // typing" with the app's own "undo last completed action" instead,
+    // which discarded the text edit and did something unrelated.
+    const inTextField = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
+
     if (e.key === 'Escape') {
       if (appState.activeModal) { appState.activeModal = null; appState.editData = null; render(); return; }
       if (appState.showAI) { appState.showAI = false; render(); return; }
     }
-    if (e.ctrlKey && e.key === 'n') {
+    if (e.ctrlKey && e.key === 'n' && !inTextField) {
       e.preventDefault();
       appState.activeModal = 'transaction';
       appState.editData = null;
       render();
       return;
     }
-    if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+    if (e.ctrlKey && e.key === 'z' && !e.shiftKey && !inTextField) {
       e.preventDefault();
       handleUndo();
       return;
@@ -279,6 +286,11 @@ function bindEvents() {
 
   // Click dispatcher — tries each handler in order
   el.addEventListener('click', async (e) => {
+    // A click inside the modal content (but not on one of its own
+    // data-action buttons) must not fall through to the overlay's own
+    // data-action="close-modal" — this check is what prevents that,
+    // rather than an inline stopPropagation handler on the modal content
+    // element (CSP's script-src 'self' blocks inline event handlers).
     const modalInner = e.target.closest('.modal, .import-modal');
     const btn = e.target.closest('[data-action]');
 
@@ -316,7 +328,7 @@ function bindEvents() {
   el.addEventListener('change', async (e) => {
     if (await handlePlanChange(e, ctx)) return;
     if (handleMoneyChange(e, ctx)) return;
-    if (handleHomeChange(e, ctx)) return;
+    if (await handleHomeChange(e, ctx)) return;
   });
 }
 

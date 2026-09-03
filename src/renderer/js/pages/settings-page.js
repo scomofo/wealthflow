@@ -11,8 +11,8 @@ const AI_MODELS = [
 
 export function renderSettings(state) {
   const s = state.settings || {};
-  const hasKey = !!s.ai_api_key;
-  const maskedKey = hasKey ? s.ai_api_key.slice(0, 10) + '...' + s.ai_api_key.slice(-4) : '';
+  const hasKey = !!s.hasApiKey;
+  const maskedKey = s.apiKeyMasked || '';
 
   return `
     <div style="max-width:600px">
@@ -27,6 +27,11 @@ export function renderSettings(state) {
         <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
           <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);cursor:pointer">
             <input type="checkbox" class="settings-input" data-field="dark_mode" ${s.dark_mode ? 'checked' : ''}> Dark Mode
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);cursor:pointer">
+            <input type="checkbox" class="settings-input" data-field="bill_notifications" ${s.bill_notifications ? 'checked' : ''}> Bill due-date notifications
           </label>
         </div>
       </div>
