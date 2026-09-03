@@ -31,6 +31,11 @@ const state = {
   personalizationProfile: null,
   summaryEmphasis: null,
   lastIntelligenceRefresh: null,
+  // USD->CAD rate used to convert USD-denominated investments into the
+  // portfolio's CAD totals. Defaults to 1 (no-op) until refreshStockPrices()
+  // fetches a real rate, rather than defaulting to some guessed constant
+  // that would silently go stale.
+  usdCadRate: 1,
 };
 
 // Initialise all domain modules with shared state and api

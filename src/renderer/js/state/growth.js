@@ -26,6 +26,20 @@ export async function deleteInvestment(id) {
 export async function refreshStockPrices() {
   if (state.investments.length === 0) return [];
 
+  // Refresh the USD->CAD rate used to convert USD-denominated investments
+  // into the portfolio's CAD totals (see investments.js). Only touch
+  // state.usdCadRate on a successful fetch — a failed/rate-limited fetch
+  // should leave the last known-good rate in place rather than resetting
+  // portfolio totals to the 1:1 default.
+  if (state.investments.some(i => i.currency === 'USD')) {
+    try {
+      const result = await api.fetchExchangeRate('USD', 'CAD');
+      if (result && !result.error && result.rate) {
+        state.usdCadRate = result.rate;
+      }
+    } catch { /* keep the last known-good rate */ }
+  }
+
   // Build query symbols: USD investments keep their symbol as-is,
   // CAD investments without a dot get .TO appended by the stock service.
   // For USD symbols, we need to prevent .TO by adding the exchange explicitly.

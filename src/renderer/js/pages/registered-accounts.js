@@ -2,6 +2,7 @@ import { icon } from '../icons.js';
 import { fmt, h } from '../helpers.js';
 import { TFSA_LIMITS, RESP, FHSA } from '../canadian/constants.js';
 import { calculateCurrentTFSARoom, calculateCurrentRRSPRoom, calculateCurrentFHSARoom, calculateCESGDetails, calculateGICMaturity } from '../canadian/calculators.js';
+import { investmentMarketValueCAD, investmentCostBasisCAD } from '../utils/currency.js';
 
 let activeTab = 'tfsa';
 
@@ -54,7 +55,7 @@ function renderTFSA(state) {
   const calc = calculateCurrentTFSARoom(room.known_room, room.known_as_of_date, state.contributions);
   const tfsaInvestments = state.investments.filter(i => i.account_type === 'tfsa');
   const tfsaContributions = state.contributions.filter(c => c.account_type === 'tfsa');
-  const investedValue = tfsaInvestments.reduce((s, i) => s + i.shares * i.current_price, 0);
+  const investedValue = tfsaInvestments.reduce((s, i) => s + investmentMarketValueCAD(i, state.usdCadRate), 0);
 
   return `
     <div class="grid4" style="margin-bottom:16px">
@@ -74,8 +75,8 @@ function renderTFSA(state) {
           <span>Symbol</span><span>Shares</span><span>Avg Cost</span><span>Price</span><span>Value</span><span>Return</span><span></span>
         </div>
         ${tfsaInvestments.map(i => {
-          const v = i.shares * i.current_price;
-          const c = i.shares * i.avg_cost;
+          const v = investmentMarketValueCAD(i, state.usdCadRate);
+          const c = investmentCostBasisCAD(i, state.usdCadRate);
           const r = c > 0 ? ((v - c) / c * 100) : 0;
           return `<div class="inv-grid">
             <span class="mono" style="font-weight:700">${h(i.symbol)}</span>
@@ -112,7 +113,7 @@ function renderRRSP(state) {
   const calc = calculateCurrentRRSPRoom(room.known_room, room.known_as_of_date, state.contributions);
   const rrspInvestments = state.investments.filter(i => i.account_type === 'rrsp');
   const rrspContributions = state.contributions.filter(c => c.account_type === 'rrsp');
-  const investedValue = rrspInvestments.reduce((s, i) => s + i.shares * i.current_price, 0);
+  const investedValue = rrspInvestments.reduce((s, i) => s + investmentMarketValueCAD(i, state.usdCadRate), 0);
 
   return `
     ${calc.overcontributed ? `
@@ -142,8 +143,8 @@ function renderRRSP(state) {
           <span>Symbol</span><span>Shares</span><span>Avg Cost</span><span>Price</span><span>Value</span><span>Return</span><span></span>
         </div>
         ${rrspInvestments.map(i => {
-          const v = i.shares * i.current_price;
-          const c = i.shares * i.avg_cost;
+          const v = investmentMarketValueCAD(i, state.usdCadRate);
+          const c = investmentCostBasisCAD(i, state.usdCadRate);
           const r = c > 0 ? ((v - c) / c * 100) : 0;
           return `<div class="inv-grid">
             <span class="mono" style="font-weight:700">${h(i.symbol)}</span>
@@ -252,7 +253,7 @@ function renderFHSA(state) {
   const calc = calculateCurrentFHSARoom(room.known_room, room.known_as_of_date, state.contributions);
   const fhsaInvestments = state.investments.filter(i => i.account_type === 'fhsa');
   const fhsaContributions = state.contributions.filter(c => c.account_type === 'fhsa');
-  const investedValue = fhsaInvestments.reduce((s, i) => s + i.shares * i.current_price, 0);
+  const investedValue = fhsaInvestments.reduce((s, i) => s + investmentMarketValueCAD(i, state.usdCadRate), 0);
   const lifetimeContributed = (state.contributions || [])
     .filter(c => c.account_type === 'fhsa')
     .reduce((sum, c) => sum + c.amount, 0);
@@ -292,8 +293,8 @@ function renderFHSA(state) {
           <span>Symbol</span><span>Shares</span><span>Avg Cost</span><span>Price</span><span>Value</span><span>Return</span><span></span>
         </div>
         ${fhsaInvestments.map(i => {
-          const v = i.shares * i.current_price;
-          const c = i.shares * i.avg_cost;
+          const v = investmentMarketValueCAD(i, state.usdCadRate);
+          const c = investmentCostBasisCAD(i, state.usdCadRate);
           const r = c > 0 ? ((v - c) / c * 100) : 0;
           return `<div class="inv-grid">
             <span class="mono" style="font-weight:700">${h(i.symbol)}</span>

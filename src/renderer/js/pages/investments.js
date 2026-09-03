@@ -1,5 +1,6 @@
 import { icon } from '../icons.js';
 import { fmt, h } from '../helpers.js';
+import { investmentMarketValueCAD, investmentCostBasisCAD } from '../utils/currency.js';
 
 let lastPriceRefresh = null;
 
@@ -11,21 +12,23 @@ function fmtPrice(value, currency) {
 }
 
 export function renderInvestments(state) {
-  const tv = state.investments.reduce((s, i) => s + i.shares * i.current_price, 0);
-  const tc = state.investments.reduce((s, i) => s + i.shares * i.avg_cost, 0);
+  const usdCadRate = state.usdCadRate || 1;
+  const tv = state.investments.reduce((s, i) => s + investmentMarketValueCAD(i, usdCadRate), 0);
+  const tc = state.investments.reduce((s, i) => s + investmentCostBasisCAD(i, usdCadRate), 0);
   const g = tv - tc;
   const gp = tc > 0 ? (g / tc * 100) : 0;
   const totalValue = tv;
   const totalCost = tc;
   const totalReturn = tc > 0 ? (g / tc * 100) : 0;
   const hasUSD = state.investments.some(i => i.currency && i.currency !== 'CAD');
+  const haveLiveRate = usdCadRate !== 1;
 
   const refreshLabel = lastPriceRefresh
     ? `<span style="font-size:11px;color:var(--sub);margin-right:8px">Last updated: ${new Date(lastPriceRefresh).toLocaleTimeString()}</span>`
     : '';
 
   return `
-    ${hasUSD ? `<div style="background:var(--input);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--sub)">${icon('info', 12)} USD investments shown at current exchange rate</div>` : ''}
+    ${hasUSD ? `<div style="background:var(--input);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--sub)">${icon('info', 12)} ${haveLiveRate ? `USD investments converted to CAD at 1 USD = ${usdCadRate.toFixed(4)} CAD` : 'USD investments not yet converted — click Refresh Prices to fetch the exchange rate'}</div>` : ''}
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
       <div>
         <div style="font-size:12px;color:var(--sub)">Portfolio Value</div>
@@ -46,8 +49,8 @@ export function renderInvestments(state) {
         <span>Symbol</span><span>Shares</span><span>Avg Cost</span><span>Price</span><span>Value</span><span>Return</span><span></span>
       </div>
       ${state.investments.map(i => {
-        const v = i.shares * i.current_price;
-        const c = i.shares * i.avg_cost;
+        const v = investmentMarketValueCAD(i, usdCadRate);
+        const c = investmentCostBasisCAD(i, usdCadRate);
         const r = c > 0 ? ((v - c) / c * 100) : 0;
         const cur = i.currency || 'CAD';
         const acctLabel = i.account_type && i.account_type !== 'non-registered' ? ` <span class="tag">${i.account_type.toUpperCase()}</span>` : '';
