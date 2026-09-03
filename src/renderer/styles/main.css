@@ -281,6 +281,16 @@ input, select { font-family: inherit; outline: none; }
 .import-ai-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Shown for the ~1-2s between first paint and init()'s awaited IPC loads
+   (settings/transactions/budgets/... plus command-center intelligence)
+   resolving and calling render() — without this, first launch was a blank
+   background with nothing at all until every load finished. render()
+   replaces #app's entire innerHTML, so this markup (a child of #app in
+   index.html) is automatically cleared the first time render() runs — no
+   JS needed to remove it. */
+.initial-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 14px; background: var(--bg); color: var(--sub); font-family: var(--font-body); font-size: 13px; }
+.initial-loader-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+
 /* ═══ Transactions ═══ */
 .tx-row {
   display: flex; align-items: center; gap: 11px;
