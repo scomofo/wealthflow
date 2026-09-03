@@ -82,6 +82,11 @@ export async function handleMoneyAction(action, btn, ctx) {
         if (bill.frequency) {
           const nextDue = calculateNextDue(today, bill.frequency);
           await State.updateBill({ ...bill, last_paid_date: today, next_due_date: nextDue });
+        } else if (bill.next_due_date) {
+          // One-off bill: there is no "next" occurrence, so clear the due
+          // date once it's paid instead of leaving it to be treated as
+          // permanently overdue by the next-best-actions rule.
+          await State.updateBill({ ...bill, last_paid_date: today, next_due_date: null });
         }
         await addXP(10, ctx);
         showToast('Payment recorded');

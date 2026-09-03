@@ -453,10 +453,15 @@ class WealthFlowDatabase {
   // Bills
   listBills() { return this.getAll('SELECT * FROM bills WHERE deleted_at IS NULL ORDER BY date'); }
   addBill(b) {
+    // A non-recurring bill legitimately has no next_due_date (the renderer
+    // sends null for it) — falling back to b.date here used to give every
+    // one-off bill a due date that was already in the past by the time it
+    // was saved, making _ruleBillsDueSoon treat it as permanently overdue
+    // forever, with no way to clear it short of deleting the bill.
     this.run(
       'INSERT INTO bills (id, title, type, amount, date, recurring, frequency, category, next_due_date, auto_generate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [b.id, b.title, b.type || 'bill', b.amount || 0, b.date, b.recurring || null,
-       b.frequency || null, b.category || 'Other', b.next_due_date || b.date, b.auto_generate || 0]
+       b.frequency || null, b.category || 'Other', b.next_due_date ?? null, b.auto_generate || 0]
     );
     return b;
   }
