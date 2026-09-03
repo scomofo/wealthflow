@@ -402,10 +402,6 @@ function registerIpcHandlers(database, aiService) {
     personalizationEngine.recordInteraction(eventType, category);
     return personalizationEngine.buildProfile();
   });
-  safeHandle('personalization:apply-weighting', (_, actions) => {
-    const profile = personalizationEngine.buildProfile();
-    return personalizationEngine.applyActionWeighting(actions, profile);
-  });
   safeHandle('personalization:summary-emphasis', () => {
     const profile = personalizationEngine.buildProfile();
     const financials = database.computeFinancials();
@@ -587,18 +583,6 @@ function registerIpcHandlers(database, aiService) {
     });
 
     return { headers, rows };
-  });
-
-  // Window controls
-  safeHandle('window:minimize', (event) => {
-    BrowserWindow.fromWebContents(event.sender)?.minimize();
-  });
-  safeHandle('window:maximize', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    if (win?.isMaximized()) win.unmaximize(); else win?.maximize();
-  });
-  safeHandle('window:close', (event) => {
-    BrowserWindow.fromWebContents(event.sender)?.close();
   });
 }
 

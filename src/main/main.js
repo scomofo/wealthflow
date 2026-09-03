@@ -80,9 +80,15 @@ app.whenReady().then(async () => {
   logger.info('AI service initialized');
 
   // Renderer logging IPC
+  const RENDERER_LOG_LEVELS = new Set(['debug', 'info', 'warn', 'error']);
   ipcMain.on('log:renderer', (_, level, message, data, source) => {
     const prefix = source ? `[renderer:${source}]` : '[renderer]';
-    logger[level] ? logger[level](`${prefix} ${message}`, data) : logger.info(`${prefix} ${message}`, data);
+    // logger[level] would also match non-level methods like init() —
+    // a renderer sending level: 'init' would re-run Logger's
+    // initialization (mkdir + a log line) as a side effect of a plain
+    // log call. Restrict to the four real log levels.
+    const fn = RENDERER_LOG_LEVELS.has(level) ? logger[level] : logger.info;
+    fn.call(logger, `${prefix} ${message}`, data);
   });
 
   registerIpcHandlers(database, aiService);
