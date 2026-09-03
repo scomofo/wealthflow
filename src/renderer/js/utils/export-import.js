@@ -140,21 +140,31 @@ export async function importFile() {
   return { headers, rows, mapping, filePath, fileType, hasAiKey, detectedBank };
 }
 
+// Reads either a single "amount" column or separate "debit"/"credit"
+// columns and returns one signed CAD amount — the one "row + column mapping
+// -> signed amount" transform every step of the import pipeline needs
+// (duplicate detection, the apply step, and the preview table in
+// import-modal.js). Extracted here as the single source of truth after this
+// same block had drifted into four near-identical copies across two files.
+export function computeSignedAmount(row, mapping) {
+  if (mapping.amount) {
+    return parseFloat(String(row[mapping.amount] || '').replace(/[,$]/g, '')) || 0;
+  }
+  if (mapping.debit || mapping.credit) {
+    const debit = parseFloat(String((mapping.debit ? row[mapping.debit] : '') || '').replace(/[,$]/g, '')) || 0;
+    const credit = parseFloat(String((mapping.credit ? row[mapping.credit] : '') || '').replace(/[,$]/g, '')) || 0;
+    return credit > 0 ? credit : (debit > 0 ? -debit : 0);
+  }
+  return 0;
+}
+
 // Check for duplicates against existing transactions
 export async function checkDuplicates(rows, mapping) {
   const checks = [];
   for (const row of rows) {
     const dateVal = mapping.date ? row[mapping.date] : null;
     const descVal = mapping.description ? row[mapping.description] : '';
-    let amount = 0;
-
-    if (mapping.amount) {
-      amount = parseFloat(String(row[mapping.amount] || '').replace(/[,$]/g, '')) || 0;
-    } else if (mapping.debit || mapping.credit) {
-      const debit = parseFloat(String((mapping.debit ? row[mapping.debit] : '') || '').replace(/[,$]/g, '')) || 0;
-      const credit = parseFloat(String((mapping.credit ? row[mapping.credit] : '') || '').replace(/[,$]/g, '')) || 0;
-      amount = credit > 0 ? credit : (debit > 0 ? -debit : 0);
-    }
+    const amount = computeSignedAmount(row, mapping);
 
     const date = normalizeDate(dateVal);
     checks.push({ date: date || '', amount, description: descVal });
@@ -260,15 +270,7 @@ export async function applyImport(rows, mapping, duplicates, aiCategories) {
     const row = rows[i];
     const dateVal = mapping.date ? row[mapping.date] : null;
     const descVal = mapping.description ? row[mapping.description] : '';
-    let amountVal = 0;
-
-    if (mapping.amount) {
-      amountVal = parseFloat(String(row[mapping.amount] || '').replace(/[,$]/g, '')) || 0;
-    } else if (mapping.debit || mapping.credit) {
-      const debit = parseFloat(String((mapping.debit ? row[mapping.debit] : '') || '').replace(/[,$]/g, '')) || 0;
-      const credit = parseFloat(String((mapping.credit ? row[mapping.credit] : '') || '').replace(/[,$]/g, '')) || 0;
-      amountVal = credit > 0 ? credit : (debit > 0 ? -debit : 0);
-    }
+    const amountVal = computeSignedAmount(row, mapping);
 
     if (!dateVal || amountVal === 0) {
       errors.push({ row: i + 1, reason: !dateVal ? 'Missing date' : 'Zero amount' });
@@ -494,15 +496,4 @@ export async function reconcileAfterImport(importedTransactions, detectedBank) {
   }
 
   return updates;
-}
-
-// ─── Legacy compatibility ────────────────────────────────────
-
-export async function importCSV() {
-  return importFile();
-}
-
-export async function applyCSVImport(rows, mapping) {
-  const result = await applyImport(rows, mapping, null, null);
-  return result.imported;
 }

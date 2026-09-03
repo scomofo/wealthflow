@@ -2,6 +2,7 @@
 import { icon } from '../icons.js';
 import { h, fmt } from '../helpers.js';
 import { autoCategorize } from '../utils/csv-parser.js';
+import { computeSignedAmount } from '../utils/export-import.js';
 
 const COLUMN_ROLES = [
   { value: '', label: '-- Skip --' },
@@ -129,15 +130,7 @@ function getMappedRole(header, mapping) {
 function buildPreviewRow(row, mapping, index, duplicates) {
   let dateVal = mapping.date ? row[mapping.date] : null;
   let descVal = mapping.description ? row[mapping.description] : '';
-  let amount = null;
-
-  if (mapping.amount) {
-    amount = parseFloat(String(row[mapping.amount] || '').replace(/[,$]/g, '')) || 0;
-  } else if (mapping.debit || mapping.credit) {
-    const debit = parseFloat(String((mapping.debit ? row[mapping.debit] : '') || '').replace(/[,$]/g, '')) || 0;
-    const credit = parseFloat(String((mapping.credit ? row[mapping.credit] : '') || '').replace(/[,$]/g, '')) || 0;
-    amount = credit > 0 ? credit : (debit > 0 ? -debit : 0);
-  }
+  const amount = computeSignedAmount(row, mapping);
 
   // Normalize date for display
   if (dateVal) {
@@ -151,7 +144,7 @@ function buildPreviewRow(row, mapping, index, duplicates) {
 
   const category = amount > 0 ? 'Income' : autoCategorize(descVal);
   const isDuplicate = duplicates && duplicates[index];
-  const hasError = !dateVal || amount === 0 || amount === null;
+  const hasError = !dateVal || amount === 0;
 
   return {
     date: dateVal,
@@ -171,15 +164,7 @@ function computeStats(rows, mapping, duplicates) {
 
     const row = rows[i];
     const dateVal = mapping.date ? row[mapping.date] : null;
-    let amount = 0;
-
-    if (mapping.amount) {
-      amount = parseFloat(String(row[mapping.amount] || '').replace(/[,$]/g, '')) || 0;
-    } else if (mapping.debit || mapping.credit) {
-      const debit = parseFloat(String((mapping.debit ? row[mapping.debit] : '') || '').replace(/[,$]/g, '')) || 0;
-      const credit = parseFloat(String((mapping.credit ? row[mapping.credit] : '') || '').replace(/[,$]/g, '')) || 0;
-      amount = credit > 0 ? credit : (debit > 0 ? -debit : 0);
-    }
+    const amount = computeSignedAmount(row, mapping);
 
     if (!dateVal || amount === 0) errorCount++;
   }

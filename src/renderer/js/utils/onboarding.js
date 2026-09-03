@@ -88,10 +88,6 @@ export function getOnboardingConfidenceSummary(settings = {}) {
   return { ...CONFIDENCE_SUMMARIES[confidence] };
 }
 
-export function hasOpenOnboardingActions(state) {
-  return getOpenOnboardingActions(state).length > 0;
-}
-
 export function selectOnboardingActions(state) {
   const actions = getOpenOnboardingActions(state);
   if (actions.length > 0) return actions;

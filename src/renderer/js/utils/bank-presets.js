@@ -131,66 +131,6 @@ export function detectBank(headers) {
   return null;
 }
 
-function resolveHeader(fieldMapping, headers) {
-  if (!fieldMapping) return null;
-  if (Array.isArray(fieldMapping)) {
-    for (const candidate of fieldMapping) {
-      const found = headers.find(h => h.toLowerCase().trim() === candidate.toLowerCase().trim());
-      if (found) return found;
-    }
-    return null;
-  }
-  return headers.find(h => h.toLowerCase().trim() === fieldMapping.toLowerCase().trim()) || null;
-}
-
-function parseDate(dateStr, format) {
-  if (!dateStr) return null;
-  const d = dateStr.trim();
-  if (format === 'YYYY-MM-DD' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
-  if (format === 'YYYYMMDD' && /^\d{8}$/.test(d)) return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
-  if (format === 'MM/DD/YYYY' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(d)) {
-    const [m, day, y] = d.split('/');
-    return `${y}-${m.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  }
-  const parsed = new Date(d);
-  if (!isNaN(parsed)) return parsed.toISOString().slice(0, 10);
-  return null;
-}
-
-/** Apply a bank preset to parse a CSV row into a WealthFlow transaction. */
-export function applyBankPreset(row, bankKey, headers) {
-  const preset = BANK_PRESETS[bankKey];
-  if (!preset) return null;
-  const mapping = preset.mapping;
-
-  const dateHeader = resolveHeader(mapping.date, headers);
-  const date = dateHeader ? parseDate(row[dateHeader], preset.dateFormat) : null;
-
-  const descHeader = resolveHeader(mapping.description, headers);
-  let description = descHeader ? (row[descHeader] || '').trim() : '';
-  if (preset.extraDescription) {
-    const extraHeader = resolveHeader(preset.extraDescription, headers);
-    if (extraHeader && row[extraHeader]) {
-      const extra = row[extraHeader].trim();
-      if (extra && extra !== description) description += ' - ' + extra;
-    }
-  }
-
-  let amount = 0;
-  if (mapping.amount) {
-    const amtHeader = resolveHeader(mapping.amount, headers);
-    if (amtHeader) amount = parseFloat((row[amtHeader] || '0').replace(/[,$]/g, '')) || 0;
-  } else if (mapping.debit && mapping.credit) {
-    const debitHeader = resolveHeader(mapping.debit, headers);
-    const creditHeader = resolveHeader(mapping.credit, headers);
-    const debit = debitHeader ? parseFloat((row[debitHeader] || '0').replace(/[,$]/g, '')) || 0 : 0;
-    const credit = creditHeader ? parseFloat((row[creditHeader] || '0').replace(/[,$]/g, '')) || 0 : 0;
-    amount = credit > 0 ? credit : -Math.abs(debit);
-  }
-
-  return { date, description, amount };
-}
-
 /** Get all available bank presets for display in a dropdown. */
 export function listBankPresets() {
   return Object.entries(BANK_PRESETS).map(([key, preset]) => ({ key, name: preset.name }));
