@@ -1,7 +1,7 @@
 // AI re-categorization script — runs inside Electron to access safeStorage
 // Usage: npx electron scripts/ai-recategorize.js
 
-const { app, safeStorage, BrowserWindow } = require('electron');
+const { app, BrowserWindow } = require('electron');
 
 app.whenReady().then(async () => {
   // Create a hidden window so safeStorage works
@@ -9,44 +9,29 @@ app.whenReady().then(async () => {
   await new Promise(r => setTimeout(r, 500)); // Give safeStorage time to initialize
   const path = require('path');
   const { WealthFlowDatabase } = require(path.join(__dirname, '../src/main/database'));
-  const { AiService } = require(path.join(__dirname, '../src/main/ai-service'));
 
   const database = new WealthFlowDatabase();
   await database.init();
 
-  // Read raw encrypted key and decrypt via safeStorage
-  const fs2 = require('fs');
-  const initSqlJs = require(path.join(__dirname, '../node_modules/sql.js'));
-  const wasmBinary = fs2.readFileSync(path.join(__dirname, '../node_modules/sql.js/dist/sql-wasm.wasm'));
-  const SQL = await initSqlJs({ wasmBinary });
-  const dbPath2 = path.join(process.env.APPDATA, 'wealthflow', 'wealthflow.db');
-  const rawDb = new SQL.Database(fs2.readFileSync(dbPath2));
-  const rawResult = rawDb.exec("SELECT ai_api_key, ai_model FROM settings WHERE id = 1");
-  const rawKey = rawResult[0]?.values[0]?.[0] || '';
-  const model = rawResult[0]?.values[0]?.[1] || 'claude-sonnet-4-5-20250929';
-  rawDb.close();
-
-  let apiKey = '';
-  if (rawKey.startsWith('enc:') && safeStorage.isEncryptionAvailable()) {
-    try {
-      const buffer = Buffer.from(rawKey.slice(4), 'base64');
-      apiKey = safeStorage.decryptString(buffer);
-    } catch (e) {
-      console.error('Decryption failed:', e.message);
-    }
-  } else {
-    apiKey = rawKey;
-  }
+  // getSettings() already resolves the real per-OS userData path (via
+  // app.getPath('userData')) and decrypts the stored key through
+  // safeStorage — no need to re-derive the db path or re-implement
+  // decryption here. A prior version of this script hardcoded
+  // process.env.APPDATA, which only exists on Windows and silently
+  // pointed at the wrong (or no) database on macOS/Linux.
+  const settings = database.getSettings();
+  const apiKey = settings.ai_api_key;
+  const model = settings.ai_model;
 
   if (!apiKey) {
-    console.log('No API key configured or decryption failed.');
-    console.log('Raw key length:', rawKey.length, 'starts with:', rawKey.substring(0, 10));
+    console.log('No API key configured.');
+    database.close();
     win.close();
     app.quit();
     return;
   }
 
-  console.log('API key found (decrypted). Starting AI categorization...');
+  console.log('API key found. Starting AI categorization...');
 
   const Anthropic = require(path.join(__dirname, '../node_modules/@anthropic-ai/sdk'));
   const client = new Anthropic.default({ apiKey });
