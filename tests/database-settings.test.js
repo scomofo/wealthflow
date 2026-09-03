@@ -142,4 +142,34 @@ describe('WealthFlowDatabase onboarding settings', () => {
     expect(financials.totalSaved).toBe(0);
     expect(financials.savingsRate).toBe(0);
   });
+
+  test('persists bill_notifications, bill_notify_days, theme_mode, and dashboard_widgets', () => {
+    // These columns exist since migration 008 but updateSettings()'s UPDATE
+    // statement never included them, so nothing set through it was ever
+    // actually saved — bill_notifications in particular is read as a
+    // notification master switch (app.js, desktop-notification-engine.js)
+    // that could never be turned off no matter what the UI sent.
+    database.updateSettings({
+      bill_notifications: false,
+      bill_notify_days: 5,
+      theme_mode: 'auto',
+      dashboard_widgets: '["summary","goals"]',
+    });
+
+    const settings = database.getSettings();
+    expect(settings.bill_notifications).toBe(0);
+    expect(settings.bill_notify_days).toBe(5);
+    expect(settings.theme_mode).toBe('auto');
+    expect(settings.dashboard_widgets).toBe('["summary","goals"]');
+  });
+
+  test('leaves bill_notifications, theme_mode etc. unchanged when not included in the update', () => {
+    database.updateSettings({ bill_notifications: false, theme_mode: 'light' });
+    database.updateSettings({ user_name: 'Alex' }); // unrelated update
+
+    const settings = database.getSettings();
+    expect(settings.user_name).toBe('Alex');
+    expect(settings.bill_notifications).toBe(0);
+    expect(settings.theme_mode).toBe('light');
+  });
 });

@@ -268,6 +268,10 @@ class WealthFlowDatabase {
         onboarding_focus: null,
         onboarding_confidence: 'starter',
         onboarding_completed_at: null,
+        bill_notifications: 1,
+        bill_notify_days: 3,
+        theme_mode: 'dark',
+        dashboard_widgets: '["summary","budgets","goals","transactions","insights"]',
       };
     }
     const settings = {
@@ -299,7 +303,7 @@ class WealthFlowDatabase {
       : (currentRawKey && !currentRawKey.startsWith('enc:') ? this._encryptApiKey(currentRawKey) : currentRawKey);
 
     this.run(
-      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, onboarding_focus = ?, onboarding_confidence = ?, onboarding_completed_at = ?, updated_at = datetime('now') WHERE id = 1`,
+      `UPDATE settings SET user_name = ?, dark_mode = ?, onboarded = ?, level = ?, xp = ?, province = ?, profile_completed = ?, last_wizard_step = ?, ai_api_key = ?, ai_model = ?, monthly_income = ?, monthly_expenses = ?, total_debt = ?, savings_buffer = ?, first_action_completed = ?, onboarding_focus = ?, onboarding_confidence = ?, onboarding_completed_at = ?, bill_notifications = ?, bill_notify_days = ?, theme_mode = ?, dashboard_widgets = ?, updated_at = datetime('now') WHERE id = 1`,
       [
         data.user_name ?? current.user_name,
         (data.dark_mode !== undefined ? (data.dark_mode ? 1 : 0) : (current.dark_mode ? 1 : 0)),
@@ -319,6 +323,10 @@ class WealthFlowDatabase {
         data.onboarding_focus !== undefined ? data.onboarding_focus : current.onboarding_focus,
         data.onboarding_confidence ?? current.onboarding_confidence ?? 'starter',
         data.onboarding_completed_at !== undefined ? data.onboarding_completed_at : current.onboarding_completed_at,
+        (data.bill_notifications !== undefined ? (data.bill_notifications ? 1 : 0) : (current.bill_notifications ?? 1)),
+        data.bill_notify_days ?? current.bill_notify_days ?? 3,
+        data.theme_mode ?? current.theme_mode ?? 'dark',
+        data.dashboard_widgets ?? current.dashboard_widgets ?? '["summary","budgets","goals","transactions","insights"]',
       ]
     );
     return this.getSettings();

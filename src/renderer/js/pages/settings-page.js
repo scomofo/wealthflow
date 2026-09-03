@@ -29,6 +29,11 @@ export function renderSettings(state) {
             <input type="checkbox" class="settings-input" data-field="dark_mode" ${s.dark_mode ? 'checked' : ''}> Dark Mode
           </label>
         </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);cursor:pointer">
+            <input type="checkbox" class="settings-input" data-field="bill_notifications" ${s.bill_notifications ? 'checked' : ''}> Bill due-date notifications
+          </label>
+        </div>
       </div>
       <div class="card">
         <div style="font-weight:600;font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px">${icon('lightbulb', 16, 'var(--accent)')} AI Advisor</div>
