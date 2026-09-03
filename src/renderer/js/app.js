@@ -37,6 +37,7 @@ import { renderRecurringModal } from './components/recurring-modal.js';
 import { detectRecurringPayments } from './utils/recurring-detector.js';
 import { renderOnboardingStepper } from './components/onboarding-stepper.js';
 import { createSerializedRunner } from './utils/serialize-async.js';
+import { focusModalOnOpen, trapTabKey } from './utils/focus-trap.js';
 
 // Handler modules
 import { handleSharedAction } from './handlers/shared.js';
@@ -250,6 +251,13 @@ async function doRender() {
     const msgs = document.getElementById('ai-msgs');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
   }
+
+  // Move keyboard focus into the modal when one is open, so Tab/Shift+Tab
+  // (trapped in the keydown handler below) starts from inside it.
+  if (appState.activeModal || appState.importModalData || appState.recurringModalData) {
+    const overlay = document.querySelector('#modal-root .modal-overlay');
+    focusModalOnOpen(overlay);
+  }
 }
 
 // --- Event binding (thin dispatcher) ---
@@ -267,7 +275,13 @@ function bindEvents() {
 
     if (e.key === 'Escape') {
       if (appState.activeModal) { appState.activeModal = null; appState.editData = null; render(); return; }
+      if (appState.importModalData) { appState.importModalData = null; render(); return; }
+      if (appState.recurringModalData) { appState.recurringModalData = null; render(); return; }
       if (appState.showAI) { appState.showAI = false; render(); return; }
+    }
+    if (e.key === 'Tab' && (appState.activeModal || appState.importModalData || appState.recurringModalData)) {
+      const overlay = document.querySelector('#modal-root .modal-overlay');
+      if (trapTabKey(e, overlay)) e.preventDefault();
     }
     if (e.ctrlKey && e.key === 'n' && !inTextField) {
       e.preventDefault();

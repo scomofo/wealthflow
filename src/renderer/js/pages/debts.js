@@ -42,8 +42,8 @@ export function renderDebts(state) {
             <div style="text-align:right">
               <div style="font-size:19px;font-weight:700">${fmt(d.balance)}</div>
             </div>
-            <button class="edit-btn" data-action="edit-debt" data-id="${d.id}">${icon('edit', 14)}</button>
-            <button class="edit-btn" style="color:var(--red)" data-action="delete-debt" data-id="${d.id}">${icon('trash-2', 14)}</button>
+            <button class="edit-btn" data-action="edit-debt" data-id="${d.id}" aria-label="Edit debt">${icon('edit', 14)}</button>
+            <button class="edit-btn" style="color:var(--red)" data-action="delete-debt" data-id="${d.id}" aria-label="Delete debt">${icon('trash-2', 14)}</button>
           </div>
         </div>
       </div>`).join('')}

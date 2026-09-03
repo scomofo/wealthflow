@@ -62,8 +62,8 @@ export function renderInvestments(state) {
           <span class="mono" style="font-weight:600;font-size:11px">${fmt(v)}</span>
           <span class="mono" style="font-weight:600;font-size:11px;color:${r >= 0 ? 'var(--green)' : 'var(--red)'}">${r >= 0 ? '+' : ''}${r.toFixed(1)}%</span>
           <span style="display:flex;gap:4px">
-            <button class="edit-btn" data-action="edit-inv" data-id="${i.id}">${icon('edit', 12)}</button>
-            <button class="edit-btn" style="color:var(--red)" data-action="delete-inv" data-id="${i.id}">${icon('trash-2', 12)}</button>
+            <button class="edit-btn" data-action="edit-inv" data-id="${i.id}" aria-label="Edit investment">${icon('edit', 12)}</button>
+            <button class="edit-btn" style="color:var(--red)" data-action="delete-inv" data-id="${i.id}" aria-label="Delete investment">${icon('trash-2', 12)}</button>
           </span>
         </div>`;
       }).join('')}

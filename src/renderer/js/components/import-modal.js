@@ -28,11 +28,11 @@ export function renderImportModal(data) {
   // Count importable rows
   const stats = computeStats(rows, mapping, duplicates);
 
-  return `<div class="modal-overlay" data-action="close-import-modal">
+  return `<div class="modal-overlay" data-action="close-import-modal" role="dialog" aria-modal="true" tabindex="-1">
     <div class="import-modal">
       <div class="modal-head">
         <div class="modal-title">${icon('upload', 18)} Import Transactions</div>
-        <button style="background:none;border:none;color:var(--sub);cursor:pointer" data-action="close-import-modal">${icon('x', 18)}</button>
+        <button style="background:none;border:none;color:var(--sub);cursor:pointer" data-action="close-import-modal" aria-label="Close">${icon('x', 18)}</button>
       </div>
 
       <!-- File Info -->

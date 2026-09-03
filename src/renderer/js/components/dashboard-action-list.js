@@ -27,8 +27,8 @@ export function renderDashboardActionList(actions = []) {
             <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(a.title)}</div>
             <div class="action-meta">${a.impact_text ? h(a.impact_text) : ''}${workflowLabel ? ` · ${h(workflowLabel)}` : ''}</div>
           </div>
-          <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:10.5px;flex-shrink:0" data-action="complete-action" data-id="${h(a.id)}">${icon('check', 12)}</button>
-          <button class="btn btn-sm btn-ghost saved-action-delete" style="padding:3px 8px;font-size:10.5px;flex-shrink:0" data-action="delete-action" data-id="${h(a.id)}">${icon('trash-2', 12)}</button>
+          <button class="btn btn-sm btn-secondary" style="padding:3px 8px;font-size:10.5px;flex-shrink:0" data-action="complete-action" data-id="${h(a.id)}" aria-label="Mark action complete">${icon('check', 12)}</button>
+          <button class="btn btn-sm btn-ghost saved-action-delete" style="padding:3px 8px;font-size:10.5px;flex-shrink:0" data-action="delete-action" data-id="${h(a.id)}" aria-label="Delete saved action">${icon('trash-2', 12)}</button>
         </div>`;
       }).join('')}
     </div>`;

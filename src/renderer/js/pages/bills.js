@@ -117,7 +117,7 @@ export function renderBills(state) {
                 ${e.type === 'income' ? '+' : '-'}${fmt(e.amount)}
               </div>
               <button class="btn btn-sm btn-secondary" style="padding:4px 8px;font-size:10px" data-action="mark-paid" data-id="${e.id}">${icon('check', 10)} Paid</button>
-              <button style="background:none;border:none;color:var(--muted)" data-action="delete-bill" data-id="${e.id}">${icon('trash-2', 12)}</button>
+              <button style="background:none;border:none;color:var(--muted)" data-action="delete-bill" data-id="${e.id}" aria-label="Delete bill">${icon('trash-2', 12)}</button>
             </div>`;
           }).join('')}
           ${state.bills.length === 0 ? '<div class="empty">No reminders</div>' : ''}

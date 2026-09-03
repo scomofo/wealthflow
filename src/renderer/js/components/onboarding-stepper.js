@@ -91,32 +91,32 @@ function renderStep1(settings) {
       <div style="color:var(--sub);font-size:12.5px;margin-bottom:18px">All fields optional — you can update these any time in Settings.</div>
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
-          <div class="input-label">Your Name</div>
+          <label class="input-label" for="ob-name">Your Name</label>
           <input class="input-field" id="ob-name" placeholder="e.g. Alex" value="${h(settings?.user_name || '')}">
         </div>
         <div>
-          <div class="input-label">Province</div>
+          <label class="input-label" for="ob-province">Province</label>
           <select class="input-field" id="ob-province">${provOptions}</select>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
-            <div class="input-label">Monthly Income</div>
+            <label class="input-label" for="ob-income">Monthly Income</label>
             <input class="input-field" id="ob-income" type="number" placeholder="e.g. 5000" value="${h(monthlyIncomeValue)}" min="0">
             <div style="font-size:10px;color:var(--muted);margin-top:2px">Use your after-tax monthly take-home if possible</div>
           </div>
           <div>
-            <div class="input-label">Major Monthly Expenses</div>
+            <label class="input-label" for="ob-expenses">Major Monthly Expenses</label>
             <input class="input-field" id="ob-expenses" type="number" placeholder="e.g. 3000" value="${h(monthlyExpensesValue)}" min="0">
             <div style="font-size:10px;color:var(--muted);margin-top:2px">A rough estimate is fine</div>
           </div>
         </div>
         <div>
-          <div class="input-label">Total Debt <span style="color:var(--sub);font-weight:400">(optional)</span></div>
+          <label class="input-label" for="ob-debt">Total Debt <span style="color:var(--sub);font-weight:400">(optional)</span></label>
           <input class="input-field" id="ob-debt" type="number" placeholder="e.g. 15000" value="${h(totalDebtValue)}" min="0">
           <div style="font-size:10px;color:var(--muted);margin-top:2px">Optional — helps with payoff guidance</div>
         </div>
         <div style="margin-bottom:10px">
-          <div class="input-label">Savings / Cash Buffer</div>
+          <label class="input-label" for="ob-savings">Savings / Cash Buffer</label>
           <input class="input-field" id="ob-savings" type="number" placeholder="e.g. 3000" value="${h(savingsBufferValue)}" min="0">
           <div style="font-size:10px;color:var(--muted);margin-top:2px">Optional — useful for emergency fund decisions</div>
         </div>
@@ -127,7 +127,7 @@ function renderStep1(settings) {
           </div>
         </div>
         <div>
-          <div class="input-label">Claude API Key <span style="color:var(--sub);font-weight:400">(optional)</span></div>
+          <label class="input-label" for="ob-api-key">Claude API Key <span style="color:var(--sub);font-weight:400">(optional)</span></label>
           <input class="input-field" id="ob-api-key" type="password" placeholder="${settings?.hasApiKey ? `Key saved (${h(settings.apiKeyMasked || '')}) — enter to replace` : 'sk-ant-...'}">
           <div style="color:var(--sub);font-size:11px;margin-top:3px">Powers the AI financial advisor. Add later in Settings if you prefer.</div>
         </div>
@@ -136,7 +136,7 @@ function renderStep1(settings) {
         A rough estimate is enough to get started \u2014 you can refine later
       </div>
       <div style="display:flex;gap:8px;margin-top:16px">
-        <button class="btn btn-ghost" style="flex:0 0 auto;justify-content:center" data-action="ob-prev">${icon('arrow-left', 14)}</button>
+        <button class="btn btn-ghost" style="flex:0 0 auto;justify-content:center" data-action="ob-prev" aria-label="Back">${icon('arrow-left', 14)}</button>
         <button class="btn btn-primary" style="flex:1;justify-content:center" data-action="ob-next">Continue ${icon('arrow-right', 14)}</button>
         <button class="btn btn-ghost" style="flex:0 0 auto;justify-content:center;font-size:12px" data-action="ob-next">Skip</button>
       </div>
@@ -159,7 +159,7 @@ function renderStep2() {
       <div style="color:var(--sub);font-size:12.5px;margin-bottom:14px">Select the spending areas most relevant to you.</div>
       <div style="max-height:220px;overflow-y:auto;padding:4px 0;border:1px solid var(--border);border-radius:4px;padding:8px 12px">${checks}</div>
       <div style="display:flex;gap:8px;margin-top:16px">
-        <button class="btn btn-ghost" style="flex:0 0 auto;justify-content:center" data-action="ob-prev">${icon('arrow-left', 14)}</button>
+        <button class="btn btn-ghost" style="flex:0 0 auto;justify-content:center" data-action="ob-prev" aria-label="Back">${icon('arrow-left', 14)}</button>
         <button class="btn btn-primary" style="flex:1;justify-content:center" data-action="ob-next">Continue ${icon('arrow-right', 14)}</button>
       </div>
     </div>`;

@@ -34,7 +34,7 @@ export function renderSavings(state) {
           ${mn > 0 ? `<div style="margin-top:8px;padding:6px 8px;border-radius:6px;background:var(--input);font-size:10px;color:var(--sub);display:flex;align-items:center;gap:4px">${icon('lightbulb', 10, 'var(--accent)')} Save ${fmt(mn)}/mo to hit deadline</div>` : ''}
           <div style="display:flex;gap:6px;margin-top:8px">
             <button class="btn btn-secondary" style="flex:1;justify-content:center;font-size:11px;padding:6px 0" data-action="deposit-goal" data-id="${g.id}">${icon('plus', 12)} Deposit</button>
-            <button class="btn btn-danger" style="padding:6px 8px" data-action="delete-goal" data-id="${g.id}">${icon('trash-2', 12)}</button>
+            <button class="btn btn-danger" style="padding:6px 8px" data-action="delete-goal" data-id="${g.id}" aria-label="Delete savings goal">${icon('trash-2', 12)}</button>
           </div>
         </div>`;
       }).join('')}

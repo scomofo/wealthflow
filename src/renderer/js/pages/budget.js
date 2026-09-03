@@ -41,8 +41,8 @@ export function renderBudget(state, F) {
             </div>
             <div style="display:flex;align-items:center;gap:6px">
               <div class="mono" style="font-size:13px;font-weight:600;color:${ov ? 'var(--red)' : 'var(--green)'}">${p.toFixed(0)}%</div>
-              <button class="edit-btn" data-action="edit-budget" data-id="${b.id}">${icon('edit', 12)}</button>
-              <button class="edit-btn" style="color:var(--red)" data-action="delete-budget" data-id="${b.id}">${icon('trash-2', 12)}</button>
+              <button class="edit-btn" data-action="edit-budget" data-id="${b.id}" aria-label="Edit budget">${icon('edit', 12)}</button>
+              <button class="edit-btn" style="color:var(--red)" data-action="delete-budget" data-id="${b.id}" aria-label="Delete budget">${icon('trash-2', 12)}</button>
             </div>
           </div>
           ${progress(sp, effective, ov ? 'var(--red)' : p > 80 ? 'var(--orange)' : 'var(--green)')}

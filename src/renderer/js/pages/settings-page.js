@@ -18,10 +18,10 @@ export function renderSettings(state) {
     <div style="max-width:600px">
       <div class="card">
         <div style="font-weight:600;font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:6px">${icon('settings', 16)} Profile</div>
-        <div class="input-label">Your Name</div>
-        <input class="input-field settings-input" data-field="user_name" value="${h(s.user_name || '')}" placeholder="Enter your name" style="margin-bottom:12px">
-        <div class="input-label">Province</div>
-        <select class="input-field settings-input" data-field="province" style="margin-bottom:12px">
+        <label class="input-label" for="settings-user-name">Your Name</label>
+        <input class="input-field settings-input" id="settings-user-name" data-field="user_name" value="${h(s.user_name || '')}" placeholder="Enter your name" style="margin-bottom:12px">
+        <label class="input-label" for="settings-province">Province</label>
+        <select class="input-field settings-input" id="settings-province" data-field="province" style="margin-bottom:12px">
           ${PROVINCES.map(p => `<option value="${p.code}" ${s.province === p.code ? 'selected' : ''}>${p.name}</option>`).join('')}
         </select>
         <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
@@ -40,14 +40,14 @@ export function renderSettings(state) {
         <div style="font-size:11px;color:var(--sub);margin-bottom:14px;line-height:1.5">
           Connect your Anthropic API key to power the AI financial advisor with Claude. Your key is stored locally and never shared.
         </div>
-        <div class="input-label">Claude API Key</div>
+        <label class="input-label" for="ai-key-input">Claude API Key</label>
         <div style="display:flex;gap:8px;margin-bottom:12px">
           <input class="input-field" id="ai-key-input" type="password" placeholder="${hasKey ? maskedKey : 'sk-ant-...'}" style="flex:1;font-family:monospace;font-size:12px">
           <button class="btn btn-primary" style="padding:8px 14px;white-space:nowrap" data-action="save-ai-key">${hasKey ? 'Update' : 'Save'} Key</button>
         </div>
         ${hasKey ? `<div style="font-size:11px;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:4px">${icon('check-circle', 12, 'var(--green)')} API key configured</div>` : ''}
-        <div class="input-label">AI Model</div>
-        <select class="input-field settings-input" data-field="ai_model" style="margin-bottom:8px">
+        <label class="input-label" for="settings-ai-model">AI Model</label>
+        <select class="input-field settings-input" id="settings-ai-model" data-field="ai_model" style="margin-bottom:8px">
           ${AI_MODELS.map(m => `<option value="${m.id}" ${s.ai_model === m.id ? 'selected' : ''}>${m.name} — ${m.desc}</option>`).join('')}
         </select>
         <div style="font-size:10px;color:var(--sub);margin-top:4px">

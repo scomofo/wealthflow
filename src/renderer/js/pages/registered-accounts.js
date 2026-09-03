@@ -188,7 +188,7 @@ function renderRESP(state) {
               <div style="font-weight:700;font-size:16px">${h(b.name)}</div>
               <div style="color:var(--sub);font-size:12px">Age ${cesg.age} (born ${b.birth_year}) ${cesg.isEligible ? `- ${cesg.yearsRemaining} years of CESG remaining` : '- CESG no longer eligible'}</div>
             </div>
-            <button style="background:none;border:none;color:var(--muted)" data-action="delete-resp-beneficiary" data-id="${b.id}">${icon('trash-2', 14)}</button>
+            <button style="background:none;border:none;color:var(--muted)" data-action="delete-resp-beneficiary" data-id="${b.id}" aria-label="Delete beneficiary">${icon('trash-2', 14)}</button>
           </div>
           <div class="grid3" style="margin-bottom:14px">
             <div>
@@ -337,7 +337,7 @@ function renderGICs(state) {
                 ${g.is_cashable ? '<span class="tag">Cashable</span>' : ''}
               </div>
             </div>
-            <button style="background:none;border:none;color:var(--muted)" data-action="delete-gic" data-id="${g.id}">${icon('trash-2', 14)}</button>
+            <button style="background:none;border:none;color:var(--muted)" data-action="delete-gic" data-id="${g.id}" aria-label="Delete GIC">${icon('trash-2', 14)}</button>
           </div>
           <div class="grid4" style="margin-top:14px">
             <div>
@@ -381,7 +381,7 @@ function renderContributionHistory(contributions, type) {
             <div style="font-size:11px;color:var(--sub)">${c.date}${c.institution ? ` - ${c.institution}` : ''}</div>
           </div>
           <div class="mono" style="font-weight:700;color:var(--green)">${fmt(c.amount)}</div>
-          <button style="background:none;border:none;color:var(--muted);margin-left:8px" data-action="delete-contribution" data-id="${c.id}">${icon('trash-2', 12)}</button>
+          <button style="background:none;border:none;color:var(--muted);margin-left:8px" data-action="delete-contribution" data-id="${c.id}" aria-label="Delete contribution">${icon('trash-2', 12)}</button>
         </div>`).join('')}
     </div>`;
 }

@@ -63,23 +63,23 @@ export function renderTaxCalculator(_state) {
       <div>
         <div class="card" style="margin-bottom:14px">
           <div style="font-weight:700;font-size:15px;margin-bottom:16px">${icon('calculator', 16)} Income & Deductions</div>
-          <div class="input-label">Province</div>
+          <label class="input-label" for="tax-province">Province</label>
           <select class="input-field tax-input" id="tax-province" data-field="province" style="margin-bottom:12px">
             ${PROVINCES.map(p => `<option value="${p.code}" ${p.code === province ? 'selected' : ''}>${p.name}</option>`).join('')}
           </select>
-          <div class="input-label">Employment Income ($)</div>
+          <label class="input-label" for="tax-employment">Employment Income ($)</label>
           <input class="input-field tax-input" id="tax-employment" data-field="employment" type="number" step="100" value="${taxInputs.employment || ''}" placeholder="0" style="margin-bottom:12px">
-          <div class="input-label">Other Income ($)</div>
+          <label class="input-label" for="tax-other">Other Income ($)</label>
           <input class="input-field tax-input" id="tax-other" data-field="other" type="number" step="100" value="${taxInputs.other || ''}" placeholder="0" style="margin-bottom:12px">
-          <div class="input-label">RRSP Deduction ($)</div>
+          <label class="input-label" for="tax-rrsp">RRSP Deduction ($)</label>
           <input class="input-field tax-input" id="tax-rrsp" data-field="rrspDeduction" type="number" step="100" value="${taxInputs.rrspDeduction || ''}" placeholder="0" style="margin-bottom:4px">
           <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Deducting RRSP contributions reduces your taxable income</div>
 
           <div style="border-top:1px solid var(--border);margin:12px 0;padding-top:12px">
             <div style="font-weight:600;font-size:13px;margin-bottom:10px">${icon('trending-up', 14)} Dividend Income</div>
-            <div class="input-label">Eligible Dividends ($)</div>
+            <label class="input-label" for="tax-eligible-div">Eligible Dividends ($)</label>
             <input class="input-field tax-input" id="tax-eligible-div" data-field="eligibleDividends" type="number" step="100" value="${taxInputs.eligibleDividends || ''}" placeholder="0" style="margin-bottom:8px">
-            <div class="input-label">Non-Eligible Dividends ($)</div>
+            <label class="input-label" for="tax-noneligible-div">Non-Eligible Dividends ($)</label>
             <input class="input-field tax-input" id="tax-noneligible-div" data-field="nonEligibleDividends" type="number" step="100" value="${taxInputs.nonEligibleDividends || ''}" placeholder="0" style="margin-bottom:4px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Eligible: from public corporations | Non-eligible: from CCPCs</div>
           </div>
@@ -92,9 +92,9 @@ export function renderTaxCalculator(_state) {
               </label>
             </div>
             ${taxInputs.pensionSplitting ? `
-              <div class="input-label">Your Pension Income ($)</div>
+              <label class="input-label" for="tax-pension">Your Pension Income ($)</label>
               <input class="input-field tax-input" id="tax-pension" data-field="pensionIncome" type="number" step="100" value="${taxInputs.pensionIncome || ''}" placeholder="0" style="margin-bottom:8px">
-              <div class="input-label">Spouse Total Income ($)</div>
+              <label class="input-label" for="tax-spouse">Spouse Total Income ($)</label>
               <input class="input-field tax-input" id="tax-spouse" data-field="spouseIncome" type="number" step="100" value="${taxInputs.spouseIncome || ''}" placeholder="0" style="margin-bottom:4px">
               <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Up to 50% of eligible pension income can be split with spouse</div>
             ` : ''}

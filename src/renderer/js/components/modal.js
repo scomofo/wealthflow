@@ -330,7 +330,7 @@ export function getModalConfig(type, data) {
 export function renderModal(type, data) {
   // Custom modal: data provides title and body directly, no save button
   if (type === '_custom' && data) {
-    return `<div class="modal-overlay" data-action="close-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    return `<div class="modal-overlay" data-action="close-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
       <div class="modal">
         <div class="modal-head">
           <div class="modal-title" id="modal-title">${data.title || ''}</div>

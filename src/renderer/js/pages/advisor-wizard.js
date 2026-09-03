@@ -52,16 +52,18 @@ function selectOpts(list, selected, codeKey = 'code', nameKey = 'name') {
 }
 
 function field(label, id, value, type = 'text', extra = '') {
+  const domId = `wiz-${STEPS[currentStep].key}-${id}`;
   return `<div class="plan-field">
-    <div class="input-label">${label}</div>
-    <input class="input-field wizard-input" data-step="${STEPS[currentStep].key}" data-field="${id}" type="${type}" value="${h(String(value || ''))}" ${extra}>
+    <label class="input-label" for="${domId}">${label}</label>
+    <input class="input-field wizard-input" id="${domId}" data-step="${STEPS[currentStep].key}" data-field="${id}" type="${type}" value="${h(String(value || ''))}" ${extra}>
   </div>`;
 }
 
 function selectField(label, id, options) {
+  const domId = `wiz-${STEPS[currentStep].key}-${id}`;
   return `<div class="plan-field">
-    <div class="input-label">${label}</div>
-    <select class="input-field wizard-input" data-step="${STEPS[currentStep].key}" data-field="${id}">
+    <label class="input-label" for="${domId}">${label}</label>
+    <select class="input-field wizard-input" id="${domId}" data-step="${STEPS[currentStep].key}" data-field="${id}">
       <option value="">Select...</option>
       ${options}
     </select>
@@ -83,8 +85,8 @@ function renderStepPersonal(profile) {
       ${field('Phone', 'phone', p.phone, 'tel')}
     </div>
     ${+p.dependents_count > 0 ? `<div class="plan-field" style="margin-top:10px">
-      <div class="input-label">Dependents Ages (comma-separated)</div>
-      <input class="input-field wizard-input" data-step="personal" data-field="dependents_ages" value="${h(typeof p.dependents_ages === 'string' ? p.dependents_ages.replace(/[[\]]/g, '') : (Array.isArray(p.dependents_ages) ? p.dependents_ages.join(', ') : ''))}">
+      <label class="input-label" for="wiz-personal-dependents_ages">Dependents Ages (comma-separated)</label>
+      <input class="input-field wizard-input" id="wiz-personal-dependents_ages" data-step="personal" data-field="dependents_ages" value="${h(typeof p.dependents_ages === 'string' ? p.dependents_ages.replace(/[[\]]/g, '') : (Array.isArray(p.dependents_ages) ? p.dependents_ages.join(', ') : ''))}">
     </div>` : ''}`;
 }
 
@@ -133,19 +135,19 @@ function renderStepGoals(profile) {
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
             <div class="plan-field">
-              <div class="input-label">Time Horizon</div>
-              <select class="input-field wizard-input" data-step="goals" data-field="goal_horizon_${g.id}" style="font-size:12px">
+              <label class="input-label" for="wiz-goal-horizon-${g.id}">Time Horizon</label>
+              <select class="input-field wizard-input" id="wiz-goal-horizon-${g.id}" data-step="goals" data-field="goal_horizon_${g.id}" style="font-size:12px">
                 <option value="">Select...</option>
                 ${TIME_HORIZONS.map(th => `<option value="${th.code}" ${g.time_horizon === th.code ? 'selected' : ''}>${th.name}</option>`).join('')}
               </select>
             </div>
             <div class="plan-field">
-              <div class="input-label">Target Amount ($)</div>
-              <input class="input-field wizard-input" data-step="goals" data-field="goal_amount_${g.id}" type="number" min="0" value="${g.target_amount || ''}" style="font-size:12px">
+              <label class="input-label" for="wiz-goal-amount-${g.id}">Target Amount ($)</label>
+              <input class="input-field wizard-input" id="wiz-goal-amount-${g.id}" data-step="goals" data-field="goal_amount_${g.id}" type="number" min="0" value="${g.target_amount || ''}" style="font-size:12px">
             </div>
             <div class="plan-field">
-              <div class="input-label">Notes</div>
-              <input class="input-field wizard-input" data-step="goals" data-field="goal_notes_${g.id}" value="${h(g.notes || '')}" style="font-size:12px">
+              <label class="input-label" for="wiz-goal-notes-${g.id}">Notes</label>
+              <input class="input-field wizard-input" id="wiz-goal-notes-${g.id}" data-step="goals" data-field="goal_notes_${g.id}" value="${h(g.notes || '')}" style="font-size:12px">
             </div>
           </div>
         </div>`;
@@ -211,12 +213,12 @@ function renderStepAssets(profile) {
     <div style="font-weight:600;font-size:14px;margin-bottom:10px">Registered Accounts</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
       <div class="plan-field">
-        <div class="input-label">TFSA Contribution Room ($)</div>
-        <input class="input-field wizard-input" data-step="assets" data-field="tfsa_room" type="number" min="0" value="${reg.tfsa_room || ''}">
+        <label class="input-label" for="wiz-assets-tfsa_room">TFSA Contribution Room ($)</label>
+        <input class="input-field wizard-input" id="wiz-assets-tfsa_room" data-step="assets" data-field="tfsa_room" type="number" min="0" value="${reg.tfsa_room || ''}">
       </div>
       <div class="plan-field">
-        <div class="input-label">RRSP Contribution Room ($)</div>
-        <input class="input-field wizard-input" data-step="assets" data-field="rrsp_room" type="number" min="0" value="${reg.rrsp_room || ''}">
+        <label class="input-label" for="wiz-assets-rrsp_room">RRSP Contribution Room ($)</label>
+        <input class="input-field wizard-input" id="wiz-assets-rrsp_room" data-step="assets" data-field="rrsp_room" type="number" min="0" value="${reg.rrsp_room || ''}">
       </div>
       ${selectField('RESP Status', 'resp_status', selectOpts(RESP_STATUSES, reg.resp_status))}
       <div class="plan-field">
@@ -231,12 +233,12 @@ function renderStepAssets(profile) {
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px">
       ${selectField('Property Status', 'property_status', selectOpts(PROPERTY_STATUSES, reg.property_status))}
       <div class="plan-field">
-        <div class="input-label">Home Value ($)</div>
-        <input class="input-field wizard-input" data-step="assets" data-field="home_value" type="number" min="0" value="${reg.home_value || ''}">
+        <label class="input-label" for="wiz-assets-home_value">Home Value ($)</label>
+        <input class="input-field wizard-input" id="wiz-assets-home_value" data-step="assets" data-field="home_value" type="number" min="0" value="${reg.home_value || ''}">
       </div>
       <div class="plan-field">
-        <div class="input-label">Mortgage Balance ($)</div>
-        <input class="input-field wizard-input" data-step="assets" data-field="mortgage_balance" type="number" min="0" value="${reg.mortgage_balance || ''}">
+        <label class="input-label" for="wiz-assets-mortgage_balance">Mortgage Balance ($)</label>
+        <input class="input-field wizard-input" id="wiz-assets-mortgage_balance" data-step="assets" data-field="mortgage_balance" type="number" min="0" value="${reg.mortgage_balance || ''}">
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -251,7 +253,7 @@ function renderStepAssets(profile) {
           <div style="font-size:10px;color:var(--sub)">${ASSET_TYPES.find(t => t.code === a.asset_type)?.name || a.asset_type}</div>
         </div>
         <span class="mono" style="font-size:13px;font-weight:600">${fmt(a.balance)}</span>
-        <button class="edit-btn" data-action="wizard-delete-asset" data-id="${a.id}">${icon('trash-2', 13)}</button>
+        <button class="edit-btn" data-action="wizard-delete-asset" data-id="${a.id}" aria-label="Delete asset">${icon('trash-2', 13)}</button>
       </div>
     `).join('')}`;
 }
@@ -264,8 +266,8 @@ function renderStepInsurance(profile) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
       ${selectField('Life Insurance Type', 'life_insurance_type', selectOpts(LIFE_INSURANCE_TYPES, ins.life_insurance_type))}
       <div class="plan-field">
-        <div class="input-label">Coverage Amount ($)</div>
-        <input class="input-field wizard-input" data-step="insurance" data-field="life_insurance_amount" type="number" min="0" value="${ins.life_insurance_amount || ''}">
+        <label class="input-label" for="wiz-insurance-life_insurance_amount">Coverage Amount ($)</label>
+        <input class="input-field wizard-input" id="wiz-insurance-life_insurance_amount" data-step="insurance" data-field="life_insurance_amount" type="number" min="0" value="${ins.life_insurance_amount || ''}">
       </div>
     </div>
     <div style="font-weight:600;font-size:14px;margin-bottom:10px">Other Insurance</div>
@@ -298,8 +300,8 @@ function renderStepInsurance(profile) {
       </div>
     </div>
     <div class="plan-field">
-      <div class="input-label">Emergency Contact</div>
-      <input class="input-field wizard-input" data-step="insurance" data-field="emergency_contact" value="${h(ins.emergency_contact || '')}" placeholder="Name and phone number">
+      <label class="input-label" for="wiz-insurance-emergency_contact">Emergency Contact</label>
+      <input class="input-field wizard-input" id="wiz-insurance-emergency_contact" data-step="insurance" data-field="emergency_contact" value="${h(ins.emergency_contact || '')}" placeholder="Name and phone number">
     </div>`;
 }
 
