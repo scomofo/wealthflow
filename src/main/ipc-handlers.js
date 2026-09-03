@@ -69,7 +69,10 @@ function registerIpcHandlers(database, aiService) {
     if (typeof tx.amount !== 'number' || isNaN(tx.amount)) throw new Error('transaction.amount must be a valid number');
     return database.addTransaction(tx);
   });
-  safeHandle('db:transactions:update', (_, tx) => database.updateTransaction(tx));
+  safeHandle('db:transactions:update', (_, tx) => {
+    validate(tx, 'object', 'transaction');
+    return database.updateTransaction(tx);
+  });
   safeHandle('db:transactions:delete', (_, id) => {
     validate(id, 'id', 'id');
     return database.deleteTransaction(id);
@@ -81,63 +84,141 @@ function registerIpcHandlers(database, aiService) {
 
   // Budgets
   safeHandle('db:budgets:list', () => database.listBudgets());
-  safeHandle('db:budgets:add', (_, b) => database.addBudget(b));
-  safeHandle('db:budgets:update', (_, b) => database.updateBudget(b));
-  safeHandle('db:budgets:delete', (_, id) => database.deleteBudget(id));
+  safeHandle('db:budgets:add', (_, b) => {
+    validate(b, 'object', 'budget');
+    return database.addBudget(b);
+  });
+  safeHandle('db:budgets:update', (_, b) => {
+    validate(b, 'object', 'budget');
+    return database.updateBudget(b);
+  });
+  safeHandle('db:budgets:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteBudget(id);
+  });
 
   // Goals
   safeHandle('db:goals:list', () => database.listGoals());
-  safeHandle('db:goals:add', (_, g) => database.addGoal(g));
-  safeHandle('db:goals:update', (_, g) => database.updateGoal(g));
-  safeHandle('db:goals:delete', (_, id) => database.deleteGoal(id));
+  safeHandle('db:goals:add', (_, g) => {
+    validate(g, 'object', 'goal');
+    return database.addGoal(g);
+  });
+  safeHandle('db:goals:update', (_, g) => {
+    validate(g, 'object', 'goal');
+    return database.updateGoal(g);
+  });
+  safeHandle('db:goals:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteGoal(id);
+  });
 
   // Debts
   safeHandle('db:debts:list', () => database.listDebts());
-  safeHandle('db:debts:add', (_, d) => database.addDebt(d));
-  safeHandle('db:debts:update', (_, d) => database.updateDebt(d));
-  safeHandle('db:debts:delete', (_, id) => database.deleteDebt(id));
+  safeHandle('db:debts:add', (_, d) => {
+    validate(d, 'object', 'debt');
+    return database.addDebt(d);
+  });
+  safeHandle('db:debts:update', (_, d) => {
+    validate(d, 'object', 'debt');
+    return database.updateDebt(d);
+  });
+  safeHandle('db:debts:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteDebt(id);
+  });
 
   // Investments
   safeHandle('db:investments:list', () => database.listInvestments());
-  safeHandle('db:investments:add', (_, i) => database.addInvestment(i));
-  safeHandle('db:investments:update', (_, i) => database.updateInvestment(i));
-  safeHandle('db:investments:delete', (_, id) => database.deleteInvestment(id));
+  safeHandle('db:investments:add', (_, i) => {
+    validate(i, 'object', 'investment');
+    return database.addInvestment(i);
+  });
+  safeHandle('db:investments:update', (_, i) => {
+    validate(i, 'object', 'investment');
+    return database.updateInvestment(i);
+  });
+  safeHandle('db:investments:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteInvestment(id);
+  });
 
   // Bills
   safeHandle('db:bills:list', () => database.listBills());
-  safeHandle('db:bills:add', (_, b) => database.addBill(b));
-  safeHandle('db:bills:update', (_, b) => database.updateBill(b));
-  safeHandle('db:bills:delete', (_, id) => database.deleteBill(id));
+  safeHandle('db:bills:add', (_, b) => {
+    validate(b, 'object', 'bill');
+    return database.addBill(b);
+  });
+  safeHandle('db:bills:update', (_, b) => {
+    validate(b, 'object', 'bill');
+    return database.updateBill(b);
+  });
+  safeHandle('db:bills:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteBill(id);
+  });
 
   // Challenges
   safeHandle('db:challenges:list', () => database.listChallenges());
-  safeHandle('db:challenges:update', (_, c) => database.updateChallenge(c));
+  safeHandle('db:challenges:update', (_, c) => {
+    validate(c, 'object', 'challenge');
+    return database.updateChallenge(c);
+  });
 
   // Community & Education
   safeHandle('db:community:list', () => database.listCommunityPosts());
   safeHandle('db:education:list', () => database.listEducation());
-  safeHandle('db:education:update', (_, e) => database.updateEducation(e));
+  safeHandle('db:education:update', (_, e) => {
+    validate(e, 'object', 'education');
+    return database.updateEducation(e);
+  });
 
   // Contribution Room
   safeHandle('db:contribution-room:list', () => database.listContributionRoom());
-  safeHandle('db:contribution-room:upsert', (_, cr) => database.upsertContributionRoom(cr));
-  safeHandle('db:contribution-room:delete', (_, id) => database.deleteContributionRoom(id));
+  safeHandle('db:contribution-room:upsert', (_, cr) => {
+    validate(cr, 'object', 'contributionRoom');
+    return database.upsertContributionRoom(cr);
+  });
+  safeHandle('db:contribution-room:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteContributionRoom(id);
+  });
 
   // Contributions
   safeHandle('db:contributions:list', () => database.listContributions());
-  safeHandle('db:contributions:add', (_, c) => database.addContribution(c));
-  safeHandle('db:contributions:delete', (_, id) => database.deleteContribution(id));
+  safeHandle('db:contributions:add', (_, c) => {
+    validate(c, 'object', 'contribution');
+    return database.addContribution(c);
+  });
+  safeHandle('db:contributions:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteContribution(id);
+  });
 
   // RESP Beneficiaries
   safeHandle('db:resp-beneficiaries:list', () => database.listRESPBeneficiaries());
-  safeHandle('db:resp-beneficiaries:add', (_, b) => database.addRESPBeneficiary(b));
-  safeHandle('db:resp-beneficiaries:update', (_, b) => database.updateRESPBeneficiary(b));
-  safeHandle('db:resp-beneficiaries:delete', (_, id) => database.deleteRESPBeneficiary(id));
+  safeHandle('db:resp-beneficiaries:add', (_, b) => {
+    validate(b, 'object', 'respBeneficiary');
+    return database.addRESPBeneficiary(b);
+  });
+  safeHandle('db:resp-beneficiaries:update', (_, b) => {
+    validate(b, 'object', 'respBeneficiary');
+    return database.updateRESPBeneficiary(b);
+  });
+  safeHandle('db:resp-beneficiaries:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteRESPBeneficiary(id);
+  });
 
   // GICs
   safeHandle('db:gics:list', () => database.listGICs());
-  safeHandle('db:gics:add', (_, g) => database.addGIC(g));
-  safeHandle('db:gics:delete', (_, id) => database.deleteGIC(id));
+  safeHandle('db:gics:add', (_, g) => {
+    validate(g, 'object', 'gic');
+    return database.addGIC(g);
+  });
+  safeHandle('db:gics:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteGIC(id);
+  });
 
   // Computed financials
   safeHandle('db:compute-financials', () => database.computeFinancials());
@@ -147,7 +228,10 @@ function registerIpcHandlers(database, aiService) {
 
   // Recurring log
   safeHandle('db:recurring-log:list', (_, billId) => database.listRecurringLog(billId));
-  safeHandle('db:recurring-log:add', (_, entry) => database.addRecurringLog(entry));
+  safeHandle('db:recurring-log:add', (_, entry) => {
+    validate(entry, 'object', 'entry');
+    return database.addRecurringLog(entry);
+  });
 
   // Net worth history
   safeHandle('db:net-worth-history:list', () => database.listNetWorthHistory());
@@ -164,7 +248,10 @@ function registerIpcHandlers(database, aiService) {
 
   // Import History
   safeHandle('db:import-history:list', () => database.listImportHistory());
-  safeHandle('db:import-history:add', (_, entry) => database.addImportHistory(entry));
+  safeHandle('db:import-history:add', (_, entry) => {
+    validate(entry, 'object', 'entry');
+    return database.addImportHistory(entry);
+  });
 
   // File dialogs
   safeHandle('dialog:save-file', async (event, options) => {
@@ -239,25 +326,61 @@ function registerIpcHandlers(database, aiService) {
 
   // Advisor Profile
   safeHandle('db:advisor:personal:get', () => database.getAdvisorPersonal());
-  safeHandle('db:advisor:personal:update', (_, data) => database.updateAdvisorPersonal(data));
+  safeHandle('db:advisor:personal:update', (_, data) => {
+    validate(data, 'object', 'data');
+    return database.updateAdvisorPersonal(data);
+  });
   safeHandle('db:advisor:employment:get', () => database.getAdvisorEmployment());
-  safeHandle('db:advisor:employment:update', (_, data) => database.updateAdvisorEmployment(data));
+  safeHandle('db:advisor:employment:update', (_, data) => {
+    validate(data, 'object', 'data');
+    return database.updateAdvisorEmployment(data);
+  });
   safeHandle('db:advisor:risk:get', () => database.getAdvisorRisk());
-  safeHandle('db:advisor:risk:update', (_, data) => database.updateAdvisorRisk(data));
+  safeHandle('db:advisor:risk:update', (_, data) => {
+    validate(data, 'object', 'data');
+    return database.updateAdvisorRisk(data);
+  });
   safeHandle('db:advisor:registered:get', () => database.getAdvisorRegistered());
-  safeHandle('db:advisor:registered:update', (_, data) => database.updateAdvisorRegistered(data));
+  safeHandle('db:advisor:registered:update', (_, data) => {
+    validate(data, 'object', 'data');
+    return database.updateAdvisorRegistered(data);
+  });
   safeHandle('db:advisor:insurance:get', () => database.getAdvisorInsurance());
-  safeHandle('db:advisor:insurance:update', (_, data) => database.updateAdvisorInsurance(data));
+  safeHandle('db:advisor:insurance:update', (_, data) => {
+    validate(data, 'object', 'data');
+    return database.updateAdvisorInsurance(data);
+  });
   safeHandle('db:advisor:goals:list', () => database.listAdvisorGoals());
-  safeHandle('db:advisor:goals:upsert', (_, g) => database.upsertAdvisorGoal(g));
-  safeHandle('db:advisor:goals:delete', (_, id) => database.deleteAdvisorGoal(id));
+  safeHandle('db:advisor:goals:upsert', (_, g) => {
+    validate(g, 'object', 'goal');
+    return database.upsertAdvisorGoal(g);
+  });
+  safeHandle('db:advisor:goals:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteAdvisorGoal(id);
+  });
   safeHandle('db:advisor:assets:list', () => database.listAdvisorAssets());
-  safeHandle('db:advisor:assets:add', (_, a) => database.addAdvisorAsset(a));
-  safeHandle('db:advisor:assets:update', (_, a) => database.updateAdvisorAsset(a));
-  safeHandle('db:advisor:assets:delete', (_, id) => database.deleteAdvisorAsset(id));
+  safeHandle('db:advisor:assets:add', (_, a) => {
+    validate(a, 'object', 'asset');
+    return database.addAdvisorAsset(a);
+  });
+  safeHandle('db:advisor:assets:update', (_, a) => {
+    validate(a, 'object', 'asset');
+    return database.updateAdvisorAsset(a);
+  });
+  safeHandle('db:advisor:assets:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteAdvisorAsset(id);
+  });
   safeHandle('db:advisor:documents:list', () => database.listAdvisorDocuments());
-  safeHandle('db:advisor:documents:add', (_, doc) => database.addAdvisorDocument(doc));
-  safeHandle('db:advisor:documents:delete', (_, id) => database.deleteAdvisorDocument(id));
+  safeHandle('db:advisor:documents:add', (_, doc) => {
+    validate(doc, 'object', 'document');
+    return database.addAdvisorDocument(doc);
+  });
+  safeHandle('db:advisor:documents:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteAdvisorDocument(id);
+  });
   safeHandle('db:advisor:profile', () => database.getAdvisorProfile());
 
   // Advisor document file operations
@@ -331,7 +454,10 @@ function registerIpcHandlers(database, aiService) {
   });
 
   // Community posts
-  safeHandle('db:community:add', (_, post) => database.addCommunityPost(post));
+  safeHandle('db:community:add', (_, post) => {
+    validate(post, 'object', 'post');
+    return database.addCommunityPost(post);
+  });
 
   // Principal Residence
   safeHandle('db:residence:get', () => database.getPrincipalResidence());
@@ -343,12 +469,21 @@ function registerIpcHandlers(database, aiService) {
   // Monthly Reports
   safeHandle('db:monthly-reports:list', () => database.listMonthlyReports());
   safeHandle('db:monthly-reports:get', (_, month, year) => database.getMonthlyReport(month, year));
-  safeHandle('db:monthly-reports:save', (_, report) => database.saveMonthlyReport(report));
+  safeHandle('db:monthly-reports:save', (_, report) => {
+    validate(report, 'object', 'report');
+    return database.saveMonthlyReport(report);
+  });
 
   // Undo Log
-  safeHandle('db:undo:add', (_, entry) => database.addUndoEntry(entry));
+  safeHandle('db:undo:add', (_, entry) => {
+    validate(entry, 'object', 'entry');
+    return database.addUndoEntry(entry);
+  });
   safeHandle('db:undo:list', (_, limit) => database.getLastUndoEntries(limit || 10));
-  safeHandle('db:undo:delete', (_, id) => database.deleteUndoEntry(id));
+  safeHandle('db:undo:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteUndoEntry(id);
+  });
   safeHandle('db:undo:cleanup', () => database.clearOldUndoEntries());
 
   // Budget rollover
@@ -378,9 +513,18 @@ function registerIpcHandlers(database, aiService) {
 
   // Recommended Actions
   safeHandle('db:recommended-actions:list', () => database.listRecommendedActions());
-  safeHandle('db:recommended-actions:add', (_, action) => database.addRecommendedAction(action));
-  safeHandle('db:recommended-actions:complete', (_, id) => database.completeRecommendedAction(id));
-  safeHandle('db:recommended-actions:delete', (_, id) => database.deleteRecommendedAction(id));
+  safeHandle('db:recommended-actions:add', (_, action) => {
+    validate(action, 'object', 'action');
+    return database.addRecommendedAction(action);
+  });
+  safeHandle('db:recommended-actions:complete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.completeRecommendedAction(id);
+  });
+  safeHandle('db:recommended-actions:delete', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.deleteRecommendedAction(id);
+  });
 
   // Next Best Actions
   const { NextBestActionsEngine } = require('./next-best-actions-engine');
@@ -390,9 +534,19 @@ function registerIpcHandlers(database, aiService) {
     return nbaEngine.generateActions();
   });
   safeHandle('actions:list-next-best', () => nbaEngine.getRankedOpenActions());
-  safeHandle('actions:complete-next-best', (_, id) => database.completeNextBestAction(id));
-  safeHandle('actions:dismiss-next-best', (_, id) => database.dismissNextBestAction(id));
-  safeHandle('actions:snooze-next-best', (_, id, untilDate) => database.snoozeNextBestAction(id, untilDate));
+  safeHandle('actions:complete-next-best', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.completeNextBestAction(id);
+  });
+  safeHandle('actions:dismiss-next-best', (_, id) => {
+    validate(id, 'id', 'id');
+    return database.dismissNextBestAction(id);
+  });
+  safeHandle('actions:snooze-next-best', (_, id, untilDate) => {
+    validate(id, 'id', 'id');
+    validate(untilDate, 'string', 'untilDate');
+    return database.snoozeNextBestAction(id, untilDate);
+  });
 
   // Personalization
   const { PersonalizationEngine } = require('./personalization-engine');
