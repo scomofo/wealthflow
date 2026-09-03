@@ -246,18 +246,25 @@ function bindEvents() {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
+    // Ctrl+N and Ctrl+Z are also native text-editing shortcuts (new
+    // window/undo). While focus is in a text field, let the field handle
+    // them — hijacking Ctrl+Z there replaced the user's expected "undo my
+    // typing" with the app's own "undo last completed action" instead,
+    // which discarded the text edit and did something unrelated.
+    const inTextField = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
+
     if (e.key === 'Escape') {
       if (appState.activeModal) { appState.activeModal = null; appState.editData = null; render(); return; }
       if (appState.showAI) { appState.showAI = false; render(); return; }
     }
-    if (e.ctrlKey && e.key === 'n') {
+    if (e.ctrlKey && e.key === 'n' && !inTextField) {
       e.preventDefault();
       appState.activeModal = 'transaction';
       appState.editData = null;
       render();
       return;
     }
-    if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+    if (e.ctrlKey && e.key === 'z' && !e.shiftKey && !inTextField) {
       e.preventDefault();
       handleUndo();
       return;
@@ -321,7 +328,7 @@ function bindEvents() {
   el.addEventListener('change', async (e) => {
     if (await handlePlanChange(e, ctx)) return;
     if (handleMoneyChange(e, ctx)) return;
-    if (handleHomeChange(e, ctx)) return;
+    if (await handleHomeChange(e, ctx)) return;
   });
 }
 

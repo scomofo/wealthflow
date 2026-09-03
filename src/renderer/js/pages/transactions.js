@@ -53,7 +53,7 @@ export function renderTransactions(state) {
       <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
         <div class="search-input-wrap">
           ${icon('search', 14)}
-          <input class="input-field search-input tx-search" placeholder="Search transactions..." value="${h(txSearch)}" aria-label="Search transactions">
+          <input class="input-field search-input tx-search" data-field="search" placeholder="Search transactions..." value="${h(txSearch)}" aria-label="Search transactions">
         </div>
         <select class="input-field tx-sort" style="width:auto;min-width:100px">
           ${sortOptions.map(o => `<option value="${o.v}" ${txSort === o.v ? 'selected' : ''}>${o.l}</option>`).join('')}

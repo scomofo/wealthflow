@@ -191,7 +191,7 @@ export function handleHomeInput(e, ctx) {
   return false;
 }
 
-export function handleHomeChange(e, ctx) {
+export async function handleHomeChange(e, ctx) {
   const { State, render, getSection, updateWizardDraft,
     renderAdvisorWizard,
   } = ctx;
@@ -218,7 +218,12 @@ export function handleHomeChange(e, ctx) {
     const field = e.target.dataset.field;
     if (field) {
       const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-      State.updateSettings({ [field]: value });
+      // Must await before rendering dark_mode: State.updateSettings only
+      // updates the local cached settings after the IPC round-trip
+      // resolves, so a render fired immediately after (as this used to do,
+      // uncritically) would still read the pre-toggle value and apply the
+      // wrong theme for one render.
+      await State.updateSettings({ [field]: value });
       if (field === 'dark_mode') render();
     }
     return true;
