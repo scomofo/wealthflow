@@ -113,7 +113,7 @@ function renderErrorScreen(error) {
     <div class="card" style="max-width:500px;text-align:center;padding:40px">
       <div style="font-size:48px;margin-bottom:16px">&#9888;</div>
       <div style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--red,#ef4444)">Something went wrong</div>
-      <div style="color:var(--sub);font-size:13px;margin-bottom:20px;word-break:break-word">${error}</div>
+      <div style="color:var(--sub);font-size:13px;margin-bottom:20px;word-break:break-word">${h(error)}</div>
       <button class="btn btn-primary" onclick="location.reload()" style="justify-content:center;width:100%">Reload App</button>
     </div>
   </div>`;
@@ -127,7 +127,7 @@ function renderPageSafe(fn, ...args) {
     if (window.wealthflow?.log) window.wealthflow.log('error', `Page render error: ${name}`, err.message);
     return `<div class="card" style="padding:24px;margin:20px;text-align:center">
       <div style="font-size:16px;font-weight:600;color:var(--red,#ef4444);margin-bottom:8px">Failed to load page</div>
-      <div style="color:var(--sub);font-size:12px">${err.message}</div>
+      <div style="color:var(--sub);font-size:12px">${h(err.message)}</div>
     </div>`;
   }
 }

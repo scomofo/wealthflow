@@ -1,4 +1,6 @@
 // Toast notification component
+import { h } from '../helpers.js';
+
 let toasts = [];
 let onChange = null;
 let actionCallbacks = {};
@@ -44,8 +46,8 @@ export function renderToasts() {
   return `<div class="toast-container">
     ${toasts.map(t => `
       <div class="toast toast-${t.type}" style="border-left:3px solid ${colors[t.type] || colors.info}">
-        <span>${t.message}</span>
-        ${t.actionLabel ? `<button class="toast-action-btn" data-action="toast-action" data-toast-id="${t.actionId}">${t.actionLabel}</button>` : ''}
+        <span>${h(t.message)}</span>
+        ${t.actionLabel ? `<button class="toast-action-btn" data-action="toast-action" data-toast-id="${t.actionId}">${h(t.actionLabel)}</button>` : ''}
       </div>
     `).join('')}
   </div>`;

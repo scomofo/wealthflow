@@ -1,4 +1,4 @@
-import { fmt, CC } from '../helpers.js';
+import { fmt, CC, h } from '../helpers.js';
 import { stat } from '../components/stat-card.js';
 import { progress } from '../components/progress-bar.js';
 import { icon } from '../icons.js';
@@ -203,7 +203,7 @@ export function renderAnalytics(state, F) {
         Object.entries(F.catSpending).sort((a, b) => b[1] - a[1]).map(([name, val]) => {
           const max = Math.max(...Object.values(F.catSpending));
           return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-            <div style="width:110px;font-size:12px;color:var(--sub)">${name}</div>
+            <div style="width:110px;font-size:12px;color:var(--sub)">${h(name)}</div>
             <div style="flex:1">${progress(val, max, CC[name] || '#6b7280', 10)}</div>
             <div class="mono" style="font-size:11px;font-weight:600;min-width:80px;text-align:right">${fmt(val)}</div>
           </div>`;

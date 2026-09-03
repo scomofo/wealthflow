@@ -317,7 +317,7 @@ function renderSavingsTimeline(goals) {
 
       return `<div style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <div style="font-size:12px;font-weight:600">${g.name}</div>
+          <div style="font-size:12px;font-weight:600">${h(g.name)}</div>
           <div style="font-size:11px;color:${onTrack ? 'var(--green)' : 'var(--red)'}">${monthsToGoal === Infinity ? 'Set savings rate' : monthsToGoal + ' months'}</div>
         </div>
         <div style="margin-bottom:4px">${progress(g.current, g.target, g.color || '#10b981', 8)}</div>
