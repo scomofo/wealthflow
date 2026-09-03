@@ -28,6 +28,14 @@ class StockService {
         let data = '';
         res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
+          if (res.statusCode < 200 || res.statusCode >= 300) {
+            // A non-2xx response (rate limit, error page, etc.) is often
+            // HTML or plain text, not JSON — parsing it produced a
+            // confusing "Failed to parse JSON response" instead of the
+            // actual cause. Report the status directly.
+            reject(new Error(`Request failed with status ${res.statusCode}: ${data.slice(0, 200)}`));
+            return;
+          }
           try {
             resolve(JSON.parse(data));
           } catch (err) {
