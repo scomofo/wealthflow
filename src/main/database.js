@@ -985,8 +985,23 @@ class WealthFlowDatabase {
   upsertNextBestAction(a) {
     const existing = this.getOne("SELECT id FROM next_best_actions WHERE action_key = ? AND deleted_at IS NULL", [a.action_key]);
     if (existing) {
+      // A recurring condition (e.g. over budget again after being fixed)
+      // regenerates the same action_key. The 7-day post-completion filter
+      // in NextBestActionsEngine already suppresses this from even being
+      // called for 7 days after completion, so by the time we get here a
+      // previously 'done' row represents a genuinely new occurrence and
+      // should resurface — otherwise it stays stuck 'done' forever and the
+      // user never sees it again. 'dismissed' and 'snoozed' are left
+      // alone: dismissing is a deliberate "don't show this again", and an
+      // active snooze already un-snoozes itself on its own schedule.
       this.run(
-        "UPDATE next_best_actions SET title=?, description=?, rationale=?, category=?, priority=?, score=?, source_payload=?, related_entity_type=?, related_entity_id=?, impact_text=?, generated_at=datetime('now') WHERE id=?",
+        `UPDATE next_best_actions SET
+           title=?, description=?, rationale=?, category=?, priority=?, score=?,
+           source_payload=?, related_entity_type=?, related_entity_id=?, impact_text=?,
+           generated_at=datetime('now'),
+           status = CASE WHEN status = 'done' THEN 'open' ELSE status END,
+           completed_at = CASE WHEN status = 'done' THEN NULL ELSE completed_at END
+         WHERE id=?`,
         [a.title, a.description || null, a.rationale || null, a.category || null, a.priority, a.score, a.source_payload || null, a.related_entity_type || null, a.related_entity_id || null, a.impact_text || null, existing.id]
       );
       return { ...a, id: existing.id };
@@ -1015,11 +1030,20 @@ class WealthFlowDatabase {
   }
 
   clearStaleNextBestActions(activeKeys) {
-    if (!activeKeys || activeKeys.length === 0) return;
-    const placeholders = activeKeys.map(() => '?').join(',');
+    const keys = activeKeys || [];
+    if (keys.length === 0) {
+      // No rule produced any candidate this run (e.g. every issue got
+      // resolved) — every currently-open action is stale, not just the
+      // ones matched by a NOT IN(...) list (which is invalid SQL when
+      // empty, hence this early branch rather than skipping the clear
+      // entirely).
+      this.run("UPDATE next_best_actions SET deleted_at = datetime('now') WHERE status = 'open' AND deleted_at IS NULL");
+      return;
+    }
+    const placeholders = keys.map(() => '?').join(',');
     this.run(
       "UPDATE next_best_actions SET deleted_at = datetime('now') WHERE status = 'open' AND action_key NOT IN (" + placeholders + ") AND deleted_at IS NULL",
-      activeKeys
+      keys
     );
   }
 
