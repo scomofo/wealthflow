@@ -68,7 +68,7 @@
 
 | Feature | Details |
 |:--------|:--------|
-| 🏦 **Tax Brackets** | 2024/2025 Federal + Alberta provincial |
+| 🏦 **Tax Brackets** | 2026 Federal + all 13 provinces/territories |
 | 📊 **TFSA** | Annual limits + lifetime room |
 | 💼 **RRSP** | Deduction limits + HBP/LLP |
 | 🎓 **RESP** | CESG matching + lifetime caps |
@@ -102,12 +102,12 @@ wealthflow/
 │   │   ├── ai-service.js        Claude AI integration
 │   │   ├── ipc-handlers.js      100+ IPC channels
 │   │   ├── stock-service.js     Real-time quotes
-│   │   └── migrations/          8 DB migrations
+│   │   └── migrations/          14 DB migrations
 │   ├── renderer/
 │   │   ├── js/
 │   │   │   ├── app.js           App coordinator
 │   │   │   ├── router.js        15-route SPA
-│   │   │   ├── state.js         State + IPC bridge
+│   │   │   ├── state/           State + IPC bridge
 │   │   │   ├── canadian/
 │   │   │   │   ├── constants.js Tax brackets, limits
 │   │   │   │   ├── calculators.js Tax, retirement, debt
@@ -125,7 +125,7 @@ wealthflow/
 
 ## 🔒 Privacy
 
-All data stored locally at `%APPDATA%/wealthflow/wealthflow.db`. Nothing sent to the cloud except AI chat messages (which go to Anthropic's API). No telemetry, no tracking.
+All financial data stored locally at `%APPDATA%/wealthflow/wealthflow.db`. No telemetry, no tracking. The app does make a few outbound requests: AI advisor messages go to Anthropic's API, stock/exchange-rate quotes go to Yahoo Finance, and UI fonts load from Google Fonts.
 
 ---
 
