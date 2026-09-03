@@ -101,8 +101,17 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
+  // On macOS the app conventionally stays running (dock icon, no windows)
+  // until the user explicitly quits — closing the database/AI service here
+  // unconditionally would leave 'activate' recreating a window against an
+  // already-closed database. Actual teardown happens once in
+  // 'before-quit', which fires on every platform right before the process
+  // really exits.
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', () => {
   if (aiService) aiService.destroy();
   if (database) database.close();
   logger.info('WealthFlow shutting down');
-  if (process.platform !== 'darwin') app.quit();
 });
