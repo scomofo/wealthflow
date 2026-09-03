@@ -776,6 +776,57 @@ class WealthFlowDatabase {
     return formatLocalDate(d);
   }
 
+  // Danger Zone: full local data reset, used by the Settings page's
+  // "Reset All Data" button. That button's own copy ("This will permanently
+  // delete all your data and reset the app") previously described behavior
+  // it didn't deliver — it only reset a handful of settings columns
+  // (name/theme/level/xp/province), leaving every transaction, budget,
+  // goal, debt, investment, bill, advisor-profile field, etc. fully intact.
+  resetAllData() {
+    const deleteAllTables = [
+      'transactions', 'budgets', 'goals', 'debts', 'investments', 'bills',
+      'challenges', 'community_posts', 'education', 'contribution_room',
+      'contributions', 'resp_beneficiaries', 'gics', 'advisor_goals',
+      'advisor_assets', 'advisor_documents', 'monthly_reports',
+      'net_worth_history', 'next_best_actions', 'recommended_actions',
+      'recurring_log', 'undo_log', 'import_history',
+    ];
+    // Singleton tables keyed on id=1 (CHECK (id = 1), one INSERT OR IGNORE
+    // seed row per migration 004/008) — delete and re-insert the row so
+    // every column reverts to its schema DEFAULT, rather than hand-
+    // duplicating each table's full default set here.
+    const singletonTables = [
+      'advisor_personal', 'advisor_employment', 'advisor_risk',
+      'advisor_registered', 'advisor_insurance', 'principal_residence',
+    ];
+
+    this.db.run('BEGIN TRANSACTION');
+    try {
+      for (const table of deleteAllTables) {
+        this.db.run(`DELETE FROM ${table}`);
+      }
+      for (const table of singletonTables) {
+        this.db.run(`DELETE FROM ${table} WHERE id = 1`);
+        this.db.run(`INSERT INTO ${table} (id) VALUES (1)`);
+      }
+      this.db.run('COMMIT');
+    } catch (err) {
+      this.db.run('ROLLBACK');
+      throw err;
+    }
+
+    this.updateSettings({
+      user_name: '', dark_mode: true, onboarded: false, level: 1, xp: 0, province: 'ON',
+      profile_completed: false, last_wizard_step: 0, ai_api_key: '',
+      monthly_income: 0, monthly_expenses: 0, total_debt: 0, savings_buffer: 0,
+      first_action_completed: false, onboarding_focus: null, onboarding_confidence: 'starter',
+      onboarding_completed_at: null, bill_notifications: 1, bill_notify_days: 3,
+      theme_mode: 'dark', dashboard_widgets: '["summary","budgets","goals","transactions","insights"]',
+    });
+
+    this.save();
+  }
+
   // Export all data
   exportAllData() {
     // The decrypted API key must never end up in a JSON backup file.

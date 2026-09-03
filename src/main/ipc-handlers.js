@@ -244,6 +244,7 @@ function registerIpcHandlers(database, aiService) {
 
   // Export/Import
   safeHandle('db:export-all', () => database.exportAllData());
+  safeHandle('db:reset-all-data', () => { database.resetAllData(); return true; });
 
   // Import History
   safeHandle('db:import-history:list', () => database.listImportHistory());

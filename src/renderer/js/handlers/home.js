@@ -29,10 +29,8 @@ export async function handleHomeAction(action, btn, ctx) {
     }
 
     case 'reset-all': {
-      if (confirm('Are you sure? This will delete all your data.')) {
-        await State.updateSettings({
-          user_name: '', dark_mode: true, onboarded: false, level: 1, xp: 0, province: 'ON'
-        });
+      if (confirm('Are you sure? This will permanently delete ALL your data — transactions, budgets, goals, debts, investments, bills, and your advisor profile. This cannot be undone.')) {
+        await window.wealthflow.resetAllData();
         location.reload();
       }
       return true;
