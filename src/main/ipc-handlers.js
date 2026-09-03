@@ -389,7 +389,7 @@ function registerIpcHandlers(database, aiService) {
   safeHandle('actions:generate-next-best', async () => {
     return nbaEngine.generateActions();
   });
-  safeHandle('actions:list-next-best', () => database.listNextBestActions('open'));
+  safeHandle('actions:list-next-best', () => nbaEngine.getRankedOpenActions());
   safeHandle('actions:complete-next-best', (_, id) => database.completeNextBestAction(id));
   safeHandle('actions:dismiss-next-best', (_, id) => database.dismissNextBestAction(id));
   safeHandle('actions:snooze-next-best', (_, id, untilDate) => database.snoozeNextBestAction(id, untilDate));

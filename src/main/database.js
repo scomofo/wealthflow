@@ -986,7 +986,7 @@ class WealthFlowDatabase {
   listNextBestActions(statusFilter) {
     if (statusFilter) {
       if (statusFilter === 'open') {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = todayLocalISO();
         this.db.run(
           "UPDATE next_best_actions SET status = 'open', snoozed_until = NULL WHERE status = 'snoozed' AND snoozed_until IS NOT NULL AND snoozed_until <= ? AND deleted_at IS NULL",
           [today]

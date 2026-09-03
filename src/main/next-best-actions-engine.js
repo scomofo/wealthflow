@@ -77,14 +77,26 @@ class NextBestActionsEngine {
     db.clearStaleNextBestActions(activeKeys);
 
     // 7. Return sorted open actions with personalization weighting
+    return this.getRankedOpenActions();
+  }
+
+  // Shared by generateActions() above and the actions:list-next-best IPC
+  // handler, which used to call database.listNextBestActions('open')
+  // directly — a plain `ORDER BY score DESC` with no personalization
+  // weighting applied. Since personalizedDelta is computed fresh each time
+  // rather than persisted, that meant the dashboard's action order could
+  // visibly change depending on whether the last refresh went through
+  // generate (personalized) or list (not), even with identical underlying
+  // data. Routing both through this one method keeps them always in sync.
+  getRankedOpenActions() {
     try {
       const { PersonalizationEngine } = require('./personalization-engine');
       const pe = new PersonalizationEngine(this.database);
       const profile = pe.buildProfile();
-      const openActions = db.listNextBestActions('open');
+      const openActions = this.database.listNextBestActions('open');
       return pe.applyActionWeighting(openActions, profile);
     } catch (_) {
-      return db.listNextBestActions('open');
+      return this.database.listNextBestActions('open');
     }
   }
 
