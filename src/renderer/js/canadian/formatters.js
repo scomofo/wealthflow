@@ -1,5 +1,9 @@
-import { FEDERAL_TAX_BRACKETS_2026, PROVINCIAL_TAX_BRACKETS_2026 } from './constants.js';
+import { FEDERAL_TAX_BRACKETS_2026, PROVINCIAL_TAX_BRACKETS_2026, BASIC_PERSONAL_AMOUNT } from './constants.js';
 
+// The Basic Personal Amount is a non-refundable credit, not a deduction
+// from taxable income: it's worth BPA times the lowest bracket rate,
+// subtracted from tax otherwise payable (never below zero). Both functions
+// below apply their own jurisdiction's BPA at its own lowest rate.
 export function calculateFederalTax(income) {
   let tax = 0;
   for (const bracket of FEDERAL_TAX_BRACKETS_2026) {
@@ -7,7 +11,8 @@ export function calculateFederalTax(income) {
     const taxable = Math.min(income, bracket.max) - bracket.min;
     tax += taxable * bracket.rate;
   }
-  return tax;
+  const bpaCredit = BASIC_PERSONAL_AMOUNT.FEDERAL * FEDERAL_TAX_BRACKETS_2026[0].rate;
+  return Math.max(0, tax - bpaCredit);
 }
 
 export function calculateProvincialTax(income, province) {
@@ -19,7 +24,9 @@ export function calculateProvincialTax(income, province) {
     const taxable = Math.min(income, bracket.max) - bracket.min;
     tax += taxable * bracket.rate;
   }
-  return tax;
+  const provincialBpa = BASIC_PERSONAL_AMOUNT[province];
+  const bpaCredit = provincialBpa ? provincialBpa * brackets[0].rate : 0;
+  return Math.max(0, tax - bpaCredit);
 }
 
 export function calculateTotalTax(income, province) {
