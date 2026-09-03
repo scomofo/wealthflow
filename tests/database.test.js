@@ -1,244 +1,165 @@
-// Database tests using in-memory sql.js
-const initSqlJs = require('sql.js');
-const path = require('path');
+// Regression coverage for finding M8: this file used to run its assertions
+// against a hand-rolled TestDB wrapper over a manually re-typed copy of the
+// migration 001 schema, with raw SQL calls standing in for the real
+// WealthFlowDatabase methods. That never actually exercised database.js —
+// e.g. its "computeFinancials calculates correctly" test asserted on a
+// simplified SUM query with no date windowing, while the real
+// computeFinancials() windows income/expenses to the current calendar month
+// (see database-financials.test.js) — so a real bug in the actual method
+// could pass this file while being broken in the app.
+//
+// Settings and computeFinancials behavior already have dedicated real-DB
+// coverage (database-settings.test.js, database-financials.test.js), so
+// this file now focuses on Transaction/Investment/Budget/Debt CRUD via the
+// real WealthFlowDatabase — the areas that had no real-DB coverage at all.
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
-let SQL;
-let db;
+// Each test gets its own fresh temp directory (set in beforeEach below) —
+// the real save()/init() persist to an actual file on disk, so reusing one
+// directory across tests would let a later test's `id: 't1'` row collide
+// with a row a previous test already committed under the same id.
+let currentTempDir;
+process.resourcesPath = os.tmpdir();
 
-// Minimal database wrapper matching WealthFlowDatabase interface
-class TestDB {
-  constructor(sqlDb) {
-    this.db = sqlDb;
-  }
+jest.mock('electron', () => ({
+  app: {
+    getPath: jest.fn(() => currentTempDir),
+  },
+  safeStorage: {
+    isEncryptionAvailable: jest.fn(() => false),
+  },
+}));
 
-  run(sql, params = []) {
-    this.db.run(sql, params);
-  }
+const { WealthFlowDatabase } = require('../src/main/database.js');
 
-  getOne(sql, params = []) {
-    const stmt = this.db.prepare(sql);
-    stmt.bind(params);
-    let result = null;
-    if (stmt.step()) {
-      const cols = stmt.getColumnNames();
-      const vals = stmt.get();
-      result = {};
-      cols.forEach((c, i) => { result[c] = vals[i]; });
-    }
-    stmt.free();
-    return result;
-  }
-
-  getAll(sql, params = []) {
-    const stmt = this.db.prepare(sql);
-    stmt.bind(params);
-    const results = [];
-    const cols = stmt.getColumnNames();
-    while (stmt.step()) {
-      const vals = stmt.get();
-      const row = {};
-      cols.forEach((c, i) => { row[c] = vals[i]; });
-      results.push(row);
-    }
-    stmt.free();
-    return results;
-  }
-
-  getScalar(sql, params = []) {
-    const stmt = this.db.prepare(sql);
-    stmt.bind(params);
-    let result = null;
-    if (stmt.step()) result = stmt.get()[0];
-    stmt.free();
-    return result;
+function flushPendingSave(database) {
+  if (database._saveTimer) {
+    clearTimeout(database._saveTimer);
+    database._saveTimer = null;
   }
 }
 
-beforeAll(async () => {
-  SQL = await initSqlJs();
-});
+describe('WealthFlowDatabase Transaction CRUD', () => {
+  let db;
 
-beforeEach(() => {
-  db = new TestDB(new SQL.Database());
-  // Run migration 001 schema
-  db.run(`CREATE TABLE IF NOT EXISTS settings (
-    id INTEGER PRIMARY KEY DEFAULT 1,
-    user_name TEXT DEFAULT '',
-    dark_mode INTEGER DEFAULT 1,
-    onboarded INTEGER DEFAULT 0,
-    level INTEGER DEFAULT 1,
-    xp INTEGER DEFAULT 0,
-    province TEXT DEFAULT 'ON',
-    profile_completed INTEGER DEFAULT 0,
-    last_wizard_step INTEGER DEFAULT 0,
-    ai_api_key TEXT DEFAULT '',
-    ai_model TEXT DEFAULT 'claude-sonnet-4-5-20250929',
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
-  )`);
-  db.run(`INSERT OR IGNORE INTO settings (id) VALUES (1)`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS transactions (
-    id TEXT PRIMARY KEY,
-    description TEXT NOT NULL,
-    amount REAL NOT NULL,
-    category TEXT DEFAULT 'Other',
-    date TEXT NOT NULL,
-    icon TEXT DEFAULT 'receipt',
-    notes TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS budgets (
-    id TEXT PRIMARY KEY,
-    category TEXT NOT NULL,
-    amount REAL NOT NULL,
-    color TEXT DEFAULT '#6366f1',
-    created_at TEXT DEFAULT (datetime('now'))
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS goals (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    target REAL NOT NULL,
-    current REAL DEFAULT 0,
-    color TEXT DEFAULT '#10b981',
-    deadline TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS debts (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    balance REAL NOT NULL,
-    rate REAL DEFAULT 0,
-    min_payment REAL DEFAULT 0,
-    type TEXT DEFAULT 'loan',
-    created_at TEXT DEFAULT (datetime('now'))
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS investments (
-    id TEXT PRIMARY KEY,
-    symbol TEXT NOT NULL,
-    name TEXT DEFAULT '',
-    shares REAL DEFAULT 0,
-    avg_cost REAL DEFAULT 0,
-    current_price REAL DEFAULT 0,
-    type TEXT DEFAULT 'stock',
-    account_type TEXT DEFAULT 'non-registered',
-    institution TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
-  )`);
-});
-
-afterEach(() => {
-  if (db && db.db) db.db.close();
-});
-
-describe('Settings CRUD', () => {
-  test('default settings exist', () => {
-    const settings = db.getOne('SELECT * FROM settings WHERE id = 1');
-    expect(settings).not.toBeNull();
-    expect(settings.dark_mode).toBe(1);
-    expect(settings.onboarded).toBe(0);
-    expect(settings.province).toBe('ON');
+  beforeEach(async () => {
+    currentTempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wealthflow-dbtest-'));
+    db = new WealthFlowDatabase();
+    await db.init();
   });
 
-  test('update settings', () => {
-    db.run('UPDATE settings SET user_name = ?, province = ? WHERE id = 1', ['Scott', 'AB']);
-    const settings = db.getOne('SELECT * FROM settings WHERE id = 1');
-    expect(settings.user_name).toBe('Scott');
-    expect(settings.province).toBe('AB');
+  afterEach(() => {
+    flushPendingSave(db);
+    db.close();
   });
-});
 
-describe('Transaction CRUD', () => {
   test('add and list transactions', () => {
-    db.run('INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['t1', 'Salary', 5000, 'Income', '2026-01-15']);
-    db.run('INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['t2', 'Groceries', -150, 'Food', '2026-01-16']);
+    db.addTransaction({ id: 't1', description: 'Salary', amount: 5000, category: 'Income', date: '2026-01-15' });
+    db.addTransaction({ id: 't2', description: 'Groceries', amount: -150, category: 'Food', date: '2026-01-16' });
 
-    const txs = db.getAll('SELECT * FROM transactions ORDER BY date');
+    const txs = db.listTransactions();
     expect(txs.length).toBe(2);
-    expect(txs[0].description).toBe('Salary');
-    expect(txs[1].amount).toBe(-150);
+    // listTransactions() orders by date DESC, so the later date comes first.
+    expect(txs[0].description).toBe('Groceries');
+    expect(txs[1].amount).toBe(5000);
   });
 
-  test('delete transaction', () => {
-    db.run('INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['t1', 'Test', 100, 'Other', '2026-01-01']);
-    db.run('DELETE FROM transactions WHERE id = ?', ['t1']);
-    const count = db.getScalar('SELECT COUNT(*) FROM transactions');
-    expect(count).toBe(0);
+  test('delete transaction is a soft delete — it disappears from listTransactions()', () => {
+    db.addTransaction({ id: 't1', description: 'Test', amount: 100, category: 'Other', date: '2026-01-01' });
+    db.deleteTransaction('t1');
+
+    expect(db.listTransactions()).toHaveLength(0);
+    // The row itself still exists with deleted_at set, not hard-deleted.
+    const raw = db.getOne('SELECT * FROM transactions WHERE id = ?', ['t1']);
+    expect(raw).not.toBeNull();
+    expect(raw.deleted_at).not.toBeNull();
   });
 
   test('update transaction', () => {
-    db.run('INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['t1', 'Old', 100, 'Other', '2026-01-01']);
-    db.run('UPDATE transactions SET description = ?, amount = ? WHERE id = ?', ['New', 200, 't1']);
-    const tx = db.getOne('SELECT * FROM transactions WHERE id = ?', ['t1']);
+    db.addTransaction({ id: 't1', description: 'Old', amount: 100, category: 'Other', date: '2026-01-01' });
+    db.updateTransaction({ id: 't1', description: 'New', amount: 200, category: 'Other', date: '2026-01-01' });
+
+    const tx = db.listTransactions().find((t) => t.id === 't1');
     expect(tx.description).toBe('New');
     expect(tx.amount).toBe(200);
   });
 });
 
-describe('Computed Financials', () => {
-  test('computeFinancials calculates correctly', () => {
-    db.run('INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['t1', 'Salary', 10000, 'Income', '2026-01-15']);
-    db.run('INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['t2', 'Rent', -2000, 'Housing', '2026-01-01']);
-    db.run('INSERT INTO transactions (id, description, amount, category, date) VALUES (?, ?, ?, ?, ?)',
-      ['t3', 'Food', -500, 'Food', '2026-01-10']);
+describe('WealthFlowDatabase Investment CRUD', () => {
+  let db;
 
-    const income = db.getScalar('SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE amount > 0') || 0;
-    const expenses = db.getScalar('SELECT COALESCE(SUM(ABS(amount)), 0) FROM transactions WHERE amount < 0') || 0;
-    const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
-
-    expect(income).toBe(10000);
-    expect(expenses).toBe(2500);
-    expect(savingsRate).toBe(75);
+  beforeEach(async () => {
+    currentTempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wealthflow-dbtest-'));
+    db = new WealthFlowDatabase();
+    await db.init();
   });
 
-  test('empty database returns zeros', () => {
-    const income = db.getScalar('SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE amount > 0') || 0;
-    const expenses = db.getScalar('SELECT COALESCE(SUM(ABS(amount)), 0) FROM transactions WHERE amount < 0') || 0;
-    expect(income).toBe(0);
-    expect(expenses).toBe(0);
+  afterEach(() => {
+    flushPendingSave(db);
+    db.close();
   });
-});
 
-describe('Investment CRUD', () => {
   test('add and query investments', () => {
-    db.run(
-      'INSERT INTO investments (id, symbol, name, shares, avg_cost, current_price, type, account_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      ['i1', 'XEQT', 'iShares All-Equity', 100, 25, 30, 'etf', 'tfsa']
-    );
-    const totalValue = db.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments');
+    db.addInvestment({
+      id: 'i1', symbol: 'XEQT', name: 'iShares All-Equity', shares: 100,
+      avg_cost: 25, current_price: 30, type: 'etf', account_type: 'tfsa',
+    });
+
+    const investments = db.listInvestments();
+    expect(investments).toHaveLength(1);
+    expect(investments[0].symbol).toBe('XEQT');
+    const totalValue = investments.reduce((s, i) => s + i.shares * i.current_price, 0);
     expect(totalValue).toBe(3000);
   });
 });
 
-describe('Budget CRUD', () => {
+describe('WealthFlowDatabase Budget CRUD', () => {
+  let db;
+
+  beforeEach(async () => {
+    currentTempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wealthflow-dbtest-'));
+    db = new WealthFlowDatabase();
+    await db.init();
+  });
+
+  afterEach(() => {
+    flushPendingSave(db);
+    db.close();
+  });
+
   test('add and list budgets', () => {
-    db.run('INSERT INTO budgets (id, category, amount, color) VALUES (?, ?, ?, ?)',
-      ['b1', 'Food', 500, '#10b981']);
-    const budgets = db.getAll('SELECT * FROM budgets');
-    expect(budgets.length).toBe(1);
+    db.addBudget({ id: 'b1', category: 'Food', amount: 500, color: '#10b981' });
+
+    const budgets = db.listBudgets();
+    expect(budgets).toHaveLength(1);
     expect(budgets[0].category).toBe('Food');
     expect(budgets[0].amount).toBe(500);
   });
 });
 
-describe('Debt CRUD', () => {
+describe('WealthFlowDatabase Debt CRUD', () => {
+  let db;
+
+  beforeEach(async () => {
+    currentTempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wealthflow-dbtest-'));
+    db = new WealthFlowDatabase();
+    await db.init();
+  });
+
+  afterEach(() => {
+    flushPendingSave(db);
+    db.close();
+  });
+
   test('add debts and compute total', () => {
-    db.run('INSERT INTO debts (id, name, balance, rate, min_payment, type) VALUES (?, ?, ?, ?, ?, ?)',
-      ['d1', 'Visa', 5000, 19.99, 150, 'credit']);
-    db.run('INSERT INTO debts (id, name, balance, rate, min_payment, type) VALUES (?, ?, ?, ?, ?, ?)',
-      ['d2', 'Car Loan', 15000, 4.5, 400, 'loan']);
-    const totalDebt = db.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts');
+    db.addDebt({ id: 'd1', name: 'Visa', balance: 5000, rate: 19.99, min_payment: 150, type: 'credit' });
+    db.addDebt({ id: 'd2', name: 'Car Loan', balance: 15000, rate: 4.5, min_payment: 400, type: 'loan' });
+
+    const debts = db.listDebts();
+    expect(debts).toHaveLength(2);
+    const totalDebt = debts.reduce((s, d) => s + d.balance, 0);
     expect(totalDebt).toBe(20000);
   });
 });
