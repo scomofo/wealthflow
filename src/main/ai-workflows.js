@@ -42,6 +42,18 @@ class AiWorkflowService {
       return buildWorkflowFallback(workflowType, err.message);
     }
 
+    // stop_reason === 'max_tokens' means the response was cut off mid-generation
+    // — it may still happen to be syntactically valid, parseable JSON (e.g. if
+    // the cut lands right after a would-be-closing brace found by the
+    // brace-matching fallback in _parseJSON below), just missing trailing
+    // content the model never got to write. That's not a parse failure, so it
+    // wouldn't be caught by the parse/validation checks that follow — check
+    // stop_reason explicitly instead of trusting whatever partial JSON parses.
+    if (response.stop_reason === 'max_tokens') {
+      logger.warn('Workflow response truncated by max_tokens', { workflowType });
+      return buildWorkflowFallback(workflowType, 'The AI response was cut off before it finished — try again.');
+    }
+
     const raw = response.content[0]?.text || '';
     const parsed = this._parseJSON(raw);
 
@@ -50,8 +62,13 @@ class AiWorkflowService {
       return buildWorkflowFallback(workflowType, 'Failed to parse AI response as JSON');
     }
 
+    // Schema validation was previously computed but only logged — invalid
+    // data (e.g. a missing summary/recommendation, which normalizeWorkflowResult
+    // does not fill in) was normalized and returned anyway. Actually enforce it:
+    // fall back instead of returning data known not to match the expected shape.
     if (!validateWorkflowResult(workflowType, parsed)) {
-      logger.warn('Workflow result failed validation, normalizing', { workflowType });
+      logger.warn('Workflow result failed validation', { workflowType, raw: raw.slice(0, 200) });
+      return buildWorkflowFallback(workflowType, 'AI response did not match the expected format.');
     }
 
     return normalizeWorkflowResult(workflowType, parsed);
