@@ -90,9 +90,12 @@ describe('AiService.chat streaming timeout', () => {
 
     const chatPromise = aiService.chat('fake-key', 'claude-test-model', 'hi', null, null);
     const assertion = expect(chatPromise).rejects.toThrow('Internal server error');
-    // Advance past both inter-attempt retry delays (1000ms each).
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(1000);
+    // Retry delay is now jittered exponential backoff (backoffDelay), not a
+    // fixed 1000ms — advance past the maximum each attempt could possibly
+    // wait (baseDelay * 2^attempt, capped at 8000ms) rather than an exact
+    // value, so this doesn't flake on the random draw.
+    await jest.advanceTimersByTimeAsync(1000); // attempt 0: max 1000ms * 2^0
+    await jest.advanceTimersByTimeAsync(2000); // attempt 1: max 1000ms * 2^1
     await assertion;
 
     expect(streamMock).toHaveBeenCalledTimes(3); // initial + 2 retries

@@ -2,6 +2,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { logger } = require('./logger');
 const { validateWorkflowResult, normalizeWorkflowResult, buildWorkflowFallback } = require('./ai-workflow-schema');
 const { buildTfsaRrspPrompt, buildDebtVsInvestingPrompt, buildMonthlyPlannerPrompt } = require('./ai-workflow-prompts');
+const { backoffDelay } = require('./backoff-delay');
 
 const PROMPT_BUILDERS = {
   tfsa_rrsp_optimizer: buildTfsaRrspPrompt,
@@ -71,8 +72,9 @@ class AiWorkflowService {
         if (status === 400 || status === 401 || status === 403) throw err;
         const isRetryable = !status || status === 429 || (status >= 500 && status < 600);
         if (!isRetryable || attempt >= maxRetries) throw err;
-        logger.warn('Workflow retry ' + (attempt + 1) + '/' + (maxRetries + 1), { status, error: err.message });
-        await new Promise(r => setTimeout(r, 1000));
+        const delay = backoffDelay(attempt);
+        logger.warn('Workflow retry ' + (attempt + 1) + '/' + (maxRetries + 1), { status, error: err.message, delay });
+        await new Promise(r => setTimeout(r, delay));
       }
     }
     throw lastError;

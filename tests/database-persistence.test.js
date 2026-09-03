@@ -60,6 +60,22 @@ describe('WealthFlowDatabase atomic save + backup recovery', () => {
     expect(fs.existsSync(tmpPath)).toBe(false);
   });
 
+  test('init() saves the database exactly once, not twice', async () => {
+    // save()'s atomic commit is the rename(tmpPath, dbPath) — counting
+    // those is a direct proxy for how many times the whole (small but
+    // non-trivial) database was actually written to disk. runMigrations()
+    // and init() each used to call save() themselves, writing the
+    // identical freshly-migrated database twice on every single startup.
+    const renameSpy = jest.spyOn(fs, 'renameSync');
+    database = new WealthFlowDatabase();
+    await database.init();
+    flushPendingSave(database);
+
+    const commits = renameSpy.mock.calls.filter(([, dest]) => dest === dbFiles().dbPath);
+    expect(commits.length).toBe(1);
+    renameSpy.mockRestore();
+  });
+
   test('save() backs up the prior state to .bak before overwriting the live file', async () => {
     database = new WealthFlowDatabase();
     await database.init();

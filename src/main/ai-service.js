@@ -4,6 +4,7 @@ const path = require('path');
 const { logger } = require('./logger');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
+const { backoffDelay } = require('./backoff-delay');
 
 class AiService {
   constructor() {
@@ -51,7 +52,7 @@ class AiService {
     logger.info('Knowledge base reloaded');
   }
 
-  async _withRetry(fn, maxRetries = 2, delay = 1000) {
+  async _withRetry(fn, maxRetries = 2, baseDelay = 1000) {
     let lastError;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
@@ -72,6 +73,7 @@ class AiService {
           throw error;
         }
 
+        const delay = backoffDelay(attempt, baseDelay);
         logger.warn(`Retryable error (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`, {
           status,
           message: error.message,

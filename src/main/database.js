@@ -226,6 +226,7 @@ class WealthFlowDatabase {
       require('./migrations/011-personalization'),
       require('./migrations/012-onboarding-settings'),
       require('./migrations/013-guided-onboarding-profile'),
+      require('./migrations/014-bills-due-date-index'),
     ];
 
     for (const migration of migrations) {
@@ -241,7 +242,9 @@ class WealthFlowDatabase {
         }
       }
     }
-    this.save();
+    // Persisting is init()'s job (the only caller) — it saves once, right
+    // after this returns, so saving here too meant every startup wrote the
+    // whole (identical) database to disk twice in a row.
   }
 
   // Settings
