@@ -55,12 +55,22 @@ The consolidation pass restores:
 7. insight/spending context,
 8. utility links.
 
-## Remaining quality priorities
+## Consolidation implementation status
 
-The next work should proceed in this order:
+The ordered consolidation pass is now implemented on PR #11:
 
-1. **Contracts and validation** — all mutating IPC boundaries, fail-closed AI workflow schemas, contribution-room reconciliation.
-2. **AI production hardening** — prompt cost/caching, current model support, prompt/data injection boundaries.
-3. **Performance + accessibility** — non-blocking first paint, timing instrumentation, render serialization, keyboard/focus/ARIA quality gate.
-4. **Canadian accuracy + privacy perimeter** — verify remaining jurisdiction data, remove debug/personal-data artifacts, evaluate full local DB locking/encryption.
-5. **External integrations** — open banking, CardVault/net-worth integration, then mobile/web research.
+1. **Source of truth** — `CLAUDE.md`/README reflect the current product, Next Best Actions lead the dashboard, and active XP/level/badge UI was removed.
+2. **Contracts and validation** — mutating database calls are validated, structured AI workflows fail closed, and contribution-room recommendations reconcile logged contributions.
+3. **AI production hardening** — untrusted financial/import data is framed and escaped, stable knowledge context uses Anthropic prompt caching, model aliases are migrated centrally, and bulk categorization reuses the same guarded AI service.
+4. **Performance and accessibility** — useful UI paints before non-critical intelligence work, async render races are guarded, startup/render timings are logged, and keyboard/focus/ARIA baseline tests are in place.
+5. **Canadian accuracy and privacy** — the product is explicitly Canada-only and Alberta-first, fresh profiles default to Alberta, current federal/Alberta tax data is first-class, personal/debug scripts were removed, reset now actually erases financial/profile/document data and recovery backups, and USD holdings are converted to CAD before portfolio/net-worth calculations.
+
+## Current focus after consolidation
+
+Depth now takes priority over breadth:
+
+1. keep Alberta + Canadian federal financial-law knowledge current against CRA/Alberta primary sources,
+2. continue correctness tests around registered accounts, taxes, retirement, debt and CAD valuation,
+3. minimize AI-bound personal data and consider optional local locking/encryption only if recoverability remains strong,
+4. preserve the command-center hierarchy, performance and accessibility gates,
+5. defer non-Canadian finance support and broad platform/integration expansion.

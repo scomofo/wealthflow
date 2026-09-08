@@ -236,33 +236,32 @@ For high-stakes tax/legal guidance, prefer CRA and Alberta government primary so
 
 # Current Quality Priorities
 
-Work in this order unless a production-critical defect supersedes it:
+The September consolidation gates are implemented: source-of-truth cleanup, boundary validation, fail-closed workflow contracts, contribution-room reconciliation, AI prompt/model hardening, startup/accessibility work, privacy cleanup, real data reset, action-ranking consistency, and mixed-currency portfolio valuation.
 
-1. **Contracts and validation**
-   - validate all mutating IPC boundaries,
-   - make AI workflow validation fail closed,
-   - reconcile contribution-room calculations with logged contributions.
+From here, prioritize depth over breadth:
 
-2. **AI production hardening**
-   - reduce repeated knowledge-base prompt cost,
-   - keep supported model choices current,
-   - strengthen prompt/data boundaries against instruction injection.
+1. **Alberta + federal financial-law accuracy**
+   - keep current-year Alberta and Canadian federal rules verified against primary sources,
+   - ensure AI knowledge follows current-year values before historical values,
+   - add regression tests whenever a law/rate/limit changes.
 
-3. **Performance + accessibility quality gate**
-   - show the shell before non-critical intelligence refreshes finish,
-   - instrument startup/render timings,
-   - serialize risky async renders,
-   - establish keyboard/focus/ARIA expectations and tests.
+2. **Financial calculation correctness**
+   - keep registered-account room, debt, cash-flow, tax, retirement and CAD portfolio calculations internally consistent,
+   - surface assumptions and uncertainty rather than presenting estimates as filing-grade results.
 
-4. **Canadian accuracy + privacy perimeter**
-   - keep 2026 federal + Alberta law/constants verified against primary sources,
-   - remove or isolate debug/personal-data scripts,
-   - evaluate whole-database encryption / local lock options.
+3. **Privacy and local-data protection**
+   - minimize personal data sent to AI,
+   - preserve crash-safe persistence and true reset semantics,
+   - evaluate an optional local app/database lock only if it can be added without weakening recoverability.
 
-5. **External integrations only after the above**
-   - Canadian open-banking feasibility,
-   - CardVault/net-worth integration,
-   - mobile/web research.
+4. **Trustworthy command-center UX**
+   - preserve Next Best Actions as the dominant decision surface,
+   - keep accessibility/performance regression gates green,
+   - improve explanations and execution support before adding more surface area.
+
+5. **Canadian integrations only when they strengthen the core**
+   - Canadian open-banking/import automation may be explored when the local financial model is stable,
+   - unrelated ecosystem expansion, mobile/web ports, and non-Canadian jurisdiction support are not current priorities.
 
 Jurisdiction expansion outside Canada is out of scope.
 
