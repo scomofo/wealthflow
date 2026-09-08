@@ -97,11 +97,22 @@ export function getModalConfig(type, data) {
             <select class="input-field" id="m-acct">${sel(ACCOUNT_TYPES, d.account_type)}</select>
           </div>
         </div>
-        <label for="m-inst" class="input-label">Institution</label>
-        <select class="input-field" id="m-inst" style="margin-bottom:14px">
-          <option value="">-- Select --</option>
-          ${sel(CANADIAN_BANKS, d.institution)}
-        </select>`,
+        <div style="display:flex;gap:12px;margin-bottom:14px">
+          <div style="flex:2">
+            <label for="m-inst" class="input-label">Institution</label>
+            <select class="input-field" id="m-inst">
+              <option value="">-- Select --</option>
+              ${sel(CANADIAN_BANKS, d.institution)}
+            </select>
+          </div>
+          <div style="flex:1">
+            <label for="m-currency" class="input-label">Currency</label>
+            <select class="input-field" id="m-currency">
+              <option value="CAD" ${(d.currency || 'CAD') === 'CAD' ? 'selected' : ''}>CAD</option>
+              <option value="USD" ${d.currency === 'USD' ? 'selected' : ''}>USD</option>
+            </select>
+          </div>
+        </div>`,
     },
     bill: {
       title: isEdit ? 'Edit Reminder' : 'Add Reminder',

@@ -5,7 +5,7 @@ import { calculateFederalTax, calculateProvincialTax } from '../canadian/formatt
 
 export function renderTaxSeason(state) {
   const txs = state.transactions || [];
-  const province = state.settings?.province || 'ON';
+  const province = state.settings?.province || 'AB';
   const year = new Date().getFullYear();
 
   // Aggregate income by type
@@ -23,7 +23,7 @@ export function renderTaxSeason(state) {
 
   // Tax calculations
   const taxableIncome = Math.max(0, totalIncome - rrspContributions);
-  const federalTax = calculateFederalTax(taxableIncome);
+  const federalTax = calculateFederalTax(taxableIncome, province);
   const provincialTax = calculateProvincialTax(taxableIncome, province);
   const totalTax = federalTax + provincialTax;
   const effectiveRate = totalIncome > 0 ? (totalTax / totalIncome * 100) : 0;

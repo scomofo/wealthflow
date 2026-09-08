@@ -49,4 +49,20 @@ describe('PersonalizationEngine guardrails', () => {
     expect(raw.dismissals).toBeUndefined();
     expect(profile.dismissBias.budget).toBe(1);
   });
+  test('weighted scores keep priority labels aligned without manufacturing urgency', () => {
+    const engine = makeEngine({ completions: { investing: 8 }, last_updated: new Date().toISOString() });
+    const profile = engine.buildProfile();
+    const weighted = engine.applyActionWeighting([
+      { id: 'promote', category: 'investing', priority: 'medium', score: 68 },
+      { id: 'near-urgent', category: 'investing', priority: 'high', score: 84 },
+    ], profile);
+
+    const promoted = weighted.find(a => a.id === 'promote');
+    const nearUrgent = weighted.find(a => a.id === 'near-urgent');
+    expect(promoted.score).toBeGreaterThanOrEqual(70);
+    expect(promoted.priority).toBe('high');
+    expect(nearUrgent.score).toBe(84);
+    expect(nearUrgent.priority).toBe('high');
+  });
+
 });

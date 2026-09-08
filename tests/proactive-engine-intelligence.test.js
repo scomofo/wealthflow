@@ -8,6 +8,7 @@ function makeDb(overrides = {}) {
     listBills: () => overrides.bills || [],
     listDebts: () => overrides.debts || [],
     listContributionRoom: () => overrides.contributionRoom || [],
+    listContributions: () => overrides.contributions || [],
     getSettings: () => overrides.settings || {},
     getPersonalizationProfile: () => profile,
     updatePersonalizationProfile: (next) => { Object.assign(profile, next); },
@@ -32,5 +33,23 @@ describe('ProactiveEngine intelligence metadata', () => {
     new ProactiveEngine(makeDb({ profile })).evaluate();
 
     expect(profile.nudge_shown.risk_budget).toBeTruthy();
+  });
+
+  test('uses room remaining after logged contributions for opportunity nudges', () => {
+    const nudges = new ProactiveEngine(makeDb({
+      budgets: [],
+      financials: { catSpending: {}, savingsRate: 25 },
+      contributionRoom: [
+        { account_type: 'TFSA', known_room: 9000, known_as_of_date: '2026-01-01' },
+      ],
+      contributions: [
+        { account_type: 'tfsa', amount: 2500, date: '2026-03-01' },
+      ],
+    })).evaluate();
+
+    const opportunity = nudges.find((n) => n.category === 'investing');
+    expect(opportunity).toBeDefined();
+    expect(opportunity.message).toContain('$6,500');
+    expect(opportunity.why_now).toContain('after logged contributions');
   });
 });

@@ -7,7 +7,7 @@ let taxInputs = {
   employment: 0,
   other: 0,
   rrspDeduction: 0,
-  province: 'ON',
+  province: 'AB',
   eligibleDividends: 0,
   nonEligibleDividends: 0,
   pensionSplitting: false,
@@ -26,8 +26,8 @@ export function updateTaxInput(field, value) {
 }
 
 export function initTaxInputs(province) {
-  if (!taxInputs.province || taxInputs.province === 'ON') {
-    taxInputs.province = province || 'ON';
+  if (!taxInputs.province || taxInputs.province === 'AB') {
+    taxInputs.province = province || 'AB';
   }
 }
 
@@ -39,7 +39,7 @@ export function renderTaxCalculator(_state) {
   const dividendCredit = calculateDividendTaxCredit(taxInputs.eligibleDividends, taxInputs.nonEligibleDividends, province);
   const taxableIncome = Math.max(0, grossIncome - taxInputs.rrspDeduction + dividendCredit.taxableAmount);
 
-  const federalTax = calculateFederalTax(taxableIncome);
+  const federalTax = calculateFederalTax(taxableIncome, province);
   const provincialTax = calculateProvincialTax(taxableIncome, province);
   const totalTaxBeforeCredits = federalTax + provincialTax;
   const totalTax = Math.max(0, totalTaxBeforeCredits - dividendCredit.totalCredit);
@@ -202,6 +202,9 @@ export function renderTaxCalculator(_state) {
           Provincial tax brackets not available for this province/territory.
         </div>`}
       </div>
+    </div>
+    <div style="margin-top:12px;font-size:10.5px;color:var(--muted);line-height:1.5">
+      2026 planning estimate only. Includes federal/provincial brackets, basic personal amounts and the Quebec federal abatement, but not every surtax, health premium, refundable/non-refundable credit, AMT rule, or Quebec-specific contribution. Confirm filing decisions with CRA/Revenu Quebec or a qualified tax professional.
     </div>
   `;
 }

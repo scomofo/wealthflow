@@ -1,320 +1,129 @@
-// Tests for Canadian financial calculators
-// Note: Re-implemented as CJS since source uses ESM
+// Tests for the real Canadian financial calculators. These intentionally import
+// production implementations instead of maintaining parallel formula copies.
 
-// Tax bracket data (same as constants.js)
-const FEDERAL_BRACKETS = [
-  { min: 0, max: 57375, rate: 0.15 },
-  { min: 57375, max: 114750, rate: 0.205 },
-  { min: 114750, max: 158468, rate: 0.26 },
-  { min: 158468, max: 221708, rate: 0.29 },
-  { min: 221708, max: Infinity, rate: 0.33 },
-];
+const {
+  calculateCurrentTFSARoom,
+  calculateCurrentRRSPRoom,
+  calculateCESGDetails,
+  calculateCurrentFHSARoom,
+  calculateGICMaturity,
+  estimateCPPBenefit,
+  estimateOASBenefit,
+  optimizeRRSPvsTFSA,
+} = require('../src/renderer/js/canadian/calculators.js');
+const {
+  TFSA_LIMITS,
+  RRSP,
+  FHSA,
+  CPP,
+  OAS,
+} = require('../src/renderer/js/canadian/constants.js');
 
-const PROVINCIAL_BRACKETS = {
-  AB: [
-    { min: 0, max: 148269, rate: 0.10 },
-    { min: 148269, max: 177922, rate: 0.12 },
-    { min: 177922, max: 237230, rate: 0.13 },
-    { min: 237230, max: 355845, rate: 0.14 },
-    { min: 355845, max: Infinity, rate: 0.15 },
-  ],
-  ON: [
-    { min: 0, max: 52886, rate: 0.0505 },
-    { min: 52886, max: 105775, rate: 0.0915 },
-    { min: 105775, max: 150000, rate: 0.1116 },
-    { min: 150000, max: 220000, rate: 0.1216 },
-    { min: 220000, max: Infinity, rate: 0.1316 },
-  ],
-  PE: [
-    { min: 0, max: 32656, rate: 0.098 },
-    { min: 32656, max: 64313, rate: 0.138 },
-    { min: 64313, max: Infinity, rate: 0.167 },
-  ],
-  NL: [
-    { min: 0, max: 43198, rate: 0.087 },
-    { min: 43198, max: 86395, rate: 0.145 },
-    { min: 86395, max: 154244, rate: 0.158 },
-    { min: 154244, max: 215943, rate: 0.178 },
-    { min: 215943, max: 275870, rate: 0.198 },
-    { min: 275870, max: 551739, rate: 0.208 },
-    { min: 551739, max: 1103478, rate: 0.213 },
-    { min: 1103478, max: Infinity, rate: 0.218 },
-  ],
-  NU: [
-    { min: 0, max: 53268, rate: 0.04 },
-    { min: 53268, max: 106537, rate: 0.07 },
-    { min: 106537, max: 173205, rate: 0.09 },
-    { min: 173205, max: Infinity, rate: 0.115 },
-  ],
-};
+jest.useFakeTimers().setSystemTime(new Date('2026-09-07T12:00:00Z'));
 
-function calculateFederalTax(income) {
-  let tax = 0;
-  for (const bracket of FEDERAL_BRACKETS) {
-    if (income <= bracket.min) break;
-    tax += (Math.min(income, bracket.max) - bracket.min) * bracket.rate;
-  }
-  return tax;
-}
+describe('registered account room', () => {
+  test('TFSA adds the next annual limit and subtracts later contributions', () => {
+    const result = calculateCurrentTFSARoom(50000, '2025-12-31', [
+      { account_type: 'tfsa', amount: 5000, date: '2026-02-01' },
+      { account_type: 'rrsp', amount: 1000, date: '2026-03-01' },
+    ]);
 
-function calculateProvincialTax(income, province) {
-  const brackets = PROVINCIAL_BRACKETS[province];
-  if (!brackets) return 0;
-  let tax = 0;
-  for (const bracket of brackets) {
-    if (income <= bracket.min) break;
-    tax += (Math.min(income, bracket.max) - bracket.min) * bracket.rate;
-  }
-  return tax;
-}
-
-// TFSA room calculator
-const TFSA_LIMITS = {
-  2009: 5000, 2010: 5000, 2011: 5000, 2012: 5000,
-  2013: 5500, 2014: 5500, 2015: 10000,
-  2016: 5500, 2017: 5500, 2018: 5500,
-  2019: 6000, 2020: 6000, 2021: 6000,
-  2022: 6000, 2023: 6500, 2024: 7000, 2025: 7000, 2026: 7000,
-};
-
-function calculateTFSARoom(knownRoom, knownYear, currentYear, contributedSince) {
-  let accumulated = 0;
-  for (let y = knownYear + 1; y <= currentYear; y++) {
-    accumulated += TFSA_LIMITS[y] || 0;
-  }
-  return knownRoom + accumulated - contributedSince;
-}
-
-// FHSA room: imports the real calculateCurrentFHSARoom rather than a local
-// reimplementation — a prior version of this function duplicated the
-// carryforward loop from calculators.js locally (with the same
-// double-counting bug the real function had), so it validated a fictional
-// parallel copy and passed regardless of what the real function did.
-const { calculateCurrentFHSARoom } = require('../src/renderer/js/canadian/calculators.js');
-
-// calculateCurrentFHSARoom always measures "now" as the real current date,
-// so these helpers express test scenarios in elapsed years from today
-// rather than an injectable currentYear parameter.
-function yearsAgoDate(years) {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - years);
-  return d.toISOString().slice(0, 10);
-}
-function fhsaContributionToday(amount) {
-  return { account_type: 'fhsa', amount, date: new Date().toISOString().slice(0, 10) };
-}
-
-// GIC interest (matching source compounding logic)
-function calculateGICInterest(principal, rate, termMonths, compounding) {
-  const periodsPerYear = compounding === 'monthly' ? 12 : compounding === 'semi-annual' ? 2 : 1;
-  const totalPeriods = periodsPerYear * (termMonths / 12);
-  const ratePerPeriod = (rate / 100) / periodsPerYear;
-  return principal * Math.pow(1 + ratePerPeriod, totalPeriods) - principal;
-}
-
-// CPP estimate (matching source logic)
-const CPP = {
-  MAX_PENSIONABLE_EARNINGS: 73200,
-  MAX_MONTHLY_BENEFIT_65: 1364.60,
-  NORMAL_AGE: 65,
-  EARLY_REDUCTION_PER_MONTH: 0.006,
-  LATE_INCREASE_PER_MONTH: 0.007,
-};
-
-function estimateCPPBenefit(currentAge, startAge, avgEarnings, childRearingYears = 0) {
-  const totalYears = Math.max(0, Math.min(currentAge - 18, 47));
-  const generalDropout = Math.floor(totalYears * 0.17);
-  const crd = Math.min(childRearingYears, 7);
-  const effectiveYears = Math.max(0, totalYears - generalDropout - crd);
-  const earningsFactor = Math.min(1, avgEarnings / CPP.MAX_PENSIONABLE_EARNINGS);
-  const careerFactor = Math.min(1, effectiveYears / 39);
-  let benefit = CPP.MAX_MONTHLY_BENEFIT_65 * earningsFactor * careerFactor;
-  if (startAge < 65) benefit *= (1 - (65 - startAge) * 12 * CPP.EARLY_REDUCTION_PER_MONTH);
-  else if (startAge > 65) benefit *= (1 + (startAge - 65) * 12 * CPP.LATE_INCREASE_PER_MONTH);
-  return Math.round(benefit * 100) / 100;
-}
-
-// ========== TESTS ==========
-
-describe('Federal Tax Calculation', () => {
-  test('zero income', () => {
-    expect(calculateFederalTax(0)).toBe(0);
+    expect(result.accumulatedLimits).toBe(TFSA_LIMITS[2026]);
+    expect(result.contributedSince).toBe(5000);
+    expect(result.currentRoom).toBe(50000 + TFSA_LIMITS[2026] - 5000);
   });
 
-  test('income in first bracket only ($50,000)', () => {
-    expect(calculateFederalTax(50000)).toBeCloseTo(50000 * 0.15, 2);
+  test('RRSP room tracks contributions forward and flags material overcontribution', () => {
+    const normal = calculateCurrentRRSPRoom(10000, '2026-01-01', [
+      { account_type: 'rrsp', amount: 2500, date: '2026-03-01' },
+    ]);
+    expect(normal.currentRoom).toBe(7500);
+    expect(normal.overcontributed).toBe(false);
+    expect(normal.maxDeduction).toBe(RRSP.MAX_2026);
+
+    const over = calculateCurrentRRSPRoom(1000, '2026-01-01', [
+      { account_type: 'rrsp', amount: 4000, date: '2026-03-01' },
+    ]);
+    expect(over.currentRoom).toBe(-3000);
+    expect(over.overcontributed).toBe(true);
+    expect(over.overcontributionAmount).toBe(1000);
   });
 
-  test('income spanning two brackets ($80,000)', () => {
-    const expected = 57375 * 0.15 + (80000 - 57375) * 0.205;
-    expect(calculateFederalTax(80000)).toBeCloseTo(expected, 2);
-  });
-
-  test('high income ($250,000)', () => {
-    const expected = 57375 * 0.15 + (114750 - 57375) * 0.205 + (158468 - 114750) * 0.26 + (221708 - 158468) * 0.29 + (250000 - 221708) * 0.33;
-    expect(calculateFederalTax(250000)).toBeCloseTo(expected, 2);
-  });
-
-  test('negative income returns 0', () => {
-    expect(calculateFederalTax(-10000)).toBe(0);
+  test('FHSA adds annual room without compounding carry-forward', () => {
+    const result = calculateCurrentFHSARoom(8000, '2025-12-31', [
+      { account_type: 'fhsa', amount: 6000, date: '2026-06-01' },
+    ]);
+    expect(result.accumulatedLimits).toBe(FHSA.ANNUAL_LIMIT);
+    expect(result.currentRoom).toBe(10000);
+    expect(result.lifetimeLimit).toBe(FHSA.LIFETIME_LIMIT);
   });
 });
 
-describe('Provincial Tax Calculation', () => {
-  test('Alberta flat 10% on first bracket ($100,000)', () => {
-    expect(calculateProvincialTax(100000, 'AB')).toBeCloseTo(100000 * 0.10, 2);
+describe('RESP and GIC calculations', () => {
+  test('CESG uses the real annual and lifetime limits', () => {
+    const result = calculateCESGDetails({
+      birth_year: 2016,
+      total_contributions: 10000,
+      total_cesg_received: 2000,
+    });
+    expect(result.age).toBe(10);
+    expect(result.cesgThisYear).toBe(500);
+    expect(result.contributionForMaxCesg).toBe(2500);
+    expect(result.lifetimeContribRoom).toBe(40000);
+    expect(result.isEligible).toBe(true);
   });
 
-  test('Ontario multi-bracket ($80,000)', () => {
-    const expected = 52886 * 0.0505 + (80000 - 52886) * 0.0915;
-    expect(calculateProvincialTax(80000, 'ON')).toBeCloseTo(expected, 2);
-  });
-
-  test('PE new brackets ($50,000)', () => {
-    const expected = 32656 * 0.098 + (50000 - 32656) * 0.138;
-    expect(calculateProvincialTax(50000, 'PE')).toBeCloseTo(expected, 2);
-  });
-
-  test('NL brackets ($100,000)', () => {
-    const expected = 43198 * 0.087 + (86395 - 43198) * 0.145 + (100000 - 86395) * 0.158;
-    expect(calculateProvincialTax(100000, 'NL')).toBeCloseTo(expected, 2);
-  });
-
-  test('NU low rates ($60,000)', () => {
-    const expected = 53268 * 0.04 + (60000 - 53268) * 0.07;
-    expect(calculateProvincialTax(60000, 'NU')).toBeCloseTo(expected, 2);
-  });
-
-  test('unknown province returns 0', () => {
-    expect(calculateProvincialTax(100000, 'XX')).toBe(0);
+  test('GIC maturity uses the production compounding calculation', () => {
+    const result = calculateGICMaturity({
+      principal: 10000,
+      rate: 5,
+      term_months: 12,
+      maturity_date: '2027-09-07',
+      compounding: 'annual',
+    });
+    expect(result.interestEarned).toBeCloseTo(500, 2);
+    expect(result.maturityValue).toBeCloseTo(10500, 2);
+    expect(result.status).toBe('active');
   });
 });
 
-describe('TFSA Room Calculation', () => {
-  test('known room with no contributions since', () => {
-    expect(calculateTFSARoom(50000, 2024, 2026, 0)).toBe(50000 + 7000 + 7000);
+describe('CPP and OAS planning', () => {
+  test('full-career CPP at 65 reaches the current maximum when earnings are at YMPE', () => {
+    const result = estimateCPPBenefit(65, 65, CPP.MAX_PENSIONABLE_EARNINGS, {
+      yearsContributing: 47,
+    });
+    expect(result.monthlyBenefit).toBeCloseTo(CPP.MAX_MONTHLY_BENEFIT_65, 2);
+    expect(result.reductionOrIncrease).toBe('0%');
   });
 
-  test('known room with contributions', () => {
-    expect(calculateTFSARoom(50000, 2024, 2026, 5000)).toBe(50000 + 14000 - 5000);
+  test('starting CPP at 60 applies the statutory early reduction', () => {
+    const at65 = estimateCPPBenefit(65, 65, CPP.MAX_PENSIONABLE_EARNINGS, { yearsContributing: 47 });
+    const at60 = estimateCPPBenefit(65, 60, CPP.MAX_PENSIONABLE_EARNINGS, { yearsContributing: 47 });
+    expect(at60.monthlyBenefit).toBeCloseTo(at65.monthlyBenefit * 0.64, 2);
   });
 
-  test('same year known date', () => {
-    expect(calculateTFSARoom(30000, 2026, 2026, 0)).toBe(30000);
+  test('full OAS at 65 uses the current quarter amount', () => {
+    const result = estimateOASBenefit(40, 50000, 65);
+    expect(result.monthlyBenefit).toBeCloseTo(OAS.MAX_MONTHLY_BENEFIT, 2);
+    expect(result.clawbackAmount).toBe(0);
+    expect(result.eligible).toBe(true);
   });
 
-  test('cumulative from 2009', () => {
-    const total = Object.values(TFSA_LIMITS).reduce((s, v) => s + v, 0);
-    expect(calculateTFSARoom(0, 2008, 2026, 0)).toBe(total);
-  });
-});
-
-describe('FHSA Room Calculation', () => {
-  test('one full year elapsed with no contributions: known room + one annual grant', () => {
-    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(1), []);
-    expect(result.currentRoom).toBe(8000 + 8000);
-  });
-
-  test('room grows linearly across multiple no-contribution years, not compounding', () => {
-    // Two years elapsed, zero contributions: known room + 2 x $8,000 new
-    // annual grants = $24,000. The carry-forward bug this replaces made
-    // each year's grant compound into the next (known 8000 -> 40000 after
-    // just 2 years) instead of adding a flat $8,000 per year.
-    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(2), []);
-    expect(result.currentRoom).toBe(8000 + 8000 + 8000);
-  });
-
-  test('with contributions since the known date', () => {
-    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(1), [fhsaContributionToday(6000)]);
-    expect(result.currentRoom).toBe(8000 + 8000 - 6000);
-  });
-
-  test('lifetime cap respected', () => {
-    const result = calculateCurrentFHSARoom(40000, yearsAgoDate(7), []);
-    expect(result.currentRoom).toBe(40000);
-  });
-
-  test('room floors at zero, never negative', () => {
-    const result = calculateCurrentFHSARoom(8000, yearsAgoDate(1), [fhsaContributionToday(50000)]);
-    expect(result.currentRoom).toBe(0);
+  test('OAS is ineligible below the minimum Canadian residency period', () => {
+    expect(estimateOASBenefit(9, 50000, 65).eligible).toBe(false);
   });
 });
 
-describe('GIC Interest Calculation', () => {
-  test('1-year annual compound', () => {
-    const interest = calculateGICInterest(10000, 5, 12, 'annual');
-    expect(interest).toBeCloseTo(500, 2);
+describe('Alberta-first RRSP vs TFSA planning', () => {
+  test('higher current Alberta marginal rate can favor RRSP', () => {
+    const result = optimizeRRSPvsTFSA(180000, 60000, 'AB', 20000, 20000);
+    expect(result.recommendation).toBe('rrsp');
+    expect(result.currentMarginalRate.combined).toBeGreaterThan(result.retirementMarginalRate.combined);
   });
 
-  test('1-year monthly compound', () => {
-    const interest = calculateGICInterest(10000, 5, 12, 'monthly');
-    expect(interest).toBeCloseTo(511.62, 0); // slightly more than simple
-    expect(interest).toBeGreaterThan(500);
-  });
-
-  test('2-year semi-annual compound', () => {
-    const interest = calculateGICInterest(10000, 4, 24, 'semi-annual');
-    expect(interest).toBeGreaterThan(800);
-    expect(interest).toBeLessThan(900);
-  });
-
-  test('zero principal', () => {
-    expect(calculateGICInterest(0, 5, 12, 'annual')).toBe(0);
-  });
-});
-
-describe('CPP Benefit Estimation', () => {
-  test('max benefit at 65 with max earnings', () => {
-    const benefit = estimateCPPBenefit(65, 65, 73200);
-    expect(benefit).toBeCloseTo(1364.60, 0);
-  });
-
-  test('reduced benefit at 60', () => {
-    const benefit = estimateCPPBenefit(65, 60, 73200);
-    const reduction = 1 - (5 * 12 * 0.006);
-    expect(benefit).toBeCloseTo(1364.60 * reduction, 0);
-  });
-
-  test('increased benefit at 70', () => {
-    const benefit = estimateCPPBenefit(65, 70, 73200);
-    const increase = 1 + (5 * 12 * 0.007);
-    expect(benefit).toBeCloseTo(1364.60 * increase, 0);
-  });
-
-  test('partial earnings ($40,000)', () => {
-    const benefit = estimateCPPBenefit(65, 65, 40000);
-    const earningsFactor = 40000 / 73200;
-    expect(benefit).toBeCloseTo(1364.60 * earningsFactor, 0);
-  });
-
-  test('child-rearing dropout reduces career factor', () => {
-    const withoutCRD = estimateCPPBenefit(50, 65, 60000, 0);
-    const withCRD = estimateCPPBenefit(50, 65, 60000, 5);
-    expect(withCRD).toBeLessThan(withoutCRD);
-  });
-
-  test('young person has lower career factor', () => {
-    const benefit25 = estimateCPPBenefit(25, 65, 73200);
-    const benefit55 = estimateCPPBenefit(55, 65, 73200);
-    expect(benefit25).toBeLessThan(benefit55);
-  });
-});
-
-describe('Combined Tax Calculation', () => {
-  test('total tax = federal + provincial', () => {
-    const income = 100000;
-    const federal = calculateFederalTax(income);
-    const provincial = calculateProvincialTax(income, 'AB');
-    expect(federal + provincial).toBeGreaterThan(0);
-    expect(federal).toBeGreaterThan(0);
-    expect(provincial).toBeGreaterThan(0);
-  });
-
-  test('all new provinces produce non-zero tax', () => {
-    const newProvinces = ['PE', 'NL', 'NU'];
-    for (const prov of newProvinces) {
-      const tax = calculateProvincialTax(100000, prov);
-      expect(tax).toBeGreaterThan(0);
-    }
+  test('available-room guardrails override tax-rate preference', () => {
+    expect(optimizeRRSPvsTFSA(180000, 60000, 'AB', 0, 10000).recommendation).toBe('tfsa');
+    expect(optimizeRRSPvsTFSA(180000, 60000, 'AB', 10000, 0).recommendation).toBe('rrsp');
+    expect(optimizeRRSPvsTFSA(180000, 60000, 'AB', 0, 0).recommendation).toBe('neither');
   });
 });

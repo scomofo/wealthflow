@@ -95,6 +95,7 @@ contextBridge.exposeInMainWorld('wealthflow', {
 
   // Export/Import
   exportAllData: () => ipcRenderer.invoke('db:export-all'),
+  resetAllData: () => ipcRenderer.invoke('db:reset-all'),
 
   // Import History
   getImportHistory: () => ipcRenderer.invoke('db:import-history:list'),

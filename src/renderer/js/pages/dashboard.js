@@ -13,17 +13,6 @@ import { renderProgressStrip } from '../components/progress-strip.js';
 
 export function setShowAllActions(_val) { /* no-op: panel handles its own display */ }
 
-const BADGE_DEFS = [
-  { id: 'first-steps',   emoji: '🚀', label: 'First Steps',   check: (s, c) => (c.transactions || 0) >= 1 },
-  { id: 'budget-master', emoji: '📊', label: 'Budget Master',  check: (s, c) => (c.budgets || 0) >= 3 },
-  { id: 'goal-setter',   emoji: '🎯', label: 'Goal Setter',    check: (s, c) => (c.goals || 0) >= 1 },
-  { id: 'debt-aware',    emoji: '💪', label: 'Debt Aware',     check: (s, c) => (c.debts || 0) >= 1 },
-  { id: 'investor',      emoji: '📈', label: 'Investor',       check: (s, c) => (c.investments || 0) >= 1 },
-  { id: 'level-5',       emoji: '⭐', label: 'Level 5',        check: (s, _c) => (s.level || 1) >= 5 },
-  { id: 'data-rich',     emoji: '📚', label: 'Data Rich',      check: (s, c) => (c.transactions || 0) >= 10 },
-  { id: 'diversified',   emoji: '🌐', label: 'Diversified',    check: (s, c) => (c.investments || 0) >= 3 },
-];
-
 export function renderDashboard(state, F, workflowCtx) {
   const s = state.settings || {};
   const now = new Date();
@@ -55,13 +44,9 @@ export function renderDashboard(state, F, workflowCtx) {
         </div>`;
       }).join('');
 
-  // ── Achievements strip ───────────────────────────────────────────────────
-  const level = s.level || 1;
-  const xp = s.xp || 0;
-  const xpForNext = level * 100;
-  const earnedBadges = BADGE_DEFS.filter(b => b.check(s, state.counts || {}));
-
   // ── Render ───────────────────────────────────────────────────────────────
+  // Keep decision surfaces ahead of status/context surfaces. The first thing
+  // below the monthly header should answer "what should I do next?".
   return `
     <div class="card dashboard-hero" style="margin-bottom:18px;padding:22px">
       <div style="font-size:18px;font-weight:700;letter-spacing:-0.5px">${monthLabel}</div>
@@ -69,15 +54,15 @@ export function renderDashboard(state, F, workflowCtx) {
       <div class="dashboard-subtitle" style="margin-top:1px">Welcome back, <b style="color:var(--text)">${h(s.user_name || 'User')}</b></div>
     </div>
 
+    ${renderNextBestActionsPanel(state.nextBestActions || [], { financials: F })}
+
+    ${renderFinancialSnapshotBar(state, F)}
+
     ${renderAISummary(buildDashboardAISummary(state, F, generateAISummary))}
 
     ${renderProactiveBanner(state.proactiveNudges)}
 
-    ${renderFinancialSnapshotBar(state, F)}
-
     ${renderProgressStrip(state.engagementProgress)}
-
-    ${renderNextBestActionsPanel(state.nextBestActions || [], { financials: F })}
 
     <div class="card dashboard-section">
       <div style="font-weight:700;font-size:14px;margin-bottom:12px">AI Recommendations</div>
@@ -89,31 +74,13 @@ export function renderDashboard(state, F, workflowCtx) {
     </div>
     ${renderActionList(state.recommendedActions)}
 
+    ${renderDashboardInsightCards(state, F)}
+
     <div class="card dashboard-section">
       <div style="font-weight:600;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
         ${icon('bar-chart-2', 15, 'var(--accent)')} Monthly Spending Snapshot
       </div>
       ${catHtml}
-    </div>
-
-    ${renderDashboardInsightCards(state, F)}
-
-    <div class="card dashboard-section">
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <span style="font-size:13px;font-weight:700;color:var(--accent)">Lv ${level}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="width:120px;max-width:120px;height:6px;border-radius:3px;background:var(--border);overflow:hidden">
-            <div style="height:100%;width:${Math.min(xp / xpForNext * 100, 100).toFixed(1)}%;background:var(--accent);border-radius:3px;transition:width 0.3s"></div>
-          </div>
-          <span style="font-size:11px;color:var(--sub)">${xp} / ${xpForNext} XP</span>
-        </div>
-        ${earnedBadges.length > 0 ? `
-        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
-          ${earnedBadges.map(b => `<span title="${b.label}" style="font-size:16px">${b.emoji}</span>`).join('')}
-        </div>` : ''}
-      </div>
     </div>
 
     <div class="grid3" style="margin-top:14px">

@@ -93,11 +93,12 @@ class WealthFlowDatabase {
   // crash mid-save can never leave a truncated/corrupt wealthflow.db).
   // The previous good copy is kept as `.bak` so a corrupt primary file can
   // still be recovered from on the next launch.
-  save() {
+  save(options = {}) {
     if (!this.db || !this.dbPath) return;
     const data = Buffer.from(this.db.export());
+    const preservePrevious = options.preservePrevious !== false;
     try {
-      if (fs.existsSync(this.dbPath)) {
+      if (preservePrevious && fs.existsSync(this.dbPath)) {
         fs.copyFileSync(this.dbPath, this._backupPath);
       }
       const fd = fs.openSync(this._tmpPath, 'w');
@@ -226,6 +227,8 @@ class WealthFlowDatabase {
       require('./migrations/011-personalization'),
       require('./migrations/012-onboarding-settings'),
       require('./migrations/013-guided-onboarding-profile'),
+      require('./migrations/014-current-ai-models'),
+      require('./migrations/015-investment-fx'),
     ];
 
     for (const migration of migrations) {
@@ -255,7 +258,7 @@ class WealthFlowDatabase {
         onboarded: false,
         level: 1,
         xp: 0,
-        province: 'ON',
+        province: 'AB',
         profile_completed: false,
         last_wizard_step: 0,
         ai_api_key: '',
@@ -361,6 +364,14 @@ class WealthFlowDatabase {
     return count;
   }
 
+  updateTransactionCategory(id, category) {
+    this.run(
+      'UPDATE transactions SET category = ? WHERE id = ? AND deleted_at IS NULL',
+      [category, id]
+    );
+    return { id, category };
+  }
+
   countTransactionsByDescription(description) {
     return this.getScalar('SELECT COUNT(*) FROM transactions WHERE description = ?', [description]) || 0;
   }
@@ -445,15 +456,17 @@ class WealthFlowDatabase {
   listInvestments() { return this.getAll('SELECT * FROM investments WHERE deleted_at IS NULL ORDER BY symbol'); }
   addInvestment(i) {
     this.run(
-      'INSERT INTO investments (id, symbol, name, shares, avg_cost, current_price, type, account_type, institution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO investments (id, symbol, name, shares, avg_cost, current_price, type, account_type, institution, currency, exchange_rate_to_cad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [i.id, i.symbol, i.name || '', i.shares || 0, i.avg_cost || 0, i.current_price || 0,
-       i.type || 'stock', i.account_type || 'non-registered', i.institution || null]
+       i.type || 'stock', i.account_type || 'non-registered', i.institution || null,
+       i.currency || 'CAD', i.exchange_rate_to_cad || 1]
     );
     return i;
   }
   updateInvestment(i) {
-    this.run('UPDATE investments SET symbol=?, name=?, shares=?, avg_cost=?, current_price=?, type=?, account_type=?, institution=? WHERE id=?',
-      [i.symbol, i.name, i.shares, i.avg_cost, i.current_price, i.type, i.account_type, i.institution, i.id]);
+    this.run('UPDATE investments SET symbol=?, name=?, shares=?, avg_cost=?, current_price=?, type=?, account_type=?, institution=?, currency=?, exchange_rate_to_cad=? WHERE id=?',
+      [i.symbol, i.name, i.shares, i.avg_cost, i.current_price, i.type, i.account_type, i.institution,
+       i.currency || 'CAD', i.exchange_rate_to_cad || 1, i.id]);
     return i;
   }
   deleteInvestment(id) { this.run("UPDATE investments SET deleted_at = datetime('now') WHERE id = ?", [id]); }
@@ -543,7 +556,7 @@ class WealthFlowDatabase {
     const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
     const debtStats = this.getOne('SELECT COALESCE(SUM(balance), 0) as total, COUNT(*) as total_count FROM debts WHERE deleted_at IS NULL');
     const totalDebt = (debtStats?.total_count || 0) > 0 ? debtStats.total : (settings.total_debt || 0);
-    const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments WHERE deleted_at IS NULL') || 0;
+    const totalInv = this.getScalar(`SELECT COALESCE(SUM(shares * current_price * CASE WHEN UPPER(COALESCE(currency, 'CAD')) = 'USD' THEN COALESCE(NULLIF(exchange_rate_to_cad, 0), 1) ELSE 1 END), 0) FROM investments WHERE deleted_at IS NULL`) || 0;
     const goalStats = this.getOne('SELECT COALESCE(SUM(current), 0) as total, COUNT(*) as total_count FROM goals WHERE deleted_at IS NULL');
     const totalSaved = (goalStats?.total_count || 0) > 0 ? goalStats.total : (settings.savings_buffer || 0);
     const catRows = this.getAll(
@@ -699,7 +712,7 @@ class WealthFlowDatabase {
     const today = new Date().toISOString().slice(0, 10);
     const existing = this.getOne('SELECT * FROM net_worth_history WHERE date = ?', [today]);
     if (existing) return existing;
-    const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments') || 0;
+    const totalInv = this.getScalar(`SELECT COALESCE(SUM(shares * current_price * CASE WHEN UPPER(COALESCE(currency, 'CAD')) = 'USD' THEN COALESCE(NULLIF(exchange_rate_to_cad, 0), 1) ELSE 1 END), 0) FROM investments`) || 0;
     const totalSaved = this.getScalar('SELECT COALESCE(SUM(current), 0) FROM goals') || 0;
     const totalDebt = this.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts') || 0;
     const netWorth = totalInv + totalSaved - totalDebt;
@@ -770,6 +783,58 @@ class WealthFlowDatabase {
       case 'annual': d.setFullYear(d.getFullYear() + 1); break;
     }
     return d.toISOString().slice(0, 10);
+  }
+
+  // Permanently clear user financial/profile data while preserving the
+  // migrated schema. The reset database itself becomes the new recovery
+  // backup so the old pre-reset database is not retained in `.bak`.
+  resetAllData() {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
+    }
+
+    const clearTables = [
+      'transactions', 'budgets', 'goals', 'debts', 'investments', 'bills',
+      'challenges', 'community_posts', 'education', 'contribution_room',
+      'contributions', 'resp_beneficiaries', 'gics', 'recurring_log',
+      'net_worth_history', 'import_history', 'advisor_goals', 'advisor_assets',
+      'advisor_documents', 'monthly_reports', 'undo_log',
+      'recommended_actions', 'next_best_actions',
+    ];
+    const singletonTables = [
+      'advisor_personal', 'advisor_employment', 'advisor_risk',
+      'advisor_registered', 'advisor_insurance', 'principal_residence',
+    ];
+
+    this.db.run('BEGIN TRANSACTION');
+    try {
+      for (const table of clearTables) this.db.run(`DELETE FROM ${table}`);
+      for (const table of singletonTables) {
+        this.db.run(`DELETE FROM ${table}`);
+        this.db.run(`INSERT INTO ${table} (id) VALUES (1)`);
+      }
+      this.db.run('DELETE FROM settings');
+      this.db.run('INSERT INTO settings (id, ai_model, province) VALUES (1, ?, ?)', [DEFAULT_AI_MODEL, 'AB']);
+      this.db.run('COMMIT');
+    } catch (err) {
+      this.db.run('ROLLBACK');
+      throw err;
+    }
+
+    // Remove the prior backup before writing the reset state. save() is told
+    // not to recreate a backup from the old live database; once the reset
+    // database is safely written, copy that clean state into the backup slot.
+    if (this._backupPath && fs.existsSync(this._backupPath)) fs.unlinkSync(this._backupPath);
+    this.save({ preservePrevious: false });
+    fs.copyFileSync(this.dbPath, this._backupPath);
+
+    const documentsDir = path.join(app.getPath('userData'), 'documents');
+    if (fs.existsSync(documentsDir)) {
+      fs.rmSync(documentsDir, { recursive: true, force: true });
+    }
+
+    return true;
   }
 
   // Export all data

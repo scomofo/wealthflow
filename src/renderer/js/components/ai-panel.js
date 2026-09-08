@@ -133,7 +133,7 @@ function formatMessage(text) {
 
 export function renderAiPanel(showAI) {
   if (!showAI) return '';
-  return `<div class="ai-panel">
+  return `<div class="ai-panel" id="ai-advisor-panel" role="complementary" aria-label="AI advisor">
     <div class="ai-head">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
@@ -143,7 +143,7 @@ export function renderAiPanel(showAI) {
         <button class="btn-ghost" style="font-size:10px;padding:4px 8px;color:var(--sub);background:none;border:1px solid var(--border);border-radius:6px" data-action="clear-ai-history">${icon('trash-2', 11)} Clear</button>
       </div>
     </div>
-    <div class="ai-msgs" id="ai-msgs" role="log">
+    <div class="ai-msgs" id="ai-msgs" role="log" aria-live="polite" aria-relevant="additions text">
       ${aiMsgs.map((m, i) => {
         const isLast = i === aiMsgs.length - 1;
         if (m.role === 'user') {

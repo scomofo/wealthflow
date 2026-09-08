@@ -5,27 +5,55 @@ let lastPriceRefresh = null;
 
 export function setLastPriceRefresh(ts) { lastPriceRefresh = ts; }
 
+function finiteNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+export function investmentValueCad(investment, field = 'current_price') {
+  const shares = finiteNumber(investment?.shares);
+  const price = finiteNumber(investment?.[field]);
+  const currency = (investment?.currency || 'CAD').toUpperCase();
+  const fx = currency === 'USD' ? finiteNumber(investment?.exchange_rate_to_cad, 1) : 1;
+  return shares * price * (fx > 0 ? fx : 1);
+}
+
+export function getPortfolioTotals(investments = []) {
+  const valueCad = investments.reduce((sum, investment) => sum + investmentValueCad(investment, 'current_price'), 0);
+  const costCadAtCurrentFx = investments.reduce((sum, investment) => sum + investmentValueCad(investment, 'avg_cost'), 0);
+  const gainCadAtCurrentFx = valueCad - costCadAtCurrentFx;
+  return {
+    valueCad,
+    costCadAtCurrentFx,
+    gainCadAtCurrentFx,
+    returnPctExcludingFxHistory: costCadAtCurrentFx > 0 ? gainCadAtCurrentFx / costCadAtCurrentFx * 100 : 0,
+  };
+}
+
 function fmtPrice(value, currency) {
   if (currency && currency !== 'CAD') return `US$${value.toFixed(2)}`;
   return fmt(value);
 }
 
 export function renderInvestments(state) {
-  const tv = state.investments.reduce((s, i) => s + i.shares * i.current_price, 0);
-  const tc = state.investments.reduce((s, i) => s + i.shares * i.avg_cost, 0);
-  const g = tv - tc;
-  const gp = tc > 0 ? (g / tc * 100) : 0;
+  const totals = getPortfolioTotals(state.investments);
+  const tv = totals.valueCad;
+  const tc = totals.costCadAtCurrentFx;
+  const g = totals.gainCadAtCurrentFx;
+  const gp = totals.returnPctExcludingFxHistory;
   const totalValue = tv;
   const totalCost = tc;
-  const totalReturn = tc > 0 ? (g / tc * 100) : 0;
-  const hasUSD = state.investments.some(i => i.currency && i.currency !== 'CAD');
+  const totalReturn = gp;
+  const usdHoldings = state.investments.filter(i => (i.currency || 'CAD').toUpperCase() === 'USD');
+  const hasUSD = usdHoldings.length > 0;
+  const latestUsdCadRate = usdHoldings.find(i => finiteNumber(i.exchange_rate_to_cad, 0) > 0)?.exchange_rate_to_cad || null;
 
   const refreshLabel = lastPriceRefresh
     ? `<span style="font-size:11px;color:var(--sub);margin-right:8px">Last updated: ${new Date(lastPriceRefresh).toLocaleTimeString()}</span>`
     : '';
 
   return `
-    ${hasUSD ? `<div style="background:var(--input);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--sub)">${icon('info', 12)} USD investments shown at current exchange rate</div>` : ''}
+    ${hasUSD ? `<div style="background:var(--input);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--sub)">${icon('info', 12)} USD holdings are converted to CAD using the last stored USD/CAD rate${latestUsdCadRate ? ` (${Number(latestUsdCadRate).toFixed(4)})` : ''}. Return figures exclude historical FX effects.</div>` : ''}
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
       <div>
         <div style="font-size:12px;color:var(--sub)">Portfolio Value</div>
@@ -46,9 +74,10 @@ export function renderInvestments(state) {
         <span>Symbol</span><span>Shares</span><span>Avg Cost</span><span>Price</span><span>Value</span><span>Return</span><span></span>
       </div>
       ${state.investments.map(i => {
-        const v = i.shares * i.current_price;
-        const c = i.shares * i.avg_cost;
-        const r = c > 0 ? ((v - c) / c * 100) : 0;
+        const nativeValue = finiteNumber(i.shares) * finiteNumber(i.current_price);
+        const nativeCost = finiteNumber(i.shares) * finiteNumber(i.avg_cost);
+        const vCad = investmentValueCad(i, 'current_price');
+        const r = nativeCost > 0 ? ((nativeValue - nativeCost) / nativeCost * 100) : 0;
         const cur = i.currency || 'CAD';
         const acctLabel = i.account_type && i.account_type !== 'non-registered' ? ` <span class="tag">${i.account_type.toUpperCase()}</span>` : '';
         return `<div class="inv-grid">
@@ -56,7 +85,7 @@ export function renderInvestments(state) {
           <span>${i.shares}</span>
           <span class="mono" style="font-size:11px">${fmtPrice(i.avg_cost, cur)}</span>
           <span class="mono" style="font-size:11px">${fmtPrice(i.current_price, cur)}</span>
-          <span class="mono" style="font-weight:600;font-size:11px">${fmt(v)}</span>
+          <span class="mono" style="font-weight:600;font-size:11px">${fmt(vCad)}</span>
           <span class="mono" style="font-weight:600;font-size:11px;color:${r >= 0 ? 'var(--green)' : 'var(--red)'}">${r >= 0 ? '+' : ''}${r.toFixed(1)}%</span>
           <span style="display:flex;gap:4px">
             <button class="edit-btn" data-action="edit-inv" data-id="${i.id}">${icon('edit', 12)}</button>

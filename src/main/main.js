@@ -58,6 +58,7 @@ app.whenReady().then(async () => {
   logger.info('WealthFlow starting');
 
   const { WealthFlowDatabase } = require('./database');
+  const { createValidatedDatabase } = require('./validated-database');
   const { registerIpcHandlers } = require('./ipc-handlers');
   const { AiService } = require('./ai-service');
 
@@ -85,7 +86,9 @@ app.whenReady().then(async () => {
     logger[level] ? logger[level](`${prefix} ${message}`, data) : logger.info(`${prefix} ${message}`, data);
   });
 
-  registerIpcHandlers(database, aiService);
+  // All database calls reachable through IPC go through a validation proxy.
+  // The original database instance remains owned here for lifecycle/close.
+  registerIpcHandlers(createValidatedDatabase(database), aiService);
   createWindow();
   logger.info('Application ready');
 

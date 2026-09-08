@@ -589,12 +589,23 @@ export async function handleSaveModal(type, ctx) {
       const itype = document.getElementById('m-itype')?.value;
       const acct = document.getElementById('m-acct')?.value;
       const inst = document.getElementById('m-inst')?.value;
+      const currency = document.getElementById('m-currency')?.value || editData?.currency || 'CAD';
       if (!sym || !sh) return;
+      let exchangeRateToCad = currency === 'USD' ? (editData?.exchange_rate_to_cad || 1) : 1;
+      if (currency === 'USD' && window.wealthflow?.fetchExchangeRate) {
+        try {
+          const fx = await window.wealthflow.fetchExchangeRate('USD', 'CAD');
+          if (Number.isFinite(Number(fx?.rate)) && Number(fx.rate) > 0) {
+            exchangeRateToCad = Number(fx.rate);
+          }
+        } catch (_) { /* keep last known rate; refresh prices can retry later */ }
+      }
       const invData = {
         symbol: sym.toUpperCase(), name: name || '',
         shares: +sh, avg_cost: +(avg || 0), current_price: +(pr || 0),
         type: itype || 'stock', account_type: acct || 'non-registered',
-        institution: inst || null,
+        institution: inst || null, currency,
+        exchange_rate_to_cad: exchangeRateToCad,
       };
       if (editData) {
         await State.updateInvestment({ ...invData, id: editData.id });

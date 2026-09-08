@@ -69,7 +69,7 @@ beforeEach(() => {
     onboarded INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1,
     xp INTEGER DEFAULT 0,
-    province TEXT DEFAULT 'ON',
+    province TEXT DEFAULT 'AB',
     profile_completed INTEGER DEFAULT 0,
     last_wizard_step INTEGER DEFAULT 0,
     ai_api_key TEXT DEFAULT '',
@@ -142,7 +142,7 @@ describe('Settings CRUD', () => {
     expect(settings).not.toBeNull();
     expect(settings.dark_mode).toBe(1);
     expect(settings.onboarded).toBe(0);
-    expect(settings.province).toBe('ON');
+    expect(settings.province).toBe('AB');
   });
 
   test('update settings', () => {

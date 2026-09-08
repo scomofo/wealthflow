@@ -1,11 +1,6 @@
 const crypto = require('crypto');
-
-function scoreToPriority(score) {
-  if (score >= 85) return 'urgent';
-  if (score >= 70) return 'high';
-  if (score >= 50) return 'medium';
-  return 'low';
-}
+const { reconcileContributionRoom } = require('./contribution-room');
+const { scoreToPriority } = require('./action-priority');
 
 function makeAction(fields) {
   const score = fields.score || 0;
@@ -32,7 +27,10 @@ class NextBestActionsEngine {
     const debts = db.listDebts();
     const bills = db.listBills();
     const goals = db.listGoals();
-    const contributionRoom = db.listContributionRoom();
+    const contributionRoom = reconcileContributionRoom(
+      db.listContributionRoom(),
+      db.listContributions()
+    );
     const settings = db.getSettings();
     const financials = db.computeFinancials();
 
@@ -76,15 +74,19 @@ class NextBestActionsEngine {
     const activeKeys = filtered.map((a) => a.action_key);
     db.clearStaleNextBestActions(activeKeys);
 
-    // 7. Return sorted open actions with personalization weighting
+    // 7. Return the same ranked view used by normal list/read paths.
+    return this.listOpenActions();
+  }
+
+  listOpenActions() {
+    const openActions = this.database.listNextBestActions('open');
     try {
       const { PersonalizationEngine } = require('./personalization-engine');
       const pe = new PersonalizationEngine(this.database);
       const profile = pe.buildProfile();
-      const openActions = db.listNextBestActions('open');
       return pe.applyActionWeighting(openActions, profile);
     } catch (_) {
-      return db.listNextBestActions('open');
+      return [...openActions].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
     }
   }
 
@@ -244,7 +246,7 @@ class NextBestActionsEngine {
     if (income <= expenses) return actions;
 
     for (const cr of contributionRoom) {
-      const room = cr.known_room ?? cr.room ?? 0;
+      const room = cr.available_room ?? cr.known_room ?? cr.room ?? 0;
       if (room > 0) {
         let score = 60;
         if (room > 5000) score += 10;
@@ -253,7 +255,7 @@ class NextBestActionsEngine {
           makeAction({
             action_key: `contribution_room_${cr.account_type}`,
             title: `Review your ${cr.account_type} room and make a contribution ($${room.toLocaleString('en-CA')} available)`,
-            description: `You have $${room.toLocaleString('en-CA')} of unused ${cr.account_type} contribution room.`,
+            description: `You have $${room.toLocaleString('en-CA')} of unused ${cr.account_type} contribution room after contributions logged since ${cr.known_as_of_date || 'your last room update'}.`,
             rationale:
               'Maximizing registered account contributions provides tax advantages.',
             category: 'investing',

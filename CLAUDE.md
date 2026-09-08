@@ -1,254 +1,281 @@
-# WealthFlow — Product & UI Memory (Claude.md)
+# WealthFlow — Product & Engineering Source of Truth
 
 ## Purpose
-This file acts as the **single source of truth** for how WealthFlow is being built.
 
-It captures:
-- product philosophy
-- architecture decisions
-- workflow system
-- dashboard strategy
-- UI system + polish roadmap
+This file is the current source of truth for WealthFlow's product direction and implementation priorities.
+
+Historical handoffs under `docs/handoffs/` describe how individual phases were built, but they are not authoritative for current behavior. When docs disagree, prefer:
+
+1. current code and tests,
+2. this file,
+3. current review/status docs,
+4. archived handoffs.
 
 ---
 
-# 🧠 Product Philosophy
+# Product Philosophy
 
-WealthFlow is not:
-- a finance tracker
-- a spreadsheet
-- a reporting tool
+WealthFlow is not primarily:
+- a finance tracker,
+- a spreadsheet,
+- a reporting dashboard.
 
 WealthFlow is:
 > **a financial decision engine + command center**
 
 Core principle:
-> “Tell the user what to do, not just what happened.”
+> **Tell the user what matters, why it matters, and what to do next.**
+
+The product should feel calm, intelligent, trustworthy, and non-judgmental.
 
 ---
 
-# 🧱 Core System Architecture
+# Current Product System
 
-## 1. AI Workflows (Deep Decisions)
+## 1. Next Best Actions — always-on decision engine
 
-Structured, deterministic AI flows:
-- TFSA vs RRSP
-- Debt vs Investing
-- Monthly Planner
-
-Each workflow:
-- uses structured prompts
-- returns strict JSON
-- is validated + normalized
-- renders via reusable UI
-- produces saveable actions
-
----
-
-## 2. Next Best Actions System (Always-On Intelligence)
-
-Rule-based engine that:
-- analyzes financial state
-- generates actions
-- ranks by priority
-- persists state
+The deterministic Next Best Actions engine:
+- analyzes current financial state,
+- generates actionable recommendations,
+- ranks by importance,
+- persists completion/dismiss/snooze state,
+- applies bounded personalization,
+- protects urgent actions from personalization suppression.
 
 Key principle:
-> rule-first, AI-second
+> **rule-first, AI-second**
+
+Next Best Actions are the primary decision surface of the dashboard.
+
+## 2. Structured AI Workflows — deeper decisions
+
+Implemented structured workflows include:
+- TFSA vs RRSP,
+- Debt vs Investing,
+- Monthly Planner.
+
+Each workflow:
+- uses a structured prompt,
+- expects structured JSON,
+- validates/normalizes output,
+- renders through reusable decision UI,
+- can produce saveable actions.
+
+AI enhances deterministic product logic; it does not replace it.
+
+## 3. AI Summary — narrative context
+
+The dashboard AI Summary explains the current financial picture in short form and connects financial state to recommended actions.
+
+It should answer quickly:
+- what matters now,
+- why it matters,
+- what the user should focus on.
+
+## 4. Personalization — bounded adaptation
+
+The personalization engine is implemented and uses interaction history to adjust relevance while preserving safety and visibility:
+- recent behavior weighs more than old behavior,
+- completion can modestly increase relevance,
+- dismiss is a mild negative signal,
+- snooze is not treated as dislike,
+- urgent actions bypass personalization,
+- score adjustments are bounded,
+- financial state can override behavioral preference in summary emphasis.
+
+Personalization must never hide material financial risk.
+
+## 5. Guided Onboarding — fast path to useful decisions
+
+Guided onboarding is implemented and captures enough context to produce useful recommendations without requiring a complete financial profile.
+
+It includes:
+- province,
+- optional income/expenses/debt/savings estimates,
+- primary financial focus,
+- budget category setup,
+- sample-data or fresh-start choice,
+- immediate prioritized next steps.
+
+Onboarding should deliver value quickly and allow refinement later.
+
+## 6. Can I Afford This? — deterministic affordability workflow
+
+The affordability workflow is implemented as a deterministic planning tool. It should remain transparent about the inputs and assumptions behind its recommendation.
+
+## 7. Proactive Guidance
+
+Proactive guidance is implemented through:
+- dashboard nudges,
+- proactive desktop notifications,
+- urgency/relevance ranking,
+- cooldown and deduplication behavior.
+
+The system should surface the right insight at the right time without becoming noisy.
 
 ---
 
-## 3. Dashboard = Command Center
+# Dashboard = Command Center
 
-Hierarchy:
-1. Next Best Actions (hero)
-2. Snapshot bar
-3. Insights
-4. Saved actions
-5. Secondary content
+The dashboard hierarchy is intentional:
+
+1. **Next Best Actions** — dominant decision surface
+2. **Financial Snapshot** — current status
+3. **AI Summary / proactive context** — interpretation and why-now context
+4. **Progress feedback** — lightweight reinforcement
+5. **Saved / generated actions** — execution queue
+6. **Insights and spending detail** — supporting context
+7. **Utilities / quick links** — lowest emphasis
 
 Goal:
-> user understands what to do in under 5 seconds
+> the user understands what to do in under five seconds.
+
+Do not allow secondary cards, analytics, or decorative engagement elements to compete with Next Best Actions.
 
 ---
 
-# 🎯 UX Philosophy
+# Behavioral UX
 
-## Action-first design
+## Reinforce meaningful action, do not gamify it
+
+Progress feedback should reflect real financial actions.
+
+Allowed:
+- “You completed 2 meaningful actions this week”
+- momentum language,
+- subtle completion feedback,
+- Focus Mode reinforcement.
+
+Avoid:
+- XP,
+- levels,
+- collectible badges,
+- flashy streak counters,
+- artificial reward loops,
+- hype or pressure.
+
+The user should feel progress because their financial situation is improving, not because a game mechanic increased.
+
+---
+
+# UX Principles
+
+## Action first
 Everything should answer:
-- what matters
-- what to do
+- what matters,
+- why,
+- what to do.
 
 ## Reduce cognitive load
-- fewer sections
-- stronger hierarchy
-
-## Progressive disclosure
-- summary first
-- detail on demand
-
----
-
-# 🎨 UI System Principles
-
-## Visual hierarchy
-1. Actions (dominant)
-2. Status
-3. Context
-4. Supporting data
+- fewer competing sections,
+- strong visual hierarchy,
+- concise copy,
+- progressive disclosure.
 
 ## Tone
-- calm
-- intelligent
-- non-judgmental
+- calm,
+- intelligent,
+- direct,
+- non-judgmental.
 
 ## Avoid
-- clutter
-- alarmist colors
-- overly dense layouts
+- clutter,
+- alarmist treatment for non-urgent items,
+- dense equal-weight card grids,
+- unnecessary motion,
+- financial claims that exceed the confidence of the underlying data.
 
 ---
 
-# 🚀 UI Execution Roadmap
+# Engineering Guardrails
 
-## PHASE 1 — Perceived Quality (DONE FIRST)
+## Data and safety
+- Treat financial data correctness as product correctness.
+- Validate inputs at renderer/main-process boundaries.
+- Keep secrets in the main process; never expose plaintext API keys to the renderer or exports.
+- Keep file access allow-listed and path-contained.
+- Prefer deterministic rules for financial recommendations where possible.
+- Fail safely when AI output is malformed or incomplete.
 
-### Goals
-- add depth
-- improve tactility
-- clean visual noise
+## Persistence
+- Database writes must remain crash-safe and recoverable.
+- Do not weaken atomic save, backup, or single-instance protections.
 
-### Changes
+## Testing
+- `npm run lint` and `npm test` are required gates.
+- Bug fixes should add regression coverage against the real implementation when practical.
+- Do not replace real implementation tests with parallel reimplementations of the same logic.
 
-#### Card Elevation
-```css
-.card {
-  border: 1px solid rgba(255,255,255,0.06);
-  transition: all 0.2s ease;
-}
-.card:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
-}
-```
-
-#### Button Feedback
-```css
-.btn:active {
-  transform: scale(0.97);
-}
-```
-
-#### Priority System
-```css
-.priority-pill { ... }
-.priority-high { ... }
-.priority-medium { ... }
-.priority-low { ... }
-```
+## Scope discipline
+- Do not overbuild before validating.
+- Prefer surgical changes over broad refactors.
+- Extract repeated patterns, not one-off abstractions.
 
 ---
 
-## PHASE 2 — Interaction Layer
+# Canadian Financial Coverage
 
-### Goals
-- improve feedback
-- reinforce action-taking
+WealthFlow is **Canada-only and Alberta-first**. The authoritative product scope is:
+- Canadian federal personal-finance and tax rules, and
+- Alberta personal-finance and provincial tax rules.
 
-### Changes
-- action completion toast
-- optional fade-out animation
-- proper button hierarchy
+Assume Alberta when no province is explicitly supplied. Alberta + federal calculations must be kept current and verified before work is spent expanding other jurisdictions.
 
----
+Current code also contains province/territory tables for portability and historical product breadth. Treat those as secondary convenience coverage, not a roadmap commitment. Do not add U.S. account/tax-law support (401(k), IRA, U.S. filing rules, etc.) unless the product scope is explicitly changed.
 
-## PHASE 3 — Visual System
+First-class Canadian coverage includes:
+- 2026 federal + Alberta tax brackets and BPA handling,
+- TFSA, RRSP, RESP and FHSA rules,
+- CPP and OAS constants,
+- Canadian bank import presets,
+- Alberta-specific guidance where provincial law or programs matter.
 
-### Goals
-- add depth
-- improve readability
-
-### Changes
-- soft color layers
-- snapshot bar refinement
+For high-stakes tax/legal guidance, prefer CRA and Alberta government primary sources. Other provincial calculations may remain available, but they must not displace Alberta correctness work.
 
 ---
 
-## PHASE 4 — Behavioral UX
+# Current Quality Priorities
 
-### Goals
-- increase engagement
-- build habit loop
+The September consolidation gates are implemented: source-of-truth cleanup, boundary validation, fail-closed workflow contracts, contribution-room reconciliation, AI prompt/model hardening, startup/accessibility work, privacy cleanup, real data reset, action-ranking consistency, and mixed-currency portfolio valuation.
 
-### Changes
-- momentum feedback ("2 actions completed")
-- focus mode (single action view)
+From here, prioritize depth over breadth:
 
----
+1. **Alberta + federal financial-law accuracy**
+   - keep current-year Alberta and Canadian federal rules verified against primary sources,
+   - ensure AI knowledge follows current-year values before historical values,
+   - add regression tests whenever a law/rate/limit changes.
 
-## PHASE 5 — Product Intelligence
+2. **Financial calculation correctness**
+   - keep registered-account room, debt, cash-flow, tax, retirement and CAD portfolio calculations internally consistent,
+   - surface assumptions and uncertainty rather than presenting estimates as filing-grade results.
 
-### Goals
-- increase perceived intelligence
+3. **Privacy and local-data protection**
+   - minimize personal data sent to AI,
+   - preserve crash-safe persistence and true reset semantics,
+   - evaluate an optional local app/database lock only if it can be added without weakening recoverability.
 
-### Changes
-- AI summary card
-- auto-refresh actions
+4. **Trustworthy command-center UX**
+   - preserve Next Best Actions as the dominant decision surface,
+   - keep accessibility/performance regression gates green,
+   - improve explanations and execution support before adding more surface area.
 
----
+5. **Canadian integrations only when they strengthen the core**
+   - Canadian open-banking/import automation may be explored when the local financial model is stable,
+   - unrelated ecosystem expansion, mobile/web ports, and non-Canadian jurisdiction support are not current priorities.
 
-# 💡 Key Product Loops
-
-## Monthly Loop
-- user opens app
-- runs planner
-- saves actions
-- executes
-
-## Daily Loop
-- opens dashboard
-- sees next best actions
-- completes 1 action
+Jurisdiction expansion outside Canada is out of scope.
 
 ---
 
-# ⚠️ Guardrails
-
-## Do NOT:
-- overbuild before validating
-- add too many UI elements
-- rely fully on AI
-
-## DO:
-- keep things deterministic first
-- prioritize clarity over completeness
-- ship in phases
-
----
-
-# 🧭 Definition of Success
+# Definition of Success
 
 WealthFlow should feel like:
-> “This app understands my finances and tells me exactly what to do.”
+> **“This app understands my finances and tells me exactly what to do next.”**
 
 Not:
 > “This app shows me my numbers.”
 
----
+And not:
+> “This app gives me points for looking at my finances.”
 
-# 🔥 Future Direction
-
-After current roadmap:
-- personalization engine
-- onboarding upgrade
-- "Can I afford this?" workflows
-- proactive notifications
-
----
-
-# Final Note
-
-Small details matter.
-
-At this stage:
-> polish + behavior design = product quality
+Product quality comes from correct financial logic, clear prioritization, calm guidance, trustworthy AI boundaries, and fast execution.

@@ -1,18 +1,50 @@
-import { FEDERAL_TAX_BRACKETS_2026, PROVINCIAL_TAX_BRACKETS_2026, BASIC_PERSONAL_AMOUNT } from './constants.js';
+import {
+  FEDERAL_TAX_BRACKETS_2026,
+  PROVINCIAL_TAX_BRACKETS_2026,
+  BASIC_PERSONAL_AMOUNT,
+  FEDERAL_BPA_2026,
+  MANITOBA_BPA_2026,
+  QUEBEC_FEDERAL_ABATEMENT_RATE,
+} from './constants.js';
 
 // The Basic Personal Amount is a non-refundable credit, not a deduction
-// from taxable income: it's worth BPA times the lowest bracket rate,
-// subtracted from tax otherwise payable (never below zero). Both functions
-// below apply their own jurisdiction's BPA at its own lowest rate.
-export function calculateFederalTax(income) {
+// from taxable income. Federal/Yukon and Manitoba amounts phase down at high
+// incomes in 2026, so use the statutory formulas instead of a fixed maximum.
+function phasedAmount(income, rule) {
+  const netIncome = Math.max(0, Number(income) || 0);
+  if (netIncome <= rule.phaseoutStart) return rule.max;
+  if (netIncome >= rule.phaseoutEnd) return rule.min;
+  const range = rule.phaseoutEnd - rule.phaseoutStart;
+  const reduction = (netIncome - rule.phaseoutStart) * ((rule.max - rule.min) / range);
+  return rule.max - reduction;
+}
+
+export function getFederalBasicPersonalAmount(income) {
+  return phasedAmount(income, FEDERAL_BPA_2026);
+}
+
+export function getProvincialBasicPersonalAmount(income, province) {
+  if (province === 'MB') return phasedAmount(income, MANITOBA_BPA_2026);
+  if (province === 'YT') return getFederalBasicPersonalAmount(income);
+  return BASIC_PERSONAL_AMOUNT[province] || 0;
+}
+
+export function calculateFederalTax(income, province = null) {
   let tax = 0;
   for (const bracket of FEDERAL_TAX_BRACKETS_2026) {
     if (income <= bracket.min) break;
     const taxable = Math.min(income, bracket.max) - bracket.min;
     tax += taxable * bracket.rate;
   }
-  const bpaCredit = BASIC_PERSONAL_AMOUNT.FEDERAL * FEDERAL_TAX_BRACKETS_2026[0].rate;
-  return Math.max(0, tax - bpaCredit);
+  const bpaCredit = getFederalBasicPersonalAmount(income) * FEDERAL_TAX_BRACKETS_2026[0].rate;
+  const afterBpa = Math.max(0, tax - bpaCredit);
+
+  // Quebec residents receive the 16.5% federal abatement. WealthFlow remains
+  // an estimate (other credits/surtaxes can still apply), but omitting this
+  // materially overstates Quebec federal tax.
+  return province === 'QC'
+    ? afterBpa * (1 - QUEBEC_FEDERAL_ABATEMENT_RATE)
+    : afterBpa;
 }
 
 export function calculateProvincialTax(income, province) {
@@ -24,13 +56,13 @@ export function calculateProvincialTax(income, province) {
     const taxable = Math.min(income, bracket.max) - bracket.min;
     tax += taxable * bracket.rate;
   }
-  const provincialBpa = BASIC_PERSONAL_AMOUNT[province];
-  const bpaCredit = provincialBpa ? provincialBpa * brackets[0].rate : 0;
+  const provincialBpa = getProvincialBasicPersonalAmount(income, province);
+  const bpaCredit = provincialBpa * brackets[0].rate;
   return Math.max(0, tax - bpaCredit);
 }
 
 export function calculateTotalTax(income, province) {
-  return calculateFederalTax(income) + calculateProvincialTax(income, province);
+  return calculateFederalTax(income, province) + calculateProvincialTax(income, province);
 }
 
 export function calculateDividendTaxCredit(eligibleDividends, nonEligibleDividends, province) {
@@ -111,5 +143,12 @@ export function getMarginalRate(income, province) {
       if (income > bracket.min) provincialRate = bracket.rate;
     }
   }
-  return { federal: federalRate, provincial: provincialRate, combined: federalRate + provincialRate };
+  const effectiveFederalRate = province === 'QC'
+    ? federalRate * (1 - QUEBEC_FEDERAL_ABATEMENT_RATE)
+    : federalRate;
+  return {
+    federal: effectiveFederalRate,
+    provincial: provincialRate,
+    combined: effectiveFederalRate + provincialRate,
+  };
 }

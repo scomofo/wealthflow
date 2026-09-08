@@ -11,6 +11,8 @@ const {
   FEDERAL_TAX_BRACKETS_2026,
   PROVINCIAL_TAX_BRACKETS_2026,
   BASIC_PERSONAL_AMOUNT,
+  OAS,
+  QUEBEC_FEDERAL_ABATEMENT_RATE,
 } = require('../src/renderer/js/canadian/constants.js');
 
 const {
@@ -18,6 +20,9 @@ const {
   calculateProvincialTax,
   getMarginalRate,
   calculateDividendTaxCredit,
+  calculateTotalTax,
+  getFederalBasicPersonalAmount,
+  getProvincialBasicPersonalAmount,
 } = require('../src/renderer/js/canadian/formatters.js');
 
 // Mirrors the bracket-walking loop inside calculateFederalTax/
@@ -56,16 +61,28 @@ describe('Federal Tax Calculation', () => {
     expect(calculateFederalTax(income)).toBeCloseTo(Math.max(0, gross - FEDERAL_BPA_CREDIT), 2);
   });
 
-  test('income spanning multiple brackets, net of the BPA credit', () => {
+  test('income in the federal BPA phaseout uses the reduced 2026 amount', () => {
     const income = 200000;
     const gross = grossBracketTax(income, FEDERAL_TAX_BRACKETS_2026);
-    expect(calculateFederalTax(income)).toBeCloseTo(gross - FEDERAL_BPA_CREDIT, 2);
+    const bpa = getFederalBasicPersonalAmount(income);
+    expect(bpa).toBeLessThan(BASIC_PERSONAL_AMOUNT.FEDERAL);
+    expect(bpa).toBeGreaterThan(14829);
+    expect(calculateFederalTax(income)).toBeCloseTo(gross - bpa * FEDERAL_TAX_BRACKETS_2026[0].rate, 2);
   });
 
-  test('high income hits all brackets, net of the BPA credit', () => {
+  test('high income uses the minimum federal BPA', () => {
     const income = 300000;
     const gross = grossBracketTax(income, FEDERAL_TAX_BRACKETS_2026);
-    expect(calculateFederalTax(income)).toBeCloseTo(gross - FEDERAL_BPA_CREDIT, 2);
+    expect(getFederalBasicPersonalAmount(income)).toBe(14829);
+    expect(calculateFederalTax(income)).toBeCloseTo(gross - 14829 * FEDERAL_TAX_BRACKETS_2026[0].rate, 2);
+  });
+
+  test('Quebec applies the 16.5% federal abatement', () => {
+    const income = 100000;
+    const regular = calculateFederalTax(income, 'AB');
+    const quebec = calculateFederalTax(income, 'QC');
+    expect(quebec).toBeCloseTo(regular * (1 - QUEBEC_FEDERAL_ABATEMENT_RATE), 2);
+    expect(calculateTotalTax(income, 'QC')).toBeCloseTo(quebec + calculateProvincialTax(income, 'QC'), 2);
   });
 });
 
@@ -90,6 +107,13 @@ describe('Provincial Tax Calculation', () => {
   test('unknown province returns 0', () => {
     expect(calculateProvincialTax(100000, 'XX')).toBe(0);
   });
+
+  test('Manitoba BPA phases out above $200,000', () => {
+    expect(getProvincialBasicPersonalAmount(150000, 'MB')).toBe(15780);
+    expect(getProvincialBasicPersonalAmount(300000, 'MB')).toBeCloseTo(7890, 2);
+    expect(getProvincialBasicPersonalAmount(400000, 'MB')).toBe(0);
+  });
+
 });
 
 describe('Marginal Rate', () => {
@@ -143,5 +167,30 @@ describe('Dividend Tax Credit', () => {
     const result = calculateDividendTaxCredit(0, 0, 'AB');
     expect(result.totalCredit).toBe(0);
     expect(result.totalGrossUp).toBe(0);
+  });
+});
+
+
+describe('2026 Canadian constants', () => {
+  test('uses post-budget 2026 brackets for previously stale jurisdictions', () => {
+    expect(PROVINCIAL_TAX_BRACKETS_2026.QC.map(b => b.max)).toEqual([54345, 108680, 132245, Infinity]);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.NB[0].max).toBe(52333);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.PE.map(b => b.max)).toEqual([33928, 65820, 106890, 142520, 200000, Infinity]);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.NL[0].max).toBe(44678);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.NT[0].max).toBe(53003);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.NU[0].max).toBe(55801);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.NS[0].max).toBe(30995);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.MB[0].max).toBe(47564);
+  });
+
+  test('uses current 2026 basic personal amounts and OAS quarter', () => {
+    expect(BASIC_PERSONAL_AMOUNT.QC).toBe(18952);
+    expect(BASIC_PERSONAL_AMOUNT.NB).toBe(13664);
+    expect(BASIC_PERSONAL_AMOUNT.PE).toBe(15000);
+    expect(BASIC_PERSONAL_AMOUNT.NL).toBe(15000);
+    expect(BASIC_PERSONAL_AMOUNT.NT).toBe(18198);
+    expect(BASIC_PERSONAL_AMOUNT.NU).toBe(19659);
+    expect(OAS.MAX_MONTHLY_BENEFIT).toBe(751.97);
+    expect(OAS.MAX_MONTHLY_BENEFIT_75_PLUS).toBe(827.17);
   });
 });

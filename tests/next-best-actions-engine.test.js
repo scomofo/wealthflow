@@ -16,6 +16,9 @@ function mockDb(existingActions = []) {
     listGoals: jest.fn(() => []),
     listInvestments: jest.fn(() => []),
     listContributionRoom: jest.fn(() => []),
+    listContributions: jest.fn(() => []),
+    getPersonalizationProfile: jest.fn(() => ({})),
+    updatePersonalizationProfile: jest.fn(),
     computeFinancials: jest.fn(() => ({
       income: 5000,
       expenses: 3000,
@@ -92,10 +95,14 @@ describe('NextBestActionsEngine', () => {
     expect(billAction.score).toBeGreaterThanOrEqual(90);
   });
 
-  test('generates contribution room action', async () => {
+  test('generates contribution room action from room remaining after later logged contributions', async () => {
     const db = mockDb();
     db.listContributionRoom.mockReturnValue([
-      { account_type: 'TFSA', known_room: 7000 },
+      { account_type: 'TFSA', known_room: 7000, known_as_of_date: '2026-01-01' },
+    ]);
+    db.listContributions.mockReturnValue([
+      { account_type: 'TFSA', amount: 1000, date: '2025-12-30' },
+      { account_type: 'tfsa', amount: 2000, date: '2026-02-01' },
     ]);
 
     const engine = new NextBestActionsEngine(db);
@@ -105,6 +112,8 @@ describe('NextBestActionsEngine', () => {
     const investAction = upserted.find((a) => a.category === 'investing');
     expect(investAction).toBeDefined();
     expect(investAction.title).toContain('TFSA');
+    expect(investAction.title).toContain('$5,000 available');
+    expect(investAction.description).toContain('$5,000');
     expect(investAction.score).toBeGreaterThanOrEqual(60);
   });
 
@@ -310,4 +319,23 @@ describe('NextBestActionsEngine', () => {
       expect(action).toHaveProperty('source_type', 'rule');
     }
   });
+
+  test('listOpenActions returns the same personalization-weighted ranking used after generation', () => {
+    const existing = [
+      { id: 'budget', action_key: 'budget', status: 'open', category: 'budget', priority: 'medium', score: 68 },
+      { id: 'debt', action_key: 'debt', status: 'open', category: 'debt', priority: 'high', score: 72 },
+    ];
+    const db = mockDb(existing);
+    db.getPersonalizationProfile.mockReturnValue({
+      completions: { budget: 5 },
+      last_updated: new Date().toISOString(),
+    });
+
+    const result = new NextBestActionsEngine(db).listOpenActions();
+    expect(result[0].id).toBe('budget');
+    expect(result[0].score).toBeGreaterThan(result[1].score);
+    expect(result[0].priority).toBe('high');
+    expect(result[0].personalizedDelta).toBeGreaterThan(0);
+  });
+
 });

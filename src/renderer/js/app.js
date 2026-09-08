@@ -56,6 +56,59 @@ const appState = {
   recurringModalData: null,
 };
 
+// Render and startup coordination. Rendering is asynchronous because some pages
+// need IPC-backed financial data. A monotonically increasing token prevents an
+// older render from overwriting a newer navigation or state change after its
+// await completes.
+let _renderSequence = 0;
+let _focusPageAfterRender = false;
+
+function perfNow() {
+  return window.performance?.now ? window.performance.now() : Date.now();
+}
+
+function logPerformance(name, startedAt) {
+  const durationMs = Math.max(0, perfNow() - startedAt);
+  if (window.wealthflow?.log) {
+    window.wealthflow.log('info', `Performance: ${name}`, { duration_ms: Math.round(durationMs) });
+  }
+  return durationMs;
+}
+
+function renderStartupShell() {
+  const el = document.getElementById('app');
+  if (!el) return;
+  el.innerHTML = `<div class="startup-shell" role="status" aria-live="polite" aria-label="Loading WealthFlow">
+    <div class="startup-mark">W</div>
+    <div>Loading your financial command center...</div>
+  </div>`;
+}
+
+function getModalFocusable() {
+  const modal = document.querySelector('.modal-overlay[role="dialog"] .modal');
+  if (!modal) return [];
+  return [...modal.querySelectorAll('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')];
+}
+
+function focusActiveModal() {
+  const modal = document.querySelector('.modal-overlay[role="dialog"] .modal');
+  if (!modal || modal.contains(document.activeElement)) return;
+  const first = getModalFocusable()[0];
+  if (first) first.focus();
+  else { modal.setAttribute('tabindex', '-1'); modal.focus(); }
+}
+
+function trapModalTab(e) {
+  if (e.key !== 'Tab') return false;
+  const focusable = getModalFocusable();
+  if (focusable.length === 0) return false;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); return true; }
+  if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); return true; }
+  return false;
+}
+
 // --- Debounced page re-render ---
 let _inputRenderTimer = null;
 function debouncedPageRender(section, renderFn, delay = 300) {
@@ -97,7 +150,7 @@ const ctx = {
 };
 
 // --- Router callback ---
-setOnNavigate(() => render());
+setOnNavigate(() => { _focusPageAfterRender = true; render(); });
 
 // Toast changes trigger re-render of toast container only
 setOnToastChange(() => {
@@ -158,7 +211,10 @@ async function handleUndo() {
 
 // --- Render ---
 async function render() {
+  const renderToken = ++_renderSequence;
+  const renderStartedAt = perfNow();
   const el = document.getElementById('app');
+  if (!el) return;
   let state, settings;
   try {
     state = State.getState();
@@ -184,16 +240,18 @@ async function render() {
 
   // Get financial computations
   const F = await State.computeFinancials();
+  if (renderToken !== _renderSequence) return;
 
   // Build main layout — all content from trusted render functions
   el.innerHTML = `
     <div class="app">
+      <a class="skip-link" href="#page">Skip to main content</a>
       ${renderSidebar(appState.sideOpen)}
-      <main class="main">
+      <main class="main" aria-label="WealthFlow workspace">
         ${renderHeader(settings)}
-        <div class="content" id="page"></div>
+        <div class="content" id="page" tabindex="-1"></div>
       </main>
-      <button class="ai-fab" data-action="toggle-ai">${appState.showAI ? icon('x', 20) : icon('lightbulb', 20)}</button>
+      <button class="ai-fab" data-action="toggle-ai" aria-label="${appState.showAI ? 'Close AI advisor' : 'Open AI advisor'}" aria-expanded="${appState.showAI ? 'true' : 'false'}" aria-controls="ai-advisor-panel">${appState.showAI ? icon('x', 20) : icon('lightbulb', 20)}</button>
       ${renderAiPanel(appState.showAI)}
       <div id="modal-root">${appState.activeModal ? renderModal(appState.activeModal, appState.editData) : ''}${appState.importModalData ? renderImportModal(appState.importModalData) : ''}${appState.recurringModalData ? renderRecurringModal(appState.recurringModalData) : ''}</div>
       <div id="toast-root">${renderToasts()}</div>
@@ -212,7 +270,8 @@ async function render() {
   else if (section === 'investments') page.innerHTML = renderPageSafe(renderInvestments, state);
   else if (section === 'analytics') {
     page.innerHTML = renderPageSafe(renderAnalytics, state, F);
-    try { initCharts(state, F); } catch (_) { /* charts optional */ }
+    try { await initCharts(state, F); } catch (_) { /* charts optional */ }
+    if (renderToken !== _renderSequence) return;
   }
   else if (section === 'bills') page.innerHTML = renderPageSafe(renderBills, state);
   else if (section === 'registered') page.innerHTML = renderPageSafe(renderRegisteredAccounts, state);
@@ -225,19 +284,31 @@ async function render() {
   else if (section === 'advisor') {
     initWizard(state);
     if (!state.advisorProfile) await State.loadAdvisorProfile();
+    if (renderToken !== _renderSequence) return;
     page.innerHTML = renderPageSafe(renderAdvisorWizard, state, state.advisorProfile);
   }
   else if (section === 'residence') {
     if (!state.residence) await State.loadResidence();
+    if (renderToken !== _renderSequence) return;
     page.innerHTML = renderPageSafe(renderResidence, state.residence);
   }
   else if (section === 'settings') page.innerHTML = renderPageSafe(renderSettings, state);
+
+  if (renderToken !== _renderSequence) return;
+
+  if (appState.activeModal || appState.importModalData || appState.recurringModalData) {
+    focusActiveModal();
+  } else if (_focusPageAfterRender) {
+    _focusPageAfterRender = false;
+    page?.focus({ preventScroll: true });
+  }
 
   // Scroll AI to bottom
   if (appState.showAI) {
     const msgs = document.getElementById('ai-msgs');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
   }
+  logPerformance(`render:${section}`, renderStartedAt);
 }
 
 // --- Event binding (thin dispatcher) ---
@@ -246,6 +317,7 @@ function bindEvents() {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
+    if (trapModalTab(e)) return;
     // Ctrl+N and Ctrl+Z are also native text-editing shortcuts (new
     // window/undo). While focus is in a text field, let the field handle
     // them — hijacking Ctrl+Z there replaced the user's expected "undo my
@@ -344,22 +416,12 @@ async function init() {
     showToast('An unexpected error occurred', 'error');
   };
 
-  await State.loadAll();
-  try { await State.snapshotNetWorth(); } catch (_) { /* ignore */ }
-  try { await State.processRecurringBills(); } catch (_) { /* ignore */ }
-  // Per-step command-center refresh errors are captured in lastIntelligenceRefresh.errors.
-  try { await State.refreshCommandCenterIntelligence('manual'); } catch (_) { /* non-blocking */ }
+  const startupStartedAt = perfNow();
+  renderStartupShell();
 
-  try {
-    const s = State.getState();
-    const recurring = detectRecurringPayments(s.transactions, s.bills);
-    if (recurring.length > 0) {
-      const untracked = recurring.filter(r => !r.alreadyTracked);
-      if (untracked.length > 0) {
-        showToast(`Found ${untracked.length} recurring payment(s). Review in Bills.`, 'info');
-      }
-    }
-  } catch (_) { /* recurring detection not critical */ }
+  const loadStartedAt = perfNow();
+  await State.loadAll();
+  logPerformance('startup:load-core-state', loadStartedAt);
 
   const state = State.getState();
   if (state.settings?.theme_mode === 'auto') {
@@ -370,9 +432,38 @@ async function init() {
 
   setupStreamListeners();
   bindEvents();
-  render();
 
-  if (state.settings?.bill_notifications !== 0) {
+  // First useful paint deliberately happens before maintenance and intelligence
+  // refresh work. Persisted actions are already available from loadAll(), so the
+  // dashboard can be useful immediately while fresher intelligence is computed.
+  await render();
+  logPerformance('startup:first-useful-render', startupStartedAt);
+  await new Promise(resolve => requestAnimationFrame(() => resolve()));
+
+  const maintenanceStartedAt = perfNow();
+  await Promise.allSettled([
+    State.snapshotNetWorth(),
+    State.processRecurringBills(),
+  ]);
+
+  // Per-step command-center refresh errors are captured in
+  // lastIntelligenceRefresh.errors. It runs only after the first paint so a
+  // slow rules/profile refresh cannot make startup feel blank.
+  try { await State.refreshCommandCenterIntelligence('manual'); } catch (_) { /* non-blocking */ }
+  logPerformance('startup:background-maintenance', maintenanceStartedAt);
+
+  try {
+    const s = State.getState();
+    const recurring = detectRecurringPayments(s.transactions, s.bills);
+    const untracked = recurring.filter(r => !r.alreadyTracked);
+    if (untracked.length > 0) {
+      showToast(`Found ${untracked.length} recurring payment(s). Review in Bills.`, 'info');
+    }
+  } catch (_) { /* recurring detection not critical */ }
+
+  await render();
+
+  if (State.getState().settings?.bill_notifications !== 0) {
     try {
       await window.wealthflow.sendProactiveDesktopNotification();
     } catch (_) { /* notifications not critical */ }

@@ -4,6 +4,7 @@ Alberta Personal & Family Tax Law
 AI Agent Training Document  
 Jurisdiction: Alberta, Canada  
 Tax Years Covered: 2025 and 2026  
+CURRENT-YEAR PRECEDENCE (2026): For any current planning question, use the 2026 federal and Alberta values in this reference. 2025 figures are retained only for prior-year returns/comparisons and must not override a 2026 value. If a current-year rule is not explicitly supported here, state that it needs CRA/Alberta verification rather than inferring from a prior year.
 Last Updated: February 2026  
 Compiled from CRA, Alberta.ca, and professional tax sources  
   
@@ -106,11 +107,8 @@ CREDITS
 Level 2025 2026 
 Federal BPA  $16,129 $16,452 
 Alberta BPA  $22,323 $22,769 
-The BPA is the amount of income an individual can earn without paying any tax. The federal enhanced BPA is 
-income-tested: it is reduced for individuals with net income above $177,882 (2025) and fully eliminated at 
-$253,414. Alberta's BPA is not income-tested. 
-The Alberta BPA credit is calculated at 8% (the lowest provincial rate). The federal BPA credit is 14% (for 
-2026) of the BPA amount. 
+The BPA is a non-refundable tax-credit base, not a deduction and not a guarantee that all tax is zero below that amount. The federal enhanced BPA is income-tested. For 2026 it is $16,452 through net income of $181,440, phases down between $181,440 and $258,482, and is $14,829 at or above $258,482; it does not phase to zero. Alberta's $22,769 BPA is not income-tested.
+The Alberta BPA credit is calculated at 8% (the lowest provincial rate). The federal BPA credit is calculated at the 14% lowest federal rate for 2026 using the applicable income-tested BPA amount.
 3.2 Key Alberta Non-Refundable Tax Credits (2025) 
 • Spousal/Common-Law Partner Amount: Up to $22,323 (reduced by spouse's net income) 
 • Eligible Dependant Amount (equivalent-to-spouse): Up to $22,323 
