@@ -69,46 +69,61 @@ export const CPP = {
   LATE_INCREASE_PER_MONTH: 0.007, // 0.7% per month after 65
 };
 
-// OAS Constants (Jan-Mar 2026 quarterly amount; OAS is re-indexed quarterly
-// so MAX_MONTHLY_BENEFIT drifts slightly through the year). Clawback
-// thresholds are for 2026 net income (recovery tax applied July 2027-June
-// 2028).
+// OAS Constants (July-September 2026 amount for ages 65-74).
+// OAS is indexed quarterly. The recovery-tax thresholds below are for 2026
+// net income and therefore remain appropriate for 2026 planning estimates.
 export const OAS = {
-  MAX_MONTHLY_BENEFIT: 742.31,
+  MAX_MONTHLY_BENEFIT: 751.97,
+  MAX_MONTHLY_BENEFIT_75_PLUS: 827.17,
   CLAWBACK_THRESHOLD: 95323,
   FULL_CLAWBACK_THRESHOLD: 154753,
   CLAWBACK_RATE: 0.15,
   ELIGIBLE_AGE: 65,
-  DEFERRAL_INCREASE_PER_MONTH: 0.006, // 0.6% per month after 65
+  DEFERRAL_INCREASE_PER_MONTH: 0.006,
   MAX_DEFERRAL_AGE: 70,
   YEARS_REQUIRED_FULL: 40,
 };
 
-// Basic Personal Amount by Province (2026)
-// FEDERAL/ON/AB/BC/SK/NS are confirmed 2026 figures. MB is unchanged from
-// the prior value, which already matched 2026. QC/NB/PE/NL/NT/NU are not
-// yet confirmed for 2026 and are carried over from an earlier year — treat
-// those as approximate until verified. YT sets its own BPA equal to the
-// federal amount by design, so it tracks FEDERAL here.
+// 2026 Basic Personal Amounts. These values are sourced from CRA T4127
+// (July 2026 revision) for CRA-administered jurisdictions and Revenu Quebec
+// for Quebec. FEDERAL and YT are maximum amounts; both phase down for high
+// incomes using FEDERAL_BPA_2026. Manitoba also phases out above $200,000.
 export const BASIC_PERSONAL_AMOUNT = {
   FEDERAL: 16452,
   ON: 12989,
   AB: 22769,
   BC: 13216,
-  QC: 18056, // unverified for 2026
+  QC: 18952,
   SK: 20381,
   MB: 15780,
   NS: 11932,
-  NB: 13044, // unverified for 2026
-  PE: 13500, // unverified for 2026
-  NL: 10818, // unverified for 2026
+  NB: 13664,
+  PE: 15000,
+  NL: 15000,
   YT: 16452,
-  NT: 17373, // unverified for 2026
-  NU: 18767, // unverified for 2026
+  NT: 18198,
+  NU: 19659,
 };
 
-// Federal Tax Brackets 2026 — lowest rate cut from 15% to 14% effective
-// July 2025, in effect for the full 2026 tax year; thresholds indexed 2%.
+export const FEDERAL_BPA_2026 = {
+  max: 16452,
+  min: 14829,
+  phaseoutStart: 181440,
+  phaseoutEnd: 258482,
+};
+
+export const MANITOBA_BPA_2026 = {
+  max: 15780,
+  min: 0,
+  phaseoutStart: 200000,
+  phaseoutEnd: 400000,
+};
+
+// Quebec residents receive a 16.5% abatement of basic federal tax in
+// recognition of provincial programs financed in place of federal programs.
+export const QUEBEC_FEDERAL_ABATEMENT_RATE = 0.165;
+
+// Federal Tax Brackets 2026 - CRA current-year rates.
 export const FEDERAL_TAX_BRACKETS_2026 = [
   { min: 0, max: 58523, rate: 0.14 },
   { min: 58523, max: 117045, rate: 0.205 },
@@ -117,14 +132,9 @@ export const FEDERAL_TAX_BRACKETS_2026 = [
   { min: 258482, max: Infinity, rate: 0.33 },
 ];
 
-// Provincial Tax Brackets 2026 (common provinces)
-// ON/AB/BC/SK/MB are confirmed 2026 figures. Alberta added a new 8%
-// bracket on the first $61,200 effective 2025, carried into 2026 with 2%
-// indexation. NS's thresholds are unchanged from the prior value (Nova
-// Scotia does not index its brackets annually) — only its basic personal
-// amount changed for 2026, see BASIC_PERSONAL_AMOUNT above. QC/NB/PE/NL/NT/NU
-// are not yet confirmed for 2026 and are carried over from an earlier
-// year — treat those as approximate until verified.
+// Provincial and territorial brackets for the 2026 tax year. CRA's current
+// T4127/current-year tables are authoritative for all jurisdictions except
+// Quebec; Quebec brackets come from Revenu Quebec's 2026 rates.
 export const PROVINCIAL_TAX_BRACKETS_2026 = {
   ON: [
     { min: 0, max: 53891, rate: 0.0505 },
@@ -150,11 +160,11 @@ export const PROVINCIAL_TAX_BRACKETS_2026 = {
     { min: 190405, max: 265545, rate: 0.168 },
     { min: 265545, max: Infinity, rate: 0.205 },
   ],
-  QC: [ // unverified for 2026
-    { min: 0, max: 51780, rate: 0.14 },
-    { min: 51780, max: 103545, rate: 0.19 },
-    { min: 103545, max: 126000, rate: 0.24 },
-    { min: 126000, max: Infinity, rate: 0.2575 },
+  QC: [
+    { min: 0, max: 54345, rate: 0.14 },
+    { min: 54345, max: 108680, rate: 0.19 },
+    { min: 108680, max: 132245, rate: 0.24 },
+    { min: 132245, max: Infinity, rate: 0.2575 },
   ],
   SK: [
     { min: 0, max: 54532, rate: 0.105 },
@@ -162,41 +172,41 @@ export const PROVINCIAL_TAX_BRACKETS_2026 = {
     { min: 155805, max: Infinity, rate: 0.145 },
   ],
   MB: [
-    { min: 0, max: 47564, rate: 0.108 },
-    { min: 47564, max: 101200, rate: 0.1275 },
-    { min: 101200, max: Infinity, rate: 0.174 },
+    { min: 0, max: 47000, rate: 0.108 },
+    { min: 47000, max: 100000, rate: 0.1275 },
+    { min: 100000, max: Infinity, rate: 0.174 },
   ],
   NS: [
-    { min: 0, max: 29590, rate: 0.0879 },
-    { min: 29590, max: 59180, rate: 0.1495 },
-    { min: 59180, max: 93000, rate: 0.1667 },
-    { min: 93000, max: 150000, rate: 0.175 },
-    { min: 150000, max: Infinity, rate: 0.21 },
+    { min: 0, max: 30995, rate: 0.0879 },
+    { min: 30995, max: 61991, rate: 0.1495 },
+    { min: 61991, max: 97417, rate: 0.1667 },
+    { min: 97417, max: 157124, rate: 0.175 },
+    { min: 157124, max: Infinity, rate: 0.21 },
   ],
-  NB: [ // unverified for 2026
-    { min: 0, max: 49958, rate: 0.094 },
-    { min: 49958, max: 99916, rate: 0.14 },
-    { min: 99916, max: 185064, rate: 0.16 },
-    { min: 185064, max: Infinity, rate: 0.195 },
+  NB: [
+    { min: 0, max: 52333, rate: 0.094 },
+    { min: 52333, max: 104666, rate: 0.14 },
+    { min: 104666, max: 193861, rate: 0.16 },
+    { min: 193861, max: Infinity, rate: 0.195 },
   ],
-  PE: [ // unverified for 2026
-    { min: 0, max: 32656, rate: 0.098 },
-    { min: 32656, max: 64313, rate: 0.138 },
-    { min: 64313, max: Infinity, rate: 0.167 },
+  PE: [
+    { min: 0, max: 33928, rate: 0.095 },
+    { min: 33928, max: 65820, rate: 0.1347 },
+    { min: 65820, max: 106890, rate: 0.166 },
+    { min: 106890, max: 142520, rate: 0.1762 },
+    { min: 142520, max: 200000, rate: 0.19 },
+    { min: 200000, max: Infinity, rate: 0.20 },
   ],
-  NL: [ // unverified for 2026
-    { min: 0, max: 43198, rate: 0.087 },
-    { min: 43198, max: 86395, rate: 0.145 },
-    { min: 86395, max: 154244, rate: 0.158 },
-    { min: 154244, max: 215943, rate: 0.178 },
-    { min: 215943, max: 275870, rate: 0.198 },
-    { min: 275870, max: 551739, rate: 0.208 },
-    { min: 551739, max: 1103478, rate: 0.213 },
-    { min: 1103478, max: Infinity, rate: 0.218 },
+  NL: [
+    { min: 0, max: 44678, rate: 0.087 },
+    { min: 44678, max: 89354, rate: 0.145 },
+    { min: 89354, max: 159528, rate: 0.158 },
+    { min: 159528, max: 223340, rate: 0.178 },
+    { min: 223340, max: 285319, rate: 0.198 },
+    { min: 285319, max: 570638, rate: 0.208 },
+    { min: 570638, max: 1141275, rate: 0.213 },
+    { min: 1141275, max: Infinity, rate: 0.218 },
   ],
-  // Yukon's bracket thresholds are set equal to the federal thresholds by
-  // design (only its rates and top bracket differ), so these track
-  // FEDERAL_TAX_BRACKETS_2026's thresholds above.
   YT: [
     { min: 0, max: 58523, rate: 0.064 },
     { min: 58523, max: 117045, rate: 0.09 },
@@ -204,17 +214,17 @@ export const PROVINCIAL_TAX_BRACKETS_2026 = {
     { min: 181440, max: 500000, rate: 0.128 },
     { min: 500000, max: Infinity, rate: 0.15 },
   ],
-  NT: [ // unverified for 2026
-    { min: 0, max: 50597, rate: 0.059 },
-    { min: 50597, max: 101198, rate: 0.086 },
-    { min: 101198, max: 164525, rate: 0.122 },
-    { min: 164525, max: Infinity, rate: 0.1405 },
+  NT: [
+    { min: 0, max: 53003, rate: 0.059 },
+    { min: 53003, max: 106009, rate: 0.086 },
+    { min: 106009, max: 172346, rate: 0.122 },
+    { min: 172346, max: Infinity, rate: 0.1405 },
   ],
-  NU: [ // unverified for 2026
-    { min: 0, max: 53268, rate: 0.04 },
-    { min: 53268, max: 106537, rate: 0.07 },
-    { min: 106537, max: 173205, rate: 0.09 },
-    { min: 173205, max: Infinity, rate: 0.115 },
+  NU: [
+    { min: 0, max: 55801, rate: 0.04 },
+    { min: 55801, max: 111602, rate: 0.07 },
+    { min: 111602, max: 181439, rate: 0.09 },
+    { min: 181439, max: Infinity, rate: 0.115 },
   ],
 };
 

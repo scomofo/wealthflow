@@ -82,16 +82,16 @@ You can refine the profile later; a rough starting picture is enough to begin.
 
 | Feature | Details |
 |:--------|:--------|
-| 🏦 **Tax Brackets** | 2026 federal + province/territory tables; some jurisdictions remain explicitly marked approximate pending verification |
+| 🏦 **Tax Brackets** | 2026 federal + all province/territory brackets; CRA-administered tables verified against current 2026 sources and Quebec against Revenu Quebec |
 | 📊 **TFSA** | Annual limits + lifetime room |
 | 💼 **RRSP** | Deduction limits + HBP/LLP |
 | 🎓 **RESP** | CESG matching + lifetime caps |
 | 🏠 **FHSA** | First Home Savings Account |
-| 👴 **CPP / OAS** | 2026 constants and retirement projections |
+| 👴 **CPP / OAS** | 2026 CPP figures + current July-September 2026 OAS amounts and retirement projections |
 | 🏧 **Bank Import** | Canadian bank presets + CSV/OFX/QIF/XLSX import |
 | 📬 **Tax Season** | T4/T5 guidance + deduction finder |
 
-> Financial and tax calculations are planning tools, not a substitute for individualized professional advice. Source constants that have not yet been verified for 2026 are labelled as such in code.
+> Financial and tax calculations are planning estimates, not a substitute for individualized professional advice. The calculator uses current 2026 bracket/BPA data but does not model every surtax, premium, credit, AMT rule, or Quebec-specific contribution.
 
 ---
 
@@ -158,7 +158,8 @@ wealthflow/
 - Financial data is stored locally at `%APPDATA%/wealthflow/wealthflow.db`.
 - No telemetry or tracking is built into WealthFlow.
 - AI requests go to Anthropic only when AI functionality is used.
-- The plaintext AI API key is kept in the Electron main process and is not included in JSON exports.
+- The AI API key is kept in the Electron main process, protected with Electron `safeStorage` when available, and is not included in JSON exports.
+- The sql.js database is stored as a local file and is **not whole-database encrypted at rest**; device/OS disk encryption remains the protection for the financial database itself.
 - Database persistence uses crash-safe replacement/backup behavior and the app enforces a single running instance to protect the sql.js database.
 
 ---
