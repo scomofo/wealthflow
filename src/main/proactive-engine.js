@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { totalAvailableContributionRoom } = require('./contribution-room');
 
 class ProactiveEngine {
   constructor(database) {
@@ -38,6 +39,7 @@ class ProactiveEngine {
     const bills = this.database.listBills();
     const debts = this.database.listDebts();
     const contributionRoom = this.database.listContributionRoom();
+    const contributions = this.database.listContributions();
     const today = new Date().toISOString().slice(0, 10);
     const catSpending = financials.catSpending || {};
 
@@ -88,13 +90,13 @@ class ProactiveEngine {
 
     // 3. Opportunity: unused contribution room
     if (!this._recentlyShown('opportunity_investing', profile, 7)) {
-      const totalRoom = contributionRoom.reduce((s, cr) => s + (cr.known_room || 0), 0);
+      const totalRoom = totalAvailableContributionRoom(contributionRoom, contributions);
       if (totalRoom > 5000 && (financials.savingsRate || 0) > 15) {
         const message = 'You have $' + Math.round(totalRoom).toLocaleString('en-CA') + ' in unused registered account room \u2014 consider a contribution';
         nudges.push(this._nudge({
           type: 'opportunity',
           message,
-          why_now: 'Available room and positive cash flow detected',
+          why_now: 'Available room after logged contributions and positive cash flow detected',
           priority: 'medium',
           category: 'investing',
           expires_at: this._endOfMonth(),
