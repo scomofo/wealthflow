@@ -8,11 +8,11 @@
 <h1 align="center">💰 WealthFlow</h1>
 
 <p align="center">
-  <strong>Canadian personal finance desktop app with AI-powered financial advising</strong>
+  <strong>Canadian financial decision engine and personal-finance command center</strong>
 </p>
 
 <p align="center">
-  <em>Budget &bull; Invest &bull; Tax Plan &bull; All local, all yours</em>
+  <em>Understand what matters &bull; Decide what to do &bull; Act with confidence</em>
 </p>
 
 ---
@@ -23,40 +23,40 @@
 <tr>
 <td width="50%">
 
-### 🤖 AI Advisor
-- **Claude-Powered** &mdash; Financial advice tailored to Canadian law
-- **Tax Optimization** &mdash; RRSP, TFSA, RESP, FHSA strategies
-- **Debt Guidance** &mdash; Snowball/avalanche recommendations
-- **Knowledge Base** &mdash; Alberta tax law, CRA rules
+### 🧭 Decide
+- **Next Best Actions** &mdash; Rule-first recommendations ranked by importance
+- **Focus Mode** &mdash; Turn a recommendation into clear execution steps
+- **AI Summary** &mdash; Short narrative explaining what matters and why
+- **Personalization** &mdash; Bounded relevance tuning without hiding urgent actions
 
 </td>
 <td width="50%">
 
-### 💳 Track
-- **Budgets** &mdash; Monthly category breakdowns
-- **Transactions** &mdash; Import CSV, OFX, QIF, XLSX
-- **Bank Presets** &mdash; TD, RBC, BMO, Scotiabank, CIBC
-- **Recurring Detection** &mdash; Auto-identify subscriptions
+### 🤖 Plan with AI
+- **Structured Workflows** &mdash; TFSA vs RRSP, Debt vs Investing, Monthly Planner
+- **Canadian Context** &mdash; Tax, registered-account and debt guidance
+- **Saveable Actions** &mdash; Turn workflow results into a practical plan
+- **Proactive Guidance** &mdash; Dashboard nudges and cooldown-aware desktop notifications
 
 </td>
 </tr>
 <tr>
 <td>
 
-### 📈 Invest
-- **Portfolio Tracker** &mdash; Real-time stock quotes
-- **Registered Accounts** &mdash; TFSA, RRSP, RESP, FHSA
-- **Contribution Room** &mdash; Lifetime tracking
-- **Performance Charts** &mdash; Chart.js visualizations
+### 💳 Track
+- **Budgets** &mdash; Monthly category breakdowns
+- **Transactions** &mdash; Import CSV, OFX, QIF, XLSX
+- **Bank Presets** &mdash; TD, RBC, BMO, Scotiabank, CIBC and more
+- **Recurring Detection** &mdash; Identify subscriptions and repeating payments
 
 </td>
 <td>
 
-### 🧮 Plan
-- **Tax Calculator** &mdash; Federal + Provincial brackets
-- **Retirement Projections** &mdash; CPP, OAS, RRSP drawdown
-- **Savings Goals** &mdash; Visual progress tracking
-- **PDF Reports** &mdash; Comprehensive summaries
+### 📈 Plan & Grow
+- **Portfolio Tracker** &mdash; Stock quotes and holdings
+- **Registered Accounts** &mdash; TFSA, RRSP, RESP, FHSA
+- **Tax + Retirement** &mdash; Federal/provincial calculations, CPP, OAS, RRSP drawdown
+- **Can I Afford This?** &mdash; Deterministic affordability planning
 
 </td>
 </tr>
@@ -64,17 +64,34 @@
 
 ---
 
+## 🚀 Guided Start
+
+WealthFlow includes a five-step onboarding path designed to reach useful recommendations quickly:
+
+1. understand the product and privacy model,
+2. add optional province / income / expense / debt / savings context,
+3. choose budget categories,
+4. start with sample data or a blank profile,
+5. see prioritized next steps immediately.
+
+You can refine the profile later; a rough starting picture is enough to begin.
+
+---
+
 ## 🇨🇦 Canadian-Specific
 
 | Feature | Details |
 |:--------|:--------|
-| 🏦 **Tax Brackets** | 2024/2025 Federal + Alberta provincial |
+| 🏦 **Tax Brackets** | 2026 federal + province/territory tables; some jurisdictions remain explicitly marked approximate pending verification |
 | 📊 **TFSA** | Annual limits + lifetime room |
 | 💼 **RRSP** | Deduction limits + HBP/LLP |
 | 🎓 **RESP** | CESG matching + lifetime caps |
 | 🏠 **FHSA** | First Home Savings Account |
-| 🏧 **Bank Import** | TD, RBC, BMO, Scotiabank, CIBC presets |
+| 👴 **CPP / OAS** | 2026 constants and retirement projections |
+| 🏧 **Bank Import** | Canadian bank presets + CSV/OFX/QIF/XLSX import |
 | 📬 **Tax Season** | T4/T5 guidance + deduction finder |
+
+> Financial and tax calculations are planning tools, not a substitute for individualized professional advice. Source constants that have not yet been verified for 2026 are labelled as such in code.
 
 ---
 
@@ -84,6 +101,15 @@
 npm install
 npm start          # 🖥️ Launch Electron app
 ```
+
+## ✅ Quality Gates
+
+```bash
+npm run lint
+npm test
+```
+
+GitHub Actions runs lint and tests on pull requests and pushes to `master`.
 
 ## 📦 Build Installer
 
@@ -97,35 +123,49 @@ npm run build:win  # 🪟 Windows NSIS installer
 wealthflow/
 ├── src/
 │   ├── main/
-│   │   ├── main.js              Electron main process
-│   │   ├── database.js          SQLite (sql.js WASM)
-│   │   ├── ai-service.js        Claude AI integration
-│   │   ├── ipc-handlers.js      100+ IPC channels
-│   │   ├── stock-service.js     Real-time quotes
-│   │   └── migrations/          8 DB migrations
+│   │   ├── main.js                        Electron main process
+│   │   ├── database.js                    SQLite (sql.js WASM) + persistence
+│   │   ├── ai-service.js                  Claude AI integration
+│   │   ├── ai-workflows.js                Structured AI workflows
+│   │   ├── next-best-actions-engine.js    Deterministic recommendation engine
+│   │   ├── personalization-engine.js      Bounded personalization
+│   │   ├── proactive-engine.js            Dashboard nudges
+│   │   ├── desktop-notification-engine.js Proactive desktop notifications
+│   │   ├── ipc-handlers.js                Main/renderer IPC boundary
+│   │   └── migrations/                    Database migrations
 │   ├── renderer/
 │   │   ├── js/
-│   │   │   ├── app.js           App coordinator
-│   │   │   ├── router.js        15-route SPA
-│   │   │   ├── state.js         State + IPC bridge
-│   │   │   ├── canadian/
-│   │   │   │   ├── constants.js Tax brackets, limits
-│   │   │   │   ├── calculators.js Tax, retirement, debt
-│   │   │   │   └── formatters.js CAD formatting
-│   │   │   └── pages/           15 feature pages
+│   │   │   ├── app.js                     App coordinator
+│   │   │   ├── router.js                  SPA routing
+│   │   │   ├── state/                     State + command-center refresh
+│   │   │   ├── canadian/                  Tax/account constants + calculators
+│   │   │   ├── components/                Reusable decision/UI surfaces
+│   │   │   └── pages/                     Feature pages
 │   │   └── styles/
 │   │       ├── main.css
-│   │       └── theme.css        Dark/light tokens
-│   └── knowledge/
-│       ├── alberta_tax_law.txt  AI context
-│       └── debt_advice.txt      AI guidance
+│   │       └── theme.css                  Dark/light tokens
+│   └── knowledge/                         AI financial context
+├── tests/                                  Jest regression suite
+├── docs/
+│   ├── handoffs/                           Historical implementation handoffs
+│   └── reviews/                            Current/recent inspections
 └── assets/
-    └── icons/                   App icons
+    └── icons/
 ```
 
-## 🔒 Privacy
+## 🔒 Privacy & Security
 
-All data stored locally at `%APPDATA%/wealthflow/wealthflow.db`. Nothing sent to the cloud except AI chat messages (which go to Anthropic's API). No telemetry, no tracking.
+- Financial data is stored locally at `%APPDATA%/wealthflow/wealthflow.db`.
+- No telemetry or tracking is built into WealthFlow.
+- AI requests go to Anthropic only when AI functionality is used.
+- The plaintext AI API key is kept in the Electron main process and is not included in JSON exports.
+- Database persistence uses crash-safe replacement/backup behavior and the app enforces a single running instance to protect the sql.js database.
+
+---
+
+## 📚 Project Direction
+
+`CLAUDE.md` is the current product/engineering source of truth. Historical files in `docs/handoffs/` are retained for context but are not authoritative for current behavior.
 
 ---
 
