@@ -41,6 +41,14 @@ class AiWorkflowService {
       return buildWorkflowFallback(workflowType, err.message);
     }
 
+    // A max_tokens stop means the model may have returned syntactically valid
+    // but incomplete JSON. Do not turn a truncated financial recommendation
+    // into a usable decision card.
+    if (response.stop_reason === 'max_tokens') {
+      logger.warn('Workflow response truncated at token limit', { workflowType });
+      return buildWorkflowFallback(workflowType, 'AI response was truncated before the analysis completed');
+    }
+
     const raw = response.content[0]?.text || '';
     const parsed = this._parseJSON(raw);
 
@@ -50,7 +58,8 @@ class AiWorkflowService {
     }
 
     if (!validateWorkflowResult(workflowType, parsed)) {
-      logger.warn('Workflow result failed validation, normalizing', { workflowType });
+      logger.warn('Workflow result failed strict validation', { workflowType });
+      return buildWorkflowFallback(workflowType, 'AI response did not match the required financial workflow schema');
     }
 
     return normalizeWorkflowResult(workflowType, parsed);
