@@ -257,7 +257,7 @@ class WealthFlowDatabase {
         onboarded: false,
         level: 1,
         xp: 0,
-        province: 'ON',
+        province: 'AB',
         profile_completed: false,
         last_wizard_step: 0,
         ai_api_key: '',
@@ -812,7 +812,7 @@ class WealthFlowDatabase {
         this.db.run(`INSERT INTO ${table} (id) VALUES (1)`);
       }
       this.db.run('DELETE FROM settings');
-      this.db.run('INSERT INTO settings (id, ai_model) VALUES (1, ?)', [DEFAULT_AI_MODEL]);
+      this.db.run('INSERT INTO settings (id, ai_model, province) VALUES (1, ?, ?)', [DEFAULT_AI_MODEL, 'AB']);
       this.db.run('COMMIT');
     } catch (err) {
       this.db.run('ROLLBACK');

@@ -41,4 +41,18 @@ describe('product doctrine guardrails', () => {
     expect(source).toContain('Proactive Guidance');
     expect(source).toContain('Avoid:\n- XP,\n- levels,\n- collectible badges');
   });
+
+  test('jurisdiction doctrine is Canada-only and Alberta-first', () => {
+    const source = readRepoFile('CLAUDE.md');
+    const migration = readRepoFile('src', 'main', 'migrations', '001-initial-schema.js');
+    const workflows = readRepoFile('src', 'main', 'ai-workflow-prompts.js');
+    const taxCalculator = readRepoFile('src', 'renderer', 'js', 'pages', 'tax-calculator.js');
+
+    expect(source).toContain('Canada-only and Alberta-first');
+    expect(source).toContain('Do not add U.S. account/tax-law support');
+    expect(migration).toContain("province TEXT DEFAULT 'AB'");
+    expect(workflows).toContain("advisorProfile?.personal?.province || 'AB'");
+    expect(taxCalculator).toContain("province: 'AB'");
+  });
+
 });

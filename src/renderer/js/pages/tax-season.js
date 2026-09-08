@@ -5,7 +5,7 @@ import { calculateFederalTax, calculateProvincialTax } from '../canadian/formatt
 
 export function renderTaxSeason(state) {
   const txs = state.transactions || [];
-  const province = state.settings?.province || 'ON';
+  const province = state.settings?.province || 'AB';
   const year = new Date().getFullYear();
 
   // Aggregate income by type

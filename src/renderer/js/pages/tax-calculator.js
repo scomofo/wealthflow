@@ -7,7 +7,7 @@ let taxInputs = {
   employment: 0,
   other: 0,
   rrspDeduction: 0,
-  province: 'ON',
+  province: 'AB',
   eligibleDividends: 0,
   nonEligibleDividends: 0,
   pensionSplitting: false,
@@ -26,8 +26,8 @@ export function updateTaxInput(field, value) {
 }
 
 export function initTaxInputs(province) {
-  if (!taxInputs.province || taxInputs.province === 'ON') {
-    taxInputs.province = province || 'ON';
+  if (!taxInputs.province || taxInputs.province === 'AB') {
+    taxInputs.province = province || 'AB';
   }
 }
 

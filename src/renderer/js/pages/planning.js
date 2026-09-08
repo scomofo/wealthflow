@@ -623,7 +623,7 @@ function renderOASEstimate() {
 
 function renderRRSPvsTFSA(state) {
   const { rrsp_current_income, rrsp_retirement_income, rrsp_room, tfsa_room } = planInputs;
-  const province = state.settings?.province || 'ON';
+  const province = state.settings?.province || 'AB';
   const result = optimizeRRSPvsTFSA(rrsp_current_income, rrsp_retirement_income, province, rrsp_room, tfsa_room);
 
   const recColor = result.recommendation === 'rrsp' ? '#6366f1' : result.recommendation === 'tfsa' ? 'var(--green)' : 'var(--accent)';

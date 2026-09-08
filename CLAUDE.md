@@ -215,16 +215,22 @@ Everything should answer:
 
 # Canadian Financial Coverage
 
-WealthFlow is Canada-first.
+WealthFlow is **Canada-only and Alberta-first**. The authoritative product scope is:
+- Canadian federal personal-finance and tax rules, and
+- Alberta personal-finance and provincial tax rules.
 
-Current code includes:
-- 2026 federal tax brackets and BPA handling,
-- province/territory tax tables,
-- TFSA, RRSP, RESP, FHSA logic,
+Assume Alberta when no province is explicitly supplied. Alberta + federal calculations must be kept current and verified before work is spent expanding other jurisdictions.
+
+Current code also contains province/territory tables for portability and historical product breadth. Treat those as secondary convenience coverage, not a roadmap commitment. Do not add U.S. account/tax-law support (401(k), IRA, U.S. filing rules, etc.) unless the product scope is explicitly changed.
+
+First-class Canadian coverage includes:
+- 2026 federal + Alberta tax brackets and BPA handling,
+- TFSA, RRSP, RESP and FHSA rules,
 - CPP and OAS constants,
-- Canadian bank import presets.
+- Canadian bank import presets,
+- Alberta-specific guidance where provincial law or programs matter.
 
-Some province/territory constants are explicitly marked unverified/approximate in source. Do not present those figures as confirmed until they are verified. Quebec requires special care because its tax/pension system is not equivalent to the other provincial calculations.
+For high-stakes tax/legal guidance, prefer CRA and Alberta government primary sources. Other provincial calculations may remain available, but they must not displace Alberta correctness work.
 
 ---
 
@@ -249,14 +255,16 @@ Work in this order unless a production-critical defect supersedes it:
    - establish keyboard/focus/ARIA expectations and tests.
 
 4. **Canadian accuracy + privacy perimeter**
-   - verify remaining 2026 jurisdiction data,
+   - keep 2026 federal + Alberta law/constants verified against primary sources,
    - remove or isolate debug/personal-data scripts,
    - evaluate whole-database encryption / local lock options.
 
 5. **External integrations only after the above**
-   - open-banking feasibility,
+   - Canadian open-banking feasibility,
    - CardVault/net-worth integration,
    - mobile/web research.
+
+Jurisdiction expansion outside Canada is out of scope.
 
 ---
 

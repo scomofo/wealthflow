@@ -15,7 +15,7 @@ module.exports = {
         onboarded INTEGER NOT NULL DEFAULT 0,
         level INTEGER NOT NULL DEFAULT 1,
         xp INTEGER NOT NULL DEFAULT 0,
-        province TEXT DEFAULT 'ON',
+        province TEXT DEFAULT 'AB',
         created_at TEXT DEFAULT (datetime('now')),
         updated_at TEXT DEFAULT (datetime('now'))
       );

@@ -180,7 +180,7 @@ describe('2026 Canadian constants', () => {
     expect(PROVINCIAL_TAX_BRACKETS_2026.NT[0].max).toBe(53003);
     expect(PROVINCIAL_TAX_BRACKETS_2026.NU[0].max).toBe(55801);
     expect(PROVINCIAL_TAX_BRACKETS_2026.NS[0].max).toBe(30995);
-    expect(PROVINCIAL_TAX_BRACKETS_2026.MB[0].max).toBe(47000);
+    expect(PROVINCIAL_TAX_BRACKETS_2026.MB[0].max).toBe(47564);
   });
 
   test('uses current 2026 basic personal amounts and OAS quarter', () => {

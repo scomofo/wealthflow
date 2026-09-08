@@ -27,7 +27,7 @@ function getContributionRoom(contributionRoom, contributions = []) {
 function buildTfsaRrspPrompt(financialData) {
   const { financials = {}, debts = [], goals = [], contributionRoom = [], contributions = [], advisorProfile = {}, settings = {} } = financialData;
 
-  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'Unknown', 50);
+  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'AB', 50);
   const annualIncome = advisorProfile?.employment?.annual_gross_income || financials.income * 12 || 0;
   const monthlyExpenses = financials.expenses || 0;
   const savingsRate = financials.savingsRate || 0;
@@ -96,7 +96,7 @@ Return exactly this JSON structure:
 function buildDebtVsInvestingPrompt(financialData) {
   const { financials = {}, debts = [], investments = [], goals = [], contributionRoom = [], contributions = [], advisorProfile = {}, settings = {} } = financialData;
 
-  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'Unknown', 50);
+  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'AB', 50);
   const annualIncome = advisorProfile?.employment?.annual_gross_income || financials.income * 12 || 0;
   const monthlyIncome = financials.income || 0;
   const monthlyExpenses = financials.expenses || 0;
@@ -169,7 +169,7 @@ Return exactly this JSON structure:
 function buildMonthlyPlannerPrompt(financialData) {
   const { financials = {}, budgets = [], debts = [], goals = [], contributionRoom = [], contributions = [], advisorProfile = {}, settings = {} } = financialData;
 
-  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'Unknown', 50);
+  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'AB', 50);
   const monthlyIncome = financials.income || 0;
   const monthlyExpenses = financials.expenses || 0;
   const savingsRate = financials.savingsRate || 0;

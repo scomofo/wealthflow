@@ -8,7 +8,7 @@
 <h1 align="center">💰 WealthFlow</h1>
 
 <p align="center">
-  <strong>Canadian financial decision engine and personal-finance command center</strong>
+  <strong>Alberta-first Canadian financial decision engine and personal-finance command center</strong>
 </p>
 
 <p align="center">
@@ -78,11 +78,11 @@ You can refine the profile later; a rough starting picture is enough to begin.
 
 ---
 
-## 🇨🇦 Canadian-Specific
+## 🇨🇦 Canada-first, Alberta-primary
 
 | Feature | Details |
 |:--------|:--------|
-| 🏦 **Tax Brackets** | 2026 federal + all province/territory brackets; CRA-administered tables verified against current 2026 sources and Quebec against Revenu Quebec |
+| 🏦 **Tax Brackets** | 2026 federal + Alberta are first-class/authoritative; other province/territory tables remain available as secondary convenience coverage |
 | 📊 **TFSA** | Annual limits + lifetime room |
 | 💼 **RRSP** | Deduction limits + HBP/LLP |
 | 🎓 **RESP** | CESG matching + lifetime caps |
@@ -91,7 +91,7 @@ You can refine the profile later; a rough starting picture is enough to begin.
 | 🏧 **Bank Import** | Canadian bank presets + CSV/OFX/QIF/XLSX import |
 | 📬 **Tax Season** | T4/T5 guidance + deduction finder |
 
-> Financial and tax calculations are planning estimates, not a substitute for individualized professional advice. The calculator uses current 2026 bracket/BPA data but does not model every surtax, premium, credit, AMT rule, or Quebec-specific contribution.
+> WealthFlow is optimized for Canadian federal + Alberta personal finance. Financial and tax calculations are planning estimates, not a substitute for individualized professional advice. Other provinces may remain selectable, but Alberta correctness takes priority over jurisdiction expansion.
 
 ---
 

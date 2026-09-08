@@ -172,9 +172,9 @@ export const PROVINCIAL_TAX_BRACKETS_2026 = {
     { min: 155805, max: Infinity, rate: 0.145 },
   ],
   MB: [
-    { min: 0, max: 47000, rate: 0.108 },
-    { min: 47000, max: 100000, rate: 0.1275 },
-    { min: 100000, max: Infinity, rate: 0.174 },
+    { min: 0, max: 47564, rate: 0.108 },
+    { min: 47564, max: 101200, rate: 0.1275 },
+    { min: 101200, max: Infinity, rate: 0.174 },
   ],
   NS: [
     { min: 0, max: 30995, rate: 0.0879 },
