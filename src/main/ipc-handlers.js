@@ -160,6 +160,11 @@ function registerIpcHandlers(database, aiService) {
 
   // Export/Import
   safeHandle('db:export-all', () => database.exportAllData());
+  safeHandle('db:reset-all', () => {
+    const result = database.resetAllData();
+    aiService.clearHistory();
+    return result;
+  });
 
   // Import History
   safeHandle('db:import-history:list', () => database.listImportHistory());

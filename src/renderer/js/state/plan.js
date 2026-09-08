@@ -56,6 +56,11 @@ export async function deleteRecommendedAction(id) {
 
 // Export/Import
 export async function exportAllData() { return api.exportAllData(); }
+export async function resetAllData() {
+  await api.resetAllData();
+  const { loadAll } = await import('./core.js');
+  return loadAll();
+}
 
 // Seed
 export async function seedSampleData(data) {
