@@ -226,6 +226,7 @@ class WealthFlowDatabase {
       require('./migrations/011-personalization'),
       require('./migrations/012-onboarding-settings'),
       require('./migrations/013-guided-onboarding-profile'),
+      require('./migrations/014-current-ai-models'),
     ];
 
     for (const migration of migrations) {

@@ -3,15 +3,19 @@
  * Each function returns a prompt string instructing Claude to return valid JSON only.
  */
 
+const { reconcileContributionRoom } = require('./contribution-room');
+const { safePromptText, UNTRUSTED_DATA_RULE } = require('./ai-prompt-safety');
+
 /**
  * Extract TFSA and RRSP contribution room from the contributionRoom array.
  */
-function getContributionRoom(contributionRoom) {
-  const tfsa = (contributionRoom || []).find(r => r.account_type === 'tfsa');
-  const rrsp = (contributionRoom || []).find(r => r.account_type === 'rrsp');
+function getContributionRoom(contributionRoom, contributions = []) {
+  const reconciled = reconcileContributionRoom(contributionRoom, contributions);
+  const tfsa = reconciled.find(r => String(r.account_type || '').toLowerCase() === 'tfsa');
+  const rrsp = reconciled.find(r => String(r.account_type || '').toLowerCase() === 'rrsp');
   return {
-    tfsa: tfsa ? (tfsa.known_room || 0) : 0,
-    rrsp: rrsp ? (rrsp.known_room || 0) : 0,
+    tfsa: tfsa ? (tfsa.available_room ?? 0) : 0,
+    rrsp: rrsp ? (rrsp.available_room ?? 0) : 0,
   };
 }
 
@@ -21,27 +25,29 @@ function getContributionRoom(contributionRoom) {
  * @returns {string}
  */
 function buildTfsaRrspPrompt(financialData) {
-  const { financials = {}, debts = [], goals = [], contributionRoom = [], advisorProfile = {}, settings = {} } = financialData;
+  const { financials = {}, debts = [], goals = [], contributionRoom = [], contributions = [], advisorProfile = {}, settings = {} } = financialData;
 
-  const province = settings.province || advisorProfile?.personal?.province || 'Unknown';
+  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'Unknown', 50);
   const annualIncome = advisorProfile?.employment?.annual_gross_income || financials.income * 12 || 0;
   const monthlyExpenses = financials.expenses || 0;
   const savingsRate = financials.savingsRate || 0;
-  const room = getContributionRoom(contributionRoom);
+  const room = getContributionRoom(contributionRoom, contributions);
 
   const debtSummary = debts.length
-    ? debts.map(d => `  - ${d.name}: balance $${(d.balance || 0).toLocaleString('en-CA')}, APR ${d.rate || d.apr || 0}%, min payment $${(d.min_payment || 0).toLocaleString('en-CA')}/mo`).join('\n')
+    ? debts.map(d => `  - ${safePromptText(d.name, 300)}: balance $${(d.balance || 0).toLocaleString('en-CA')}, APR ${d.rate || d.apr || 0}%, min payment $${(d.min_payment || 0).toLocaleString('en-CA')}/mo`).join('\n')
     : '  None';
 
   const goalSummary = goals.length
-    ? goals.map(g => `  - ${g.name}: target $${(g.target || 0).toLocaleString('en-CA')}, saved $${(g.current || 0).toLocaleString('en-CA')}`).join('\n')
+    ? goals.map(g => `  - ${safePromptText(g.name, 300)}: target $${(g.target || 0).toLocaleString('en-CA')}, saved $${(g.current || 0).toLocaleString('en-CA')}`).join('\n')
     : '  None';
 
   return `You are a Canadian financial advisor specializing in registered accounts and tax optimization.
 
 Your task is to analyze the user's financial situation and recommend whether their next contribution should go to their TFSA, RRSP, or a split between both.
 
-USER FINANCIAL DATA:
+${UNTRUSTED_DATA_RULE}
+
+<user_financial_data>
 - Province: ${province}
 - Annual gross income: $${annualIncome.toLocaleString('en-CA')}
 - Monthly expenses: $${monthlyExpenses.toLocaleString('en-CA')}
@@ -54,6 +60,7 @@ ${debtSummary}
 
 Financial goals:
 ${goalSummary}
+</user_financial_data>
 
 INSTRUCTIONS:
 - Do not fabricate missing financial details.
@@ -87,30 +94,32 @@ Return exactly this JSON structure:
  * @returns {string}
  */
 function buildDebtVsInvestingPrompt(financialData) {
-  const { financials = {}, debts = [], investments = [], goals = [], contributionRoom = [], advisorProfile = {}, settings = {} } = financialData;
+  const { financials = {}, debts = [], investments = [], goals = [], contributionRoom = [], contributions = [], advisorProfile = {}, settings = {} } = financialData;
 
-  const province = settings.province || advisorProfile?.personal?.province || 'Unknown';
+  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'Unknown', 50);
   const annualIncome = advisorProfile?.employment?.annual_gross_income || financials.income * 12 || 0;
   const monthlyIncome = financials.income || 0;
   const monthlyExpenses = financials.expenses || 0;
   const savingsRate = financials.savingsRate || 0;
-  const room = getContributionRoom(contributionRoom);
+  const room = getContributionRoom(contributionRoom, contributions);
 
   const debtSummary = debts.length
-    ? debts.map(d => `  - ${d.name}: balance $${(d.balance || 0).toLocaleString('en-CA')}, APR ${d.rate || d.apr || 0}%, min payment $${(d.min_payment || 0).toLocaleString('en-CA')}/mo`).join('\n')
+    ? debts.map(d => `  - ${safePromptText(d.name, 300)}: balance $${(d.balance || 0).toLocaleString('en-CA')}, APR ${d.rate || d.apr || 0}%, min payment $${(d.min_payment || 0).toLocaleString('en-CA')}/mo`).join('\n')
     : '  None';
 
   const investmentSummary = investments.length
-    ? investments.map(i => `  - ${i.symbol || i.name || 'Unknown'}: ${i.shares || 0} shares @ $${(i.current_price || 0).toLocaleString('en-CA')}`).join('\n')
+    ? investments.map(i => `  - ${safePromptText(i.symbol || i.name || 'Unknown', 100)}: ${i.shares || 0} shares @ $${(i.current_price || 0).toLocaleString('en-CA')}`).join('\n')
     : '  None';
 
   const goalSummary = goals.length
-    ? goals.map(g => `  - ${g.name}: target $${(g.target || 0).toLocaleString('en-CA')}, saved $${(g.current || 0).toLocaleString('en-CA')}`).join('\n')
+    ? goals.map(g => `  - ${safePromptText(g.name, 300)}: target $${(g.target || 0).toLocaleString('en-CA')}, saved $${(g.current || 0).toLocaleString('en-CA')}`).join('\n')
     : '  None';
 
   return `You are a Canadian financial advisor helping a client decide between accelerating debt paydown versus investing.
 
-USER FINANCIAL DATA:
+${UNTRUSTED_DATA_RULE}
+
+<user_financial_data>
 - Province: ${province}
 - Annual gross income: $${annualIncome.toLocaleString('en-CA')}
 - Monthly income: $${monthlyIncome.toLocaleString('en-CA')}
@@ -127,6 +136,7 @@ ${investmentSummary}
 
 Financial goals:
 ${goalSummary}
+</user_financial_data>
 
 INSTRUCTIONS:
 - Do not fabricate missing financial details.
@@ -157,13 +167,13 @@ Return exactly this JSON structure:
  * @returns {string}
  */
 function buildMonthlyPlannerPrompt(financialData) {
-  const { financials = {}, budgets = [], debts = [], goals = [], contributionRoom = [], advisorProfile = {}, settings = {} } = financialData;
+  const { financials = {}, budgets = [], debts = [], goals = [], contributionRoom = [], contributions = [], advisorProfile = {}, settings = {} } = financialData;
 
-  const province = settings.province || advisorProfile?.personal?.province || 'Unknown';
+  const province = safePromptText(settings.province || advisorProfile?.personal?.province || 'Unknown', 50);
   const monthlyIncome = financials.income || 0;
   const monthlyExpenses = financials.expenses || 0;
   const savingsRate = financials.savingsRate || 0;
-  const room = getContributionRoom(contributionRoom);
+  const room = getContributionRoom(contributionRoom, contributions);
 
   // Build budget status with spending percentages
   const catSpending = financials.catSpending || {};
@@ -171,23 +181,25 @@ function buildMonthlyPlannerPrompt(financialData) {
     ? budgets.map(b => {
         const spent = catSpending[b.category] || 0;
         const pct = b.amount > 0 ? Math.round((spent / b.amount) * 100) : 0;
-        return `  - ${b.category}: budgeted $${(b.amount || 0).toLocaleString('en-CA')}, spent $${spent.toLocaleString('en-CA')} (${pct}%)`;
+        return `  - ${safePromptText(b.category, 200)}: budgeted $${(b.amount || 0).toLocaleString('en-CA')}, spent $${spent.toLocaleString('en-CA')} (${pct}%)`;
       }).join('\n')
     : '  No budget data available';
 
   const debtSummary = debts.length
-    ? debts.map(d => `  - ${d.name}: balance $${(d.balance || 0).toLocaleString('en-CA')}, APR ${d.rate || d.apr || 0}%`).join('\n')
+    ? debts.map(d => `  - ${safePromptText(d.name, 300)}: balance $${(d.balance || 0).toLocaleString('en-CA')}, APR ${d.rate || d.apr || 0}%`).join('\n')
     : '  None';
 
   const goalSummary = goals.length
-    ? goals.map(g => `  - ${g.name}: target $${(g.target || 0).toLocaleString('en-CA')}, saved $${(g.current || 0).toLocaleString('en-CA')}`).join('\n')
+    ? goals.map(g => `  - ${safePromptText(g.name, 300)}: target $${(g.target || 0).toLocaleString('en-CA')}, saved $${(g.current || 0).toLocaleString('en-CA')}`).join('\n')
     : '  None';
 
   return `You are a Canadian financial advisor creating a personalized monthly financial action plan.
 
 Your task is to identify the top 3–5 highest-impact financial actions this person should take this month.
 
-USER FINANCIAL DATA:
+${UNTRUSTED_DATA_RULE}
+
+<user_financial_data>
 - Province: ${province}
 - Monthly income: $${monthlyIncome.toLocaleString('en-CA')}
 - Monthly expenses: $${monthlyExpenses.toLocaleString('en-CA')}
@@ -203,6 +215,7 @@ ${debtSummary}
 
 Financial goals:
 ${goalSummary}
+</user_financial_data>
 
 INSTRUCTIONS:
 - Do not fabricate missing financial details.

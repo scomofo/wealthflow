@@ -4,9 +4,9 @@ import { h } from '../helpers.js';
 import { PROVINCES } from '../canadian/constants.js';
 
 const AI_MODELS = [
-  { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5 (Recommended)', desc: 'Fast, smart, cost-effective' },
-  { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', desc: 'Fastest, cheapest' },
-  { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', desc: 'Most capable, highest cost' },
+  { id: 'claude-sonnet-5', name: 'Claude Sonnet 5 (Recommended)', desc: 'Smart, balanced default' },
+  { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', desc: 'Fastest, lowest cost' },
+  { id: 'claude-opus-5', name: 'Claude Opus 5', desc: 'Most capable, higher cost' },
 ];
 
 export function renderSettings(state) {

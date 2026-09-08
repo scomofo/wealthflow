@@ -88,6 +88,7 @@ export async function buildFinancialData() {
     investments: state.investments,
     goals: state.goals,
     contributionRoom: state.contributionRoom,
+    contributions: state.contributions,
     advisorProfile: state.advisorProfile,
     settings: state.settings,
   };
