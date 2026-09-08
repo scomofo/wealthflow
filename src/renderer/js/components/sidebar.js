@@ -15,7 +15,7 @@ export function renderSidebar(sideOpen) {
     expandedGroup = getGroupForSection(section);
   }
 
-  var html = '<aside class="side ' + (sideOpen ? '' : 'collapsed') + '">';
+  var html = '<aside class="side ' + (sideOpen ? '' : 'collapsed') + '" aria-label="Primary navigation">';
 
   html += '<div class="side-head">';
   html += '<div class="side-logo">W</div>';
@@ -24,7 +24,7 @@ export function renderSidebar(sideOpen) {
   }
   html += '</div>';
 
-  html += '<nav role="navigation">';
+  html += '<nav role="navigation" aria-label="Main sections">';
 
   if (!sideOpen) {
     // Collapsed: show only group icons
@@ -47,13 +47,14 @@ export function renderSidebar(sideOpen) {
       html += '<div class="nav-group ' + (isExpanded ? 'expanded' : '') + '">';
 
       html += '<button class="nav-group-header ' + (isGrpActive ? 'active' : '') + '"'
-        + ' data-action="toggle-group" data-group="' + grp.id + '">'
+        + ' data-action="toggle-group" data-group="' + grp.id + '"'
+        + ' aria-expanded="' + (isExpanded ? 'true' : 'false') + '" aria-controls="nav-group-' + grp.id + '">'
         + icon(grp.icon, 14)
         + ' <span>' + grp.label + '</span>'
         + ' <span class="nav-group-chevron">' + icon('chevron-down', 12) + '</span>'
         + '</button>';
 
-      html += '<div class="nav-group-items">';
+      html += '<div class="nav-group-items" id="nav-group-' + grp.id + '">';
       for (var k = 0; k < grp.items.length; k++) {
         var item = grp.items[k];
         var id = item[0];
@@ -85,7 +86,7 @@ export function renderSidebar(sideOpen) {
     + icon('settings', 16)
     + (sideOpen ? ' <span>Settings</span>' : '')
     + '</button>';
-  html += '<button class="side-toggle" data-action="toggle-side" aria-label="Toggle sidebar">'
+  html += '<button class="side-toggle" data-action="toggle-side" aria-label="' + (sideOpen ? 'Collapse sidebar' : 'Expand sidebar') + '">'
     + icon('menu', 16)
     + '</button>';
   html += '</div>';
