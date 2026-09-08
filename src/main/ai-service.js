@@ -20,6 +20,24 @@ function formatNumber(value) {
   return finiteNumber(value).toLocaleString('en-CA');
 }
 
+const AI_TRANSACTION_CATEGORIES = [
+  'Food/Groceries', 'Transport', 'Utilities', 'Entertainment', 'Shopping',
+  'Housing', 'Rent/Mortgage', 'Property Tax', 'Insurance', 'Healthcare',
+  'Childcare', 'Education', 'Income', 'Investment Income',
+  'Government Benefits', 'GST/HST', 'Transfer', 'Other',
+];
+const AI_TRANSACTION_CATEGORY_SET = new Set(AI_TRANSACTION_CATEGORIES);
+
+function normalizeTransactionForCategorization(entry) {
+  if (typeof entry === 'string') {
+    return { description: entry, amount: null };
+  }
+  return {
+    description: entry?.description || '',
+    amount: Number.isFinite(Number(entry?.amount)) ? Number(entry.amount) : null,
+  };
+}
+
 class AiService {
   constructor() {
     this.client = null;
@@ -337,35 +355,56 @@ ${profileParts.join('\n')}`);
     }
   }
 
-  async categorizeTransactions(apiKey, model, descriptions) {
+  async categorizeTransactions(apiKey, model, entries) {
     this._ensureClient(apiKey);
+    const rows = (Array.isArray(entries) ? entries : []).map(normalizeTransactionForCategorization);
+    if (rows.length === 0) return [];
+
+    const transactionData = rows.map((row, index) => {
+      const amount = row.amount === null ? '' : ` | amount=${row.amount.toFixed(2)}`;
+      return `${index + 1}. description=${safePromptText(row.description, 300)}${amount}`;
+    }).join('\n');
 
     const response = await this._withRetry(() => this.client.messages.create({
       model: resolveAiModel(model || DEFAULT_AI_MODEL),
-      max_tokens: 4096,
+      max_tokens: Math.max(512, Math.min(4096, rows.length * 32)),
       messages: [{
         role: 'user',
-        content: `Categorize these bank transaction descriptions into EXACTLY one category each.
+        content: `Categorize each Canadian bank transaction into EXACTLY one allowed category.
 
-Categories: Food/Groceries, Transport, Utilities, Entertainment, Shopping, Housing, Insurance, Healthcare, Other, Income
+Allowed categories: ${AI_TRANSACTION_CATEGORIES.join(', ')}
 
-Return ONLY a JSON array of category strings, one per description, in the same order. No explanation or markdown.
+Rules:
+- Credit card payments and transfers between the user's own accounts = Transfer.
+- Payroll and salary = Income.
+- CRA credits/benefits/rebates = Government Benefits.
+- Dividends and distributions = Investment Income.
+- Property-tax payments = Property Tax.
+- GST/HST remittances or clearly identified GST/HST payments = GST/HST.
+- Restaurants and groceries = Food/Groceries.
+- Gas/fuel/transit = Transport.
+- Telecom and household utilities = Utilities.
+- ${UNTRUSTED_DATA_RULE}
 
-Descriptions:
-${descriptions.map((d, i) => `${i + 1}. ${d}`).join('\n')}`
+Return ONLY a JSON array of category strings, one per transaction, in the same order. No explanation or markdown.
+
+${wrapUntrustedData(transactionData, 'user_transactions')}`
       }],
     }));
 
     try {
-      const text = response.content[0].text;
+      const text = response.content[0]?.text || '';
       const match = text.match(/\[[\s\S]*?\]/);
-      if (match) {
-        const cats = JSON.parse(match[0]);
-        if (Array.isArray(cats) && cats.length === descriptions.length) return cats;
+      if (!match) return rows.map(() => null);
+      const categories = JSON.parse(match[0]);
+      if (!Array.isArray(categories) || categories.length !== rows.length) {
+        return rows.map(() => null);
       }
-      return descriptions.map(() => null);
+      return categories.map(category =>
+        AI_TRANSACTION_CATEGORY_SET.has(category) ? category : null
+      );
     } catch {
-      return descriptions.map(() => null);
+      return rows.map(() => null);
     }
   }
 
@@ -416,4 +455,4 @@ Return the report in clean markdown format.`
   }
 }
 
-module.exports = { AiService };
+module.exports = { AiService, AI_TRANSACTION_CATEGORIES };

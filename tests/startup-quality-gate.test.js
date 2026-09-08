@@ -50,3 +50,12 @@ describe('baseline accessibility quality gate', () => {
     expect(sidebar).toContain("sideOpen ? 'Collapse sidebar' : 'Expand sidebar'");
   });
 });
+
+
+describe('next-best-action read consistency', () => {
+  test('normal list IPC uses the engine ranking instead of raw database order', () => {
+    const ipc = readRepoFile('src', 'main', 'ipc-handlers.js');
+    expect(ipc).toContain("safeHandle('actions:list-next-best', () => nbaEngine.listOpenActions())");
+    expect(ipc).not.toContain("safeHandle('actions:list-next-best', () => database.listNextBestActions('open'))");
+  });
+});

@@ -1,12 +1,6 @@
 const crypto = require('crypto');
 const { reconcileContributionRoom } = require('./contribution-room');
-
-function scoreToPriority(score) {
-  if (score >= 85) return 'urgent';
-  if (score >= 70) return 'high';
-  if (score >= 50) return 'medium';
-  return 'low';
-}
+const { scoreToPriority } = require('./action-priority');
 
 function makeAction(fields) {
   const score = fields.score || 0;
@@ -80,15 +74,19 @@ class NextBestActionsEngine {
     const activeKeys = filtered.map((a) => a.action_key);
     db.clearStaleNextBestActions(activeKeys);
 
-    // 7. Return sorted open actions with personalization weighting
+    // 7. Return the same ranked view used by normal list/read paths.
+    return this.listOpenActions();
+  }
+
+  listOpenActions() {
+    const openActions = this.database.listNextBestActions('open');
     try {
       const { PersonalizationEngine } = require('./personalization-engine');
       const pe = new PersonalizationEngine(this.database);
       const profile = pe.buildProfile();
-      const openActions = db.listNextBestActions('open');
       return pe.applyActionWeighting(openActions, profile);
     } catch (_) {
-      return db.listNextBestActions('open');
+      return [...openActions].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
     }
   }
 

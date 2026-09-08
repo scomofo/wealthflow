@@ -1,3 +1,5 @@
+const { scoreToPriority } = require('./action-priority');
+
 function applyTimeDecay(count, lastUpdated) {
   if (!lastUpdated || !count) return count || 0;
   const ageDays = (Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60 * 24);
@@ -93,10 +95,18 @@ class PersonalizationEngine {
       // Primary focus boost: +5
       if (profile.primaryFocus === cat) delta += 5;
 
-      // Cap delta to prevent runaway (visibility floor: -5)
+      // Cap delta to prevent runaway (visibility floor: -5). Behavioral
+      // weighting may move low/medium/high priority, but must never manufacture
+      // urgency: urgent is reserved for deterministic rule semantics.
       delta = Math.max(-5, Math.min(10, delta));
+      const weightedScore = Math.min(84, (Number(a.score) || 0) + delta);
 
-      return { ...a, score: a.score + delta, personalizedDelta: delta };
+      return {
+        ...a,
+        score: weightedScore,
+        priority: scoreToPriority(weightedScore),
+        personalizedDelta: delta,
+      };
     }).sort((a, b) => {
       const aUrgent = (a.priority || '').toLowerCase() === 'urgent';
       const bUrgent = (b.priority || '').toLowerCase() === 'urgent';

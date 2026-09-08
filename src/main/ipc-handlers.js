@@ -388,7 +388,7 @@ function registerIpcHandlers(database, aiService) {
   safeHandle('actions:generate-next-best', async () => {
     return nbaEngine.generateActions();
   });
-  safeHandle('actions:list-next-best', () => database.listNextBestActions('open'));
+  safeHandle('actions:list-next-best', () => nbaEngine.listOpenActions());
   safeHandle('actions:complete-next-best', (_, id) => database.completeNextBestAction(id));
   safeHandle('actions:dismiss-next-best', (_, id) => database.dismissNextBestAction(id));
   safeHandle('actions:snooze-next-best', (_, id, untilDate) => database.snoozeNextBestAction(id, untilDate));
@@ -463,7 +463,9 @@ function registerIpcHandlers(database, aiService) {
   // Bills due soon
   safeHandle('db:bills:due-soon', (_, days) => database.getBillsDueSoon(days || 3));
 
-  // AI bulk re-categorize "Other" transactions
+  // AI bulk re-categorize "Other" transactions. Reuse the central AI
+  // service so model resolution, retry behavior, prompt safety, category
+  // validation and output parsing stay identical to normal categorization.
   safeHandle('ai:recategorize-others', async () => {
     const settings = database.getSettings();
     const apiKey = settings.ai_api_key;
@@ -473,39 +475,24 @@ function registerIpcHandlers(database, aiService) {
     const txs = database.getAll("SELECT id, description, amount FROM transactions WHERE category = 'Other' AND deleted_at IS NULL ORDER BY date DESC");
     if (txs.length === 0) return { categorized: 0, total: 0 };
 
-    const Anthropic = require('@anthropic-ai/sdk');
-    const client = new Anthropic({ apiKey });
     const batchSize = 40;
     let totalCategorized = 0;
-
     for (let i = 0; i < txs.length; i += batchSize) {
       const batch = txs.slice(i, i + batchSize);
-      const prompt = batch.map((t, idx) => `${idx + 1}. ${t.description} (${t.amount >= 0 ? '+' : ''}${t.amount.toFixed(2)})`).join('\n');
-
       try {
-        const response = await client.messages.create({
-          model, max_tokens: 2048,
-          messages: [{ role: 'user', content: `Categorize these Canadian bank transaction descriptions. Categories: Food/Groceries, Transport, Utilities, Entertainment, Shopping, Housing, Rent/Mortgage, Insurance, Healthcare, Childcare, Education, Income, Investment Income, Government Benefits, Transfer, Other.\n\nRules:\n- Credit card payments, inter-account transfers = Transfer\n- Payroll, salary = Income\n- CRA, GST credit, carbon rebate = Government Benefits\n- Dividends = Investment Income\n- Subscriptions = Entertainment\n- Gas, fuel = Transport\n- Restaurants, groceries = Food/Groceries\n- Telecom bills = Utilities\n\nReturn ONLY a JSON array of category strings. No explanation.\n\nDescriptions:\n${prompt}` }],
-        });
-        const match = response.content[0].text.match(/\[[\s\S]*?\]/);
-        if (match) {
-          const cats = JSON.parse(match[0]);
-          if (Array.isArray(cats) && cats.length === batch.length) {
-            for (let j = 0; j < batch.length; j++) {
-              if (cats[j] && cats[j] !== 'Other') {
-                database.run('UPDATE transactions SET category = ? WHERE id = ?', [cats[j], batch[j].id]);
-                totalCategorized++;
-              }
-            }
+        const categories = await aiService.categorizeTransactions(apiKey, model, batch);
+        for (let j = 0; j < batch.length; j++) {
+          const category = categories[j];
+          if (category && category !== 'Other') {
+            database.updateTransactionCategory(batch[j].id, category);
+            totalCategorized++;
           }
         }
       } catch (err) {
         logger.error('AI recategorize batch error', { error: err.message });
       }
-      if (i + batchSize < txs.length) await new Promise(r => setTimeout(r, 1000));
     }
 
-    database.save();
     return { categorized: totalCategorized, total: txs.length };
   });
 

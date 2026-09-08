@@ -362,6 +362,14 @@ class WealthFlowDatabase {
     return count;
   }
 
+  updateTransactionCategory(id, category) {
+    this.run(
+      'UPDATE transactions SET category = ? WHERE id = ? AND deleted_at IS NULL',
+      [category, id]
+    );
+    return { id, category };
+  }
+
   countTransactionsByDescription(description) {
     return this.getScalar('SELECT COUNT(*) FROM transactions WHERE description = ?', [description]) || 0;
   }

@@ -17,6 +17,8 @@ function mockDb(existingActions = []) {
     listInvestments: jest.fn(() => []),
     listContributionRoom: jest.fn(() => []),
     listContributions: jest.fn(() => []),
+    getPersonalizationProfile: jest.fn(() => ({})),
+    updatePersonalizationProfile: jest.fn(),
     computeFinancials: jest.fn(() => ({
       income: 5000,
       expenses: 3000,
@@ -317,4 +319,23 @@ describe('NextBestActionsEngine', () => {
       expect(action).toHaveProperty('source_type', 'rule');
     }
   });
+
+  test('listOpenActions returns the same personalization-weighted ranking used after generation', () => {
+    const existing = [
+      { id: 'budget', action_key: 'budget', status: 'open', category: 'budget', priority: 'medium', score: 68 },
+      { id: 'debt', action_key: 'debt', status: 'open', category: 'debt', priority: 'high', score: 72 },
+    ];
+    const db = mockDb(existing);
+    db.getPersonalizationProfile.mockReturnValue({
+      completions: { budget: 5 },
+      last_updated: new Date().toISOString(),
+    });
+
+    const result = new NextBestActionsEngine(db).listOpenActions();
+    expect(result[0].id).toBe('budget');
+    expect(result[0].score).toBeGreaterThan(result[1].score);
+    expect(result[0].priority).toBe('high');
+    expect(result[0].personalizedDelta).toBeGreaterThan(0);
+  });
+
 });
