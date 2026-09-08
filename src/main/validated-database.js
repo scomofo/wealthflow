@@ -130,6 +130,12 @@ function validateCoreFinancialRecord(method, record) {
       if (record.shares !== undefined) assertFiniteNumber(record.shares, 'investment.shares', { min: 0 });
       if (record.avg_cost !== undefined) assertFiniteNumber(record.avg_cost, 'investment.avg_cost', { min: 0 });
       if (record.current_price !== undefined) assertFiniteNumber(record.current_price, 'investment.current_price', { min: 0 });
+      if (record.currency !== undefined && !['CAD', 'USD'].includes(record.currency)) {
+        throw new TypeError('investment.currency must be CAD or USD');
+      }
+      if (record.exchange_rate_to_cad !== undefined) {
+        assertFiniteNumber(record.exchange_rate_to_cad, 'investment.exchange_rate_to_cad', { min: 0.000001, max: 1000 });
+      }
       break;
     case 'addBill':
     case 'updateBill':

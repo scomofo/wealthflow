@@ -26,41 +26,45 @@ export async function deleteInvestment(id) {
 export async function refreshStockPrices() {
   if (state.investments.length === 0) return [];
 
-  // Build query symbols: USD investments keep their symbol as-is,
-  // CAD investments without a dot get .TO appended by the stock service.
-  // For USD symbols, we need to prevent .TO by adding the exchange explicitly.
-  const queryMap = []; // { symbol, querySymbol, inv }
+  // Currency is explicit on the holding. Force TSX lookup for CAD holdings
+  // without an exchange suffix so symbols that also exist in the US cannot
+  // silently resolve to the wrong market.
+  const queryMap = [];
   for (const inv of state.investments) {
     if (!inv.symbol) continue;
-    const sym = inv.symbol;
-    // Skip non-tradeable (mutual funds, GICs, crypto with custom symbols)
+    const sym = inv.symbol.toUpperCase();
     if (sym.includes('-') || inv.type === 'gic' || inv.type === 'mutual_fund') continue;
-    // If already has a dot (e.g., CVO.TO, ZUAG.F), use as-is
-    if (sym.includes('.')) {
-      queryMap.push({ symbol: sym, querySymbol: sym, inv });
-    } else if (inv.currency === 'USD') {
-      // US-listed — don't append .TO
-      queryMap.push({ symbol: sym, querySymbol: sym, inv });
-    } else {
-      // Canadian — let stock service append .TO
-      queryMap.push({ symbol: sym, querySymbol: sym, inv });
-    }
+    const currency = (inv.currency || 'CAD').toUpperCase();
+    const querySymbol = sym.includes('.') || currency === 'USD' ? sym : `${sym}.TO`;
+    queryMap.push({ querySymbol, inv });
   }
 
   if (queryMap.length === 0) return [];
-  const symbols = queryMap.map(q => q.querySymbol);
-  const quotes = await api.fetchBatchQuotes(symbols);
 
-  for (const q of quotes) {
-    if (q.error || !q.price) continue;
-    const match = queryMap.find(m =>
-      m.querySymbol.toUpperCase() === q.symbol?.toUpperCase() ||
-      m.querySymbol.toUpperCase() + '.TO' === q.symbol?.toUpperCase()
-    );
-    if (match) {
-      match.inv.current_price = q.price;
-      await api.updateInvestment(match.inv);
+  let usdCadRate = null;
+  if (queryMap.some(item => (item.inv.currency || 'CAD').toUpperCase() === 'USD') && api.fetchExchangeRate) {
+    const fx = await api.fetchExchangeRate('USD', 'CAD');
+    if (fx && Number.isFinite(Number(fx.rate)) && Number(fx.rate) > 0) {
+      usdCadRate = Number(fx.rate);
     }
+  }
+
+  const quotes = await api.fetchBatchQuotes(queryMap.map(q => q.querySymbol));
+  for (const q of quotes) {
+    if (q.error || !Number.isFinite(Number(q.price)) || Number(q.price) <= 0) continue;
+    const quoteSymbol = String(q.symbol || '').toUpperCase();
+    const match = queryMap.find(m => m.querySymbol.toUpperCase() === quoteSymbol);
+    if (!match) continue;
+
+    match.inv.current_price = Number(q.price);
+    const currency = (q.currency || match.inv.currency || 'CAD').toUpperCase();
+    match.inv.currency = currency === 'USD' ? 'USD' : 'CAD';
+    if (match.inv.currency === 'USD') {
+      match.inv.exchange_rate_to_cad = usdCadRate || match.inv.exchange_rate_to_cad || 1;
+    } else {
+      match.inv.exchange_rate_to_cad = 1;
+    }
+    await api.updateInvestment(match.inv);
   }
   return quotes;
 }

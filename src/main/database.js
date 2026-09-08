@@ -228,6 +228,7 @@ class WealthFlowDatabase {
       require('./migrations/012-onboarding-settings'),
       require('./migrations/013-guided-onboarding-profile'),
       require('./migrations/014-current-ai-models'),
+      require('./migrations/015-investment-fx'),
     ];
 
     for (const migration of migrations) {
@@ -455,15 +456,17 @@ class WealthFlowDatabase {
   listInvestments() { return this.getAll('SELECT * FROM investments WHERE deleted_at IS NULL ORDER BY symbol'); }
   addInvestment(i) {
     this.run(
-      'INSERT INTO investments (id, symbol, name, shares, avg_cost, current_price, type, account_type, institution) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO investments (id, symbol, name, shares, avg_cost, current_price, type, account_type, institution, currency, exchange_rate_to_cad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [i.id, i.symbol, i.name || '', i.shares || 0, i.avg_cost || 0, i.current_price || 0,
-       i.type || 'stock', i.account_type || 'non-registered', i.institution || null]
+       i.type || 'stock', i.account_type || 'non-registered', i.institution || null,
+       i.currency || 'CAD', i.exchange_rate_to_cad || 1]
     );
     return i;
   }
   updateInvestment(i) {
-    this.run('UPDATE investments SET symbol=?, name=?, shares=?, avg_cost=?, current_price=?, type=?, account_type=?, institution=? WHERE id=?',
-      [i.symbol, i.name, i.shares, i.avg_cost, i.current_price, i.type, i.account_type, i.institution, i.id]);
+    this.run('UPDATE investments SET symbol=?, name=?, shares=?, avg_cost=?, current_price=?, type=?, account_type=?, institution=?, currency=?, exchange_rate_to_cad=? WHERE id=?',
+      [i.symbol, i.name, i.shares, i.avg_cost, i.current_price, i.type, i.account_type, i.institution,
+       i.currency || 'CAD', i.exchange_rate_to_cad || 1, i.id]);
     return i;
   }
   deleteInvestment(id) { this.run("UPDATE investments SET deleted_at = datetime('now') WHERE id = ?", [id]); }
@@ -553,7 +556,7 @@ class WealthFlowDatabase {
     const savingsRate = income > 0 ? ((income - expenses) / income * 100) : 0;
     const debtStats = this.getOne('SELECT COALESCE(SUM(balance), 0) as total, COUNT(*) as total_count FROM debts WHERE deleted_at IS NULL');
     const totalDebt = (debtStats?.total_count || 0) > 0 ? debtStats.total : (settings.total_debt || 0);
-    const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments WHERE deleted_at IS NULL') || 0;
+    const totalInv = this.getScalar(`SELECT COALESCE(SUM(shares * current_price * CASE WHEN UPPER(COALESCE(currency, 'CAD')) = 'USD' THEN COALESCE(NULLIF(exchange_rate_to_cad, 0), 1) ELSE 1 END), 0) FROM investments WHERE deleted_at IS NULL`) || 0;
     const goalStats = this.getOne('SELECT COALESCE(SUM(current), 0) as total, COUNT(*) as total_count FROM goals WHERE deleted_at IS NULL');
     const totalSaved = (goalStats?.total_count || 0) > 0 ? goalStats.total : (settings.savings_buffer || 0);
     const catRows = this.getAll(
@@ -709,7 +712,7 @@ class WealthFlowDatabase {
     const today = new Date().toISOString().slice(0, 10);
     const existing = this.getOne('SELECT * FROM net_worth_history WHERE date = ?', [today]);
     if (existing) return existing;
-    const totalInv = this.getScalar('SELECT COALESCE(SUM(shares * current_price), 0) FROM investments') || 0;
+    const totalInv = this.getScalar(`SELECT COALESCE(SUM(shares * current_price * CASE WHEN UPPER(COALESCE(currency, 'CAD')) = 'USD' THEN COALESCE(NULLIF(exchange_rate_to_cad, 0), 1) ELSE 1 END), 0) FROM investments`) || 0;
     const totalSaved = this.getScalar('SELECT COALESCE(SUM(current), 0) FROM goals') || 0;
     const totalDebt = this.getScalar('SELECT COALESCE(SUM(balance), 0) FROM debts') || 0;
     const netWorth = totalInv + totalSaved - totalDebt;
