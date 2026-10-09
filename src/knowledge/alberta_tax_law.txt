@@ -5,8 +5,9 @@ AI Agent Training Document
 Jurisdiction: Alberta, Canada  
 Tax Years Covered: 2025 and 2026  
 CURRENT-YEAR PRECEDENCE (2026): For any current planning question, use the 2026 federal and Alberta values in this reference. 2025 figures are retained only for prior-year returns/comparisons and must not override a 2026 value. If a current-year rule is not explicitly supported here, state that it needs CRA/Alberta verification rather than inferring from a prior year.
-Last Updated: February 2026  
-Compiled from CRA, Alberta.ca, and professional tax sources  
+Scope: Canada-only, Alberta-first. Canadian federal and Alberta rules are authoritative for WealthFlow guidance.
+Last Verified: October 2026
+Current-year figures in the sections marked 2026 are verified against Canada Revenue Agency (CRA) and Alberta.ca primary sources. Historical 2025 figures remain for prior-year context.
   
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
@@ -14,7 +15,7 @@ Page 2 1. FOUNDATIONAL OVERVIEW
 This document provides comprehensive reference material for an AI agent to achieve expert-level proficiency 
 in Alberta personal and family tax law. It covers the dual federal-provincial tax system, all current rates, credits, 
 deductions, family-specific rules, registered savings plans, estate planning, and strategic planning 
-considerations. All information is current as of February 2026. 
+considerations. Current-year figures explicitly marked 2026 were re-verified in October 2026; historical material is retained only for prior-year context.
 1.1 Canada's Dual Tax System 
 Canada operates a dual income tax system. Personal income tax is levied at both the federal level (by the 
 Canada Revenue Agency, or CRA) and the provincial level. Alberta residents pay both federal income tax and 
@@ -97,7 +98,7 @@ $246,813–$258,482  43.29% 21.65% 27.81% 36.89%
 $258,482–$370,220  47.00% 23.50% 32.93% 41.16% 
 Over $370,220  48.00% 24.00% 34.31% 42.31% 
 The maximum combined marginal rate in Alberta is 48% on ordinary income (33% federal + 15% Alberta). 
-Alberta's top combined rate remains the lowest of any Canadian province. 
+Alberta's maximum combined ordinary-income marginal rate is 48% in 2026. Cross-province ranking is not a WealthFlow decision rule.
   
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
@@ -109,20 +110,15 @@ Federal BPA  $16,129 $16,452
 Alberta BPA  $22,323 $22,769 
 The BPA is a non-refundable tax-credit base, not a deduction and not a guarantee that all tax is zero below that amount. The federal enhanced BPA is income-tested. For 2026 it is $16,452 through net income of $181,440, phases down between $181,440 and $258,482, and is $14,829 at or above $258,482; it does not phase to zero. Alberta's $22,769 BPA is not income-tested.
 The Alberta BPA credit is calculated at 8% (the lowest provincial rate). The federal BPA credit is calculated at the 14% lowest federal rate for 2026 using the applicable income-tested BPA amount.
-3.2 Key Alberta Non-Refundable Tax Credits (2025) 
-• Spousal/Common-Law Partner Amount: Up to $22,323 (reduced by spouse's net income) 
-• Eligible Dependant Amount (equivalent-to-spouse): Up to $22,323 
-• Alberta Age Amount (age 65+): Up to $6,221 (reduced when net income exceeds $46,308, eliminated at 
-$87,782) 
-• Pension Income Amount: Up to $1,719 
-• Disability Amount: Mirrors federal DTC certificate requirement 
-• Caregiver Amount for Infirm Dependants Age 18+: Up to $12,922 
-• Medical Expenses: Same eligible expenses as federal; excess over lesser of 3% of net income or threshold 
-• Tuition Tax Credit: 8% of eligible tuition fees 
-• Adoption Expenses: Up to $19,354 per child 
-• Charitable Donations: 8% on first $200, then varying rates above 
-• Political Contributions: Alberta political contribution tax credit 
-• Alberta Supplemental Tax Credit: 2% of non-refundable credits exceeding $60,000 (new for 2025) 
+3.2 Key Alberta Non-Refundable Tax Credits (2026)
+• Basic Personal / Spouse / Eligible Dependant baseline: $22,769 (subject to the applicable dependant's net income)
+• Alberta Age Amount (age 65+): $6,345 when net income is $47,234 or less; partial amount from $47,234 to $89,534
+• Pension Income Amount: Up to $1,753 of qualifying pension income
+• Disability Amount: $17,563 when the federal disability-tax-credit requirements are met
+• Caregiver Amount: $13,180 if the TD1AB caregiver conditions are met and the dependant's net income is $20,956 or less; a partial amount may apply from $20,956 to $34,136
+• Amount for infirm dependants age 18 or older: $13,180 if the TD1AB conditions are met and net income is $8,707 or less; a partial amount may apply from $8,707 to $21,887
+• Alberta tuition and education tax credits were discontinued beginning with the 2020 tax year. Students cannot create a new Alberta tuition credit for current-year tuition; unused Alberta tuition and education amounts from before 2020 may continue to be carried forward and claimed subject to CRA rules.
+• Charitable donations and other provincial credits remain subject to their specific AB428 rules; verify current-year amounts before making a filing decision.
 3.3 Spousal and Equivalent-to-Spouse Credits 
 The spousal amount allows an individual to claim a credit for supporting a spouse or common-law partner with 
 low or no income. The maximum claim is the BPA minus the dependent spouse's net income. A common-law 
@@ -141,15 +137,11 @@ Alberta residents use the federal CWB calculation (no separate Alberta working i
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
 Page 6 4. CAPITAL GAINS TAXATION 
-4.1 Inclusion Rate — Current Status (as of February 2026) 
-The capital gains inclusion rate remains at 50% for all taxpayers. The proposed increase to 66.67% (two-thirds) 
-— originally announced in the 2024 Federal Budget for June 25, 2024, then deferred to January 1, 2026 — 
-was formally cancelled by Prime Minister Carney on March 21, 2025, prior to the 2025 federal election. 
-Current rule: 50% of net capital gains are included in taxable income for individuals, corporations, and trusts. 
-Principal Residence Exemption: Fully maintained. Capital gains on a principal residence are entirely tax-free. 
-Lifetime Capital Gains Exemption (LCGE): $1,250,000 for qualified small business corporation shares and 
-qualified farming/fishing property (increased from $1,016,836 effective June 25, 2024). Indexed for inflation 
-starting 2026. 
+4.1 Inclusion Rate — Current Status (2026)
+The general capital gains inclusion rate remains 50% under current enacted law. The Government of Canada announced on March 21, 2025 that it would not proceed with the proposed increase, and the CRA reverted to administering the one-half inclusion rate.
+Current rule: generally, 50% of net capital gains are included in taxable income unless a specific rule or exemption applies. Verify current CRA guidance before a material disposition.
+Principal Residence Exemption: A qualifying principal residence can shelter the gain, but reporting and eligibility conditions still apply.
+Lifetime Capital Gains Exemption (LCGE): Special rules apply to qualifying small business corporation shares and qualified farm or fishing property; verify the current limit and eligibility before relying on the exemption.
 4.2 Property Flipping Rules 
 If you sell residential property within 365 days of purchase and do not meet an exemption condition, the gain is 
 treated as fully taxable business income (100% inclusion, not 50%) and the principal residence exemption does 
@@ -192,7 +184,7 @@ Contributions are not tax-deductible, but all investment growth and withdrawals 
 Withdrawals are added back to contribution room the following January 1. No attribution rules on TFSA 
 contributions: a higher-earning spouse can gift money to a lower-earning spouse for TFSA contributions 
 without any income attribution concerns. 
-TFSA income and withdrawals do not affect income-tested benefits (CCB, GST/HST credit, OAS, GIS, ACFB). 
+TFSA income and withdrawals do not affect income-tested benefits (CCB, CGEB — formerly the GST/HST credit, OAS, GIS, ACFB). 
 This makes TFSAs especially powerful for families receiving these benefits. 
 5.3 First Home Savings Account (FHSA) 
 Annual Limit: $8,000 per year 
@@ -236,43 +228,17 @@ members.
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
 Page 9 6. FAMILY TAX BENEFITS AND CREDITS 
-6.1 Canada Child Benefit (CCB) 
-The CCB is a tax-free monthly payment from the federal government to eligible families with children under 18. 
-It is income-tested based on adjusted family net income (AFNI) from the prior year's tax return. 
-Child Age  Max Annual Amount (July 2025 –June 2026)  
-Under 6 $7,997 ($666.41/month)  
-Ages 6–17  $6,748 ($562.33/month)  
-The CCB is reduced at higher income levels. For families with AFNI above $36,502 (2025), the reduction 
-begins at varying rates depending on the number of children. For AFNI above $79,087, additional phase-out 
-applies. 
-Shared Custody: When both parents have the child approximately equally (40%–60% of the time), the CRA 
-splits the CCB, calculating each parent's entitlement separately based on their individual AFNI. 
-Filing Requirement: Both parents must file tax returns to receive CCB. Late filing delays payments. 
-6.2 Alberta Child and Family Benefit (ACFB) 
-The ACFB is Alberta's provincial tax-free benefit for low- and middle-income families with children under 18. It 
-is administered by the CRA on Alberta's behalf and paid quarterly (August, November, February, May). It 
-replaced the former Alberta Child Benefit and Alberta Family Employment Tax Credit in July 2020. 
-6.2.1 Base Component (July 2025–June 2026) 
-• 1 child: up to $1,330/year 
-• 2 children: up to $1,995/year 
-• 3 children: up to $2,527/year 
-• 4+ children: up to $2,923/year 
-The base component is available regardless of employment income. It is reduced when adjusted family net 
-income exceeds $27,565 and phases out completely at $46,191. 
-6.2.2 Working Component (July 2025–June 2026) 
-• 1 child: up to $718/year 
-• 2 children: up to $1,718/year 
-• 3 children: up to $2,218/year 
-• 4+ children: up to $2,468/year 
-Available to families with working income exceeding $2,760. The benefit increases at 15% of each additional 
-dollar above $2,760 until the maximum is reached, then reduces when AFNI exceeds $46,191. 
-Automatic Enrollment: No application needed. If you qualify for the federal CCB and file your tax return, you 
-are automatically assessed for the ACFB. 
-ACFB is non-taxable and does not affect AISH, Income Support, or Alberta child care subsidy eligibility. 
-6.3 GST/HST Credit 
-A quarterly tax-free payment for individuals and families with low to modest income. For the July 2025 to June 
-2026 period, the maximum annual amount is approximately $519 for a single individual, $680 for a couple, plus 
-$179 per child under 19. The credit phases out at higher income levels. 
+6.1 Canada Child Benefit (CCB)
+The CCB is a tax-free monthly federal benefit for eligible families with children under 18. For the July 2026–June 2027 payment period (based on 2025 adjusted family net income, or AFNI), the maximum is $8,157/year ($679.75/month) for each child under age 6 and $6,883/year ($573.58/month) for each child age 6–17. Families with AFNI under $38,237 receive the maximum; reductions begin above $38,237, with a second threshold at $82,847. Reduction rates vary by number of children. Shared-custody and filing rules remain subject to CRA eligibility requirements.
+6.2 Alberta Child and Family Benefit (ACFB)
+The ACFB is Alberta's tax-free benefit for lower- and middle-income families with children under 18. It is administered by the CRA and paid quarterly. For July 2026–June 2027, maximum cumulative base / working components are:
+• 1 child: $1,529 base + $782 working
+• 2 children: $2,293 base + $1,494 working
+• 3 children: $3,057 base + $1,920 working
+• 4+ children: $3,821 base + $2,061 working
+The base component begins reducing when family net income exceeds $28,116; the working component/final reduction threshold is $47,115. Use the CRA/Alberta benefit calculator for household-specific entitlement.
+6.3 Canada Groceries and Essentials Benefit (CGEB)
+The Canada Groceries and Essentials Benefit (CGEB) replaced the GST/HST credit in July 2026. It remains a tax-free quarterly federal benefit with the same eligibility/calculation structure, increased by 25% for the July 2026–June 2027 period. Maximum amounts are $679 for a single individual, $890 for a married/common-law couple, plus $234 per eligible child under 19. The 2025-base-year phase-out threshold is $46,432; a single-person additional-amount phase-in begins at $11,564. CRA automatically considers tax filers for the benefit.
 6.4 Child Care Expense Deduction 
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
@@ -436,30 +402,20 @@ requirements
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
 Page 16 10. SENIORS-SPECIFIC TAX PROVISIONS 
-10.1 Age Amount 
-Available to individuals aged 65+ at December 31. For 2025: federal amount up to $8,790 (reduced when net 
-income exceeds $44,325); Alberta amount up to $6,221 (reduced when net income exceeds $46,308, 
-eliminated at $87,782). 
-10.2 Pension Income Amount 
-Both federal and Alberta provide a tax credit on up to $2,000 of eligible pension income ($1,719 Alberta for 
-2025). Eligible income includes RPP payments, RRIF withdrawals (if age 65+), life annuity from RRSP, and 
-certain other pension income. Pension splitting allows the receiving spouse to also claim this credit. 
-10.3 OAS Clawback 
-Old Age Security payments are subject to a recovery tax (clawback) when individual net income exceeds 
-$95,323 (2026). The clawback rate is 15 cents per dollar above the threshold. OAS is fully eliminated at 
-approximately $157,000 of net income. Pension splitting, RRSP contributions (before 71), and TFSA usage can 
-help keep net income below the threshold. 
-10.4 Alberta Seniors Benefit 
-A provincial tax-free monthly payment for low-income seniors aged 65+ who receive federal OAS. For 2025, 
-maximum annual benefit is approximately $3,868 for a single senior with zero non-deductible income. The 
-benefit varies by income, accommodation type, and marital status. Application is required. Couples' income is 
-split 50:50 for calculation purposes. 
+10.1 Age Amount
+For 2026, the federal age amount is up to $9,208 for a person age 65+ with net income of $46,432 or less, with a partial amount available through $107,819. Alberta's age amount is up to $6,345 when net income is $47,234 or less, with a partial amount through $89,534.
+10.2 Pension Income Amount
+The federal pension income amount is up to $2,000 of qualifying pension income. Alberta's 2026 pension income amount is up to $1,753. CPP, OAS and GIS payments do not qualify as pension income for the TD1 pension-income amount.
+10.3 OAS Clawback
+For 2026 net world income, OAS recovery tax begins above $95,323. The 2026 repayment range extends to $155,109 for ages 65–74 and $161,088 for ages 75+. The repayment rate is 15% of income above the threshold, limited by OAS received. For July–September 2026, maximum OAS is $751.97/month for ages 65–74 and $827.17/month for ages 75+. OAS is indexed quarterly, so verify the current quarter before making a precise cash-flow projection.
+10.4 Alberta Seniors Benefit
+Effective July 1, 2026, guideline income levels for seniors receiving full OAS are $32,690 or less for a single senior and $53,800 or less for a senior couple. For a homeowner, renter or lodge resident with $0 non-deductible income, the maximum annual benefit is $3,946 for a single senior and $5,918 for a senior couple. Actual entitlement depends on income, accommodation and marital/cohabitation status.
 10.5 Seniors Property Tax Deferral Program 
 Alberta allows eligible seniors to defer paying all or part of their property taxes for up to 10 years. A lien is 
 placed on the property. This can provide cash flow relief during retirement without triggering tax consequences. 
 10.6 Medical Expenses 
 Seniors often have significant medical expenses. The medical expense tax credit allows claiming expenses 
-above the lesser of 3% of net income or the threshold ($2,635 federally for 2025). Claiming a 12-month period 
+above the lesser of 3% of net income or the threshold ($2,834 federally for 2025). Claiming a 12-month period 
 ending in the current tax year provides flexibility for timing. In the year of death, the period extends to 24 
 months. 
   
@@ -516,21 +472,19 @@ the donation amount — one of the most tax-efficient giving strategies availabl
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
 Page 19 13. CPP AND EI CONTRIBUTIONS 
-13.1 Canada Pension Plan (CPP) — 2026 
-Parameter  2026 Amount  
-Year's Maximum Pensionable Earnings (YMPE)  $74,600 
-Year's Additional Max Pensionable Earnings (YAMPE)  $85,000 
-Basic Exemption  $3,500 
-Employee Contribution Rate (base CPP)  5.95% 
-CPP2 Rate (on earnings $74,600–$85,000)  4% 
-Max Employee Contribution (CPP + CPP2)  ~$4,640 + $416 = ~$5,056  
-Employers match employee CPP contributions. Self-employed individuals pay both portions. The enhanced 
-CPP (CPP2) introduced in 2024 applies a 4% rate on earnings between the first and second earnings ceilings. 
-13.2 Employment Insurance (EI) — 2026 
-EI premiums apply on insurable earnings up to the maximum insurable earnings ($65,700 for 2026). Employee 
-rate is 1.64%, with a maximum annual employee premium of approximately $1,077. Employers pay 1.4 times 
-the employee rate. 
-  
+13.1 Canada Pension Plan (CPP) — 2026
+Parameter  2026 Amount
+Year's Maximum Pensionable Earnings (YMPE)  $74,600
+Year's Additional Maximum Pensionable Earnings (YAMPE)  $85,000
+Basic Exemption  $3,500
+Employee/Employer contribution rate on base and first additional CPP  5.95%
+Maximum employee/employer base + first additional CPP contribution  $4,230.45
+CPP2 rate on earnings $74,600–$85,000  4%
+Maximum employee/employer CPP2 contribution  $416.00
+Maximum combined employee CPP + CPP2 contribution  $4,646.45
+Self-employed maximums are $8,460.90 for base + first additional CPP and $832.00 for CPP2.
+13.2 Employment Insurance (EI) — 2026
+For workers outside Quebec, the 2026 maximum insurable earnings are $68,900. The employee premium rate is 1.63% ($1.63 per $100), for a maximum employee premium of $1,123.07. The employer rate is 1.4 times the employee rate, producing a maximum employer premium of $1,572.30 per employee.
 
 Alberta Personal & Family Tax Law — AI Agent Reference  
 Page 20 14. TAX FILING REQUIREMENTS AND DEADLINES 
@@ -569,13 +523,13 @@ return)
 threshold 
 15.2 Alberta's Tax Advantages 
 • No provincial sales tax (saves families thousands annually compared to other provinces) 
-• Lowest combined top marginal rate in Canada (48% vs. 53.5%+ in other provinces) 
-• High provincial basic personal amount ($22,769 for 2026 — highest in Canada) 
+• Top combined ordinary-income marginal rate is 48% in 2026
+• Provincial basic personal amount is $22,769 for 2026
 • Maximum probate fees of $525 (vs. $6,750+ in Ontario for a $500K estate) 
 • No provincial health premium or payroll tax 
-• New 8% bracket on first ~$60,000 saves up to $750/year vs. prior 10% rate 
+• Alberta's 8% first tax bracket applies to the first $61,200 of taxable income in 2026
 15.3 Common Tax Planning Mistakes 
-• Not filing tax returns — delays CCB, ACFB, GST credits, and other benefits 
+• Not filing tax returns — delays CCB, ACFB, CGEB (formerly GST/HST credit), and other benefits
 • Ignoring spousal RRSP for income splitting in retirement 
 • Over-contributing to registered accounts without tracking room 
 • Not claiming medical expenses, child care expenses, or disability credits 
