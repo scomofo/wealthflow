@@ -169,6 +169,9 @@ export function handlePlanInput(e, ctx) {
 
   // Tax calculator
   if (e.target.classList.contains('tax-input')) {
+    // Checkbox/select input events also precede change events. Let the
+    // change handler use checked (not the checkbox's default value "on").
+    if (e.target.type === 'checkbox' || e.target.tagName === 'SELECT') return true;
     const field = e.target.dataset.field;
     if (field) {
       updateTaxInput(field, e.target.value);
@@ -205,6 +208,10 @@ export async function handlePlanChange(e, ctx) {
       if (page && getSection() === 'tax-calc') {
         // Trusted render function — all content is escaped
         page.innerHTML = renderTaxCalculator(State.getState());
+        // Keep keyboard focus on the same control when conditional inputs
+        // appear. Numeric input focus is handled by debouncedPageRender.
+        const control = Array.from(page.querySelectorAll('.tax-input')).find(input => input.dataset.field === field);
+        control?.focus();
       }
     }
     return true;

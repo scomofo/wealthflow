@@ -225,6 +225,7 @@ Current code also contains province/territory tables for portability and histori
 
 First-class Canadian coverage includes:
 - 2026 federal + Alberta tax brackets and BPA handling,
+- an Alberta-first tax calculator with adult age/disability, qualifying pension, basic spouse and Canada employment amounts, optional employee CPP/EI amounts, and Alberta supplemental/federal top-up credits,
 - TFSA, RRSP, RESP and FHSA rules,
 - CPP and OAS constants,
 - Canadian bank import presets,
@@ -248,6 +249,14 @@ From here, prioritize depth over breadth:
 2. **Financial calculation correctness**
    - keep registered-account room, debt, cash-flow, tax, retirement and CAD portfolio calculations internally consistent,
    - surface assumptions and uncertainty rather than presenting estimates as filing-grade results.
+
+   The interactive tax calculator shares one model across its main estimate,
+   RRSP impact and no-split/50%-split comparison. Pension income is entered
+   separately and counted once. Eligibility is explicit; other-province
+   calculations and the transaction-based Tax Season helper retain their
+   narrower basic-amount estimates. Caregiver/dependant claims, unused-credit
+   transfers, medical/donation/tuition credits, refundable benefits, OAS
+   recovery and self-employment contributions remain outside this calculator.
 
 3. **Privacy and local-data protection**
    - minimize personal data sent to AI,
