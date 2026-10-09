@@ -113,6 +113,44 @@ export const FEDERAL_BPA_2026 = {
   phaseoutEnd: 258482,
 };
 
+// 2026 planning-credit amounts verified October 9, 2026 against CRA TD1,
+// TD1AB and their worksheets. Age amounts use NET income, not gross income.
+// These cover adult claims only; caregiver/dependant claims and transfers
+// need additional eligibility information and are not inferred here.
+export const FEDERAL_CREDITS_2026 = {
+  rate: 0.14,
+  age: { max: 9208, phaseoutStart: 46432, phaseoutRate: 0.15 },
+  pensionMax: 2000,
+  disability: 10341,
+  employmentMax: 1501,
+  // Income Tax Act s.118(11): 7.14% of eligible credit dollars over
+  // 14% of the first-bracket threshold, for 2026 (not a rounded 1% of base).
+  topUpThreshold: 58523,
+  topUpMultiplier: 0.0714,
+};
+
+export const ALBERTA_CREDITS_2026 = {
+  rate: 0.08,
+  age: { max: 6345, phaseoutStart: 47234, phaseoutRate: 0.15 },
+  pensionMax: 1753,
+  disability: 17563,
+  // CRA T4127 January 2026, K5P: max(0, eligible credit dollars - 4896)
+  // multiplied by 25%, equivalent to 2% of eligible bases above $61,200.
+  // AB428 excludes tuition carryforwards, donations and dividend credits
+  // from this base. Only the modeled eligible personal/CPP/EI amounts enter it.
+  supplementalThreshold: 61200,
+  supplementalRate: 0.02,
+};
+
+// Optional employee amounts from Schedule 8 / the tax return. The full
+// T4 CPP contribution includes enhanced contributions and is NOT all a
+// non-refundable credit. No payroll contribution or eligibility is guessed.
+export const EMPLOYEE_TAX_AMOUNTS_2026 = {
+  cppBaseMax: 3519.45,
+  enhancedCppDeductionMax: 1127, // first additional $711 + CPP2 $416
+  eiMax: 1123.07,
+};
+
 export const MANITOBA_BPA_2026 = {
   max: 15780,
   min: 0,

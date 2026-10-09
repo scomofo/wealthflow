@@ -83,6 +83,7 @@ You can refine the profile later; a rough starting picture is enough to begin.
 | Feature | Details |
 |:--------|:--------|
 | 🏦 **Tax Brackets** | 2026 federal + Alberta are first-class/authoritative; other province/territory tables remain available as secondary convenience coverage |
+| 🧮 **Alberta Tax Calculator** | Adult age/disability, eligible pension, basic spouse and Canada employment credits; optional employee CPP/EI inputs; Alberta supplemental/federal top-up credits; consistent RRSP and pension-split comparisons with a visible credit breakdown |
 | 📊 **TFSA** | Annual limits + lifetime room |
 | 💼 **RRSP** | Deduction limits + HBP/LLP |
 | 🎓 **RESP** | CESG matching + lifetime caps |

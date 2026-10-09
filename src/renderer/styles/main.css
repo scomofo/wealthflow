@@ -214,6 +214,8 @@ input, select { font-family: inherit; outline: none; }
 }
 .input-field:focus { border-color: var(--accent); }
 .input-label { font-size: 10px; color: var(--sub); margin-bottom: 4px; letter-spacing: .5px; text-transform: uppercase; }
+label.input-label { display: block; }
+.tax-calculator .input-label { font-size: 11px; color: var(--text); opacity: .78; }
 
 /* ═══ Modal ═══ */
 .modal-overlay {
