@@ -99,11 +99,24 @@ app.whenReady().then(async () => {
     console.log('PASS ' + scenario.name);
   }
   if (process.platform === 'win32') {
+    const entered = new Promise(resolve => win.once('enter-full-screen', resolve));
     win.setFullScreen(true);
-    await waitFor('navigator.windowControlsOverlay.visible === false && !document.documentElement.classList.contains("has-window-controls-overlay")');
+    await entered;
+    const width = win.getContentSize()[0] / win.webContents.getZoomFactor();
+    await waitFor(`Math.abs(innerWidth - ${width}) <= 1`);
+    await new Promise(resolve => setTimeout(resolve, 100));
     await win.webContents.executeJavaScript('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
-    const fullscreen = await win.webContents.executeJavaScript('({ viewport:innerWidth, right:document.querySelector(".header-right").getBoundingClientRect().right })');
-    assert.ok(Math.abs(fullscreen.viewport - fullscreen.right - 24) <= 1, 'fullscreen: obsolete caption inset remains');
+    const fullscreen = await win.webContents.executeJavaScript(`(() => {
+      const overlay = navigator.windowControlsOverlay;
+      const area = overlay.getTitlebarAreaRect();
+      return { viewport:innerWidth, right:document.querySelector('.header-right').getBoundingClientRect().right,
+        overlay:area.toJSON(), visible:overlay.visible, inset:document.documentElement.classList.contains('has-window-controls-overlay') };
+    })()`);
+    const active = fullscreen.visible && fullscreen.overlay.width > 0 && fullscreen.overlay.height > 0;
+    assert.equal(fullscreen.inset, active, 'fullscreen: caption inset must follow the reported native area');
+    const edge = active ? fullscreen.overlay.right : fullscreen.viewport;
+    assert.ok(Math.abs(edge - fullscreen.right - 24) <= 1, 'fullscreen: header does not follow native caption geometry');
+    fs.writeFileSync(path.join(output, 'fullscreen.png'), (await win.webContents.capturePage()).toPNG());
     results.push({ scenario: 'fullscreen', geometry: fullscreen });
     console.log('PASS fullscreen');
   }
