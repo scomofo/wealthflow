@@ -192,6 +192,8 @@ Everything should answer:
 ## Data and safety
 - Treat financial data correctness as product correctness.
 - Validate inputs at renderer/main-process boundaries.
+- Statement import previews, duplicate checks and insertion must share normalization. Import transaction activity without guessing debt balances, goal deposits or registered contributions; those require explicit user entries.
+- Once a batch write commits, history/refresh failures must preserve success and must not offer another insertion attempt.
 - Keep secrets in the main process; never expose plaintext API keys to the renderer or exports.
 - Keep file access allow-listed and path-contained.
 - Prefer deterministic rules for financial recommendations where possible.

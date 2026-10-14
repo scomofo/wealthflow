@@ -143,6 +143,15 @@ function resolveHeader(fieldMapping, headers) {
   return headers.find(h => h.toLowerCase().trim() === fieldMapping.toLowerCase().trim()) || null;
 }
 
+export function resolveBankMapping(bankKey, headers) {
+  const preset = BANK_PRESETS[bankKey];
+  if (!preset) return null;
+  const mapping = Object.fromEntries(Object.entries(preset.mapping)
+    .map(([role, field]) => [role, resolveHeader(field, headers)]));
+  if (preset.extraDescription) mapping.extraDescription = resolveHeader(preset.extraDescription, headers);
+  return mapping;
+}
+
 function parseDate(dateStr, format) {
   if (!dateStr) return null;
   const d = dateStr.trim();

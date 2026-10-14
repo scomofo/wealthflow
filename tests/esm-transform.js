@@ -4,6 +4,9 @@ module.exports = {
     // Minimal renderer ESM to CommonJS transform for Jest.
     const exports = [];
     let transformed = source
+      .replace(/import\s+\*\s+as\s+(\w+)\s+from\s+['"]([^'"]+)['"];?/g, (_, name, path) => {
+        return 'const ' + name + " = require('" + path + "');";
+      })
       .replace(/import\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"];?/g, (_, names, path) => {
         return 'const {' + names.trim() + "} = require('" + path + "');";
       })

@@ -27,7 +27,8 @@ function looksLikeDate(val) {
          /^\d{4}-\d{2}-\d{2}$/.test(s) ||
          /^\d{1,2}-\d{1,2}-\d{4}$/.test(s) ||
          /^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(s) ||
-         /^\d{4}\/\d{2}\/\d{2}$/.test(s);
+         /^\d{4}\/\d{2}\/\d{2}$/.test(s) ||
+         /^(?:19|20)\d{6}$/.test(s);
 }
 
 // Detect if the first row is data (no header row) by checking if it starts with a date-like value
@@ -112,60 +113,53 @@ function inferColumnMapping(sampleRows, colCount) {
 }
 
 export function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length === 0) return { headers: [], rows: [] };
-
-  const firstRowValues = parseLine(lines[0]);
-  const headerless = !hasHeaderRow(firstRowValues);
-
-  let headers;
-  let dataStartIndex;
-
-  if (headerless) {
-    // Parse all lines as data rows first to infer column types
-    const allParsed = lines.map(l => parseLine(l));
-    headers = inferColumnMapping(allParsed, firstRowValues.length);
-    dataStartIndex = 0;
-  } else {
-    headers = firstRowValues;
-    dataStartIndex = 1;
-    if (lines.length < 2) return { headers: [], rows: [] };
+  const records = parseRecords(String(text).replace(/^\uFEFF/, ''));
+  if (records.length === 0) return { headers: [], rows: [] };
+  const headerless = !hasHeaderRow(records[0]);
+  const headers = headerless ? inferColumnMapping(records, records[0].length) : records[0];
+  if (new Set(headers.map(header => header.toLowerCase())).size !== headers.length) {
+    throw new Error('Duplicate column names. Give each source column a unique header.');
   }
-
-  const rows = [];
-  for (let i = dataStartIndex; i < lines.length; i++) {
-    const vals = parseLine(lines[i]);
-    if (vals.length >= headers.length) {
-      const row = {};
-      headers.forEach((h, idx) => row[h] = vals[idx]);
-      rows.push(row);
-    } else if (vals.length > 0 && vals.length >= headers.length - 2) {
-      const row = {};
-      headers.forEach((h, idx) => row[h] = vals[idx] ?? '');
-      rows.push(row);
+  const rows = records.slice(headerless ? 0 : 1).map((values, index) => {
+    if (values.length > headers.length) {
+      throw new Error(`Row ${index + (headerless ? 1 : 2)} has more values than columns. Check commas and quoting.`);
     }
-  }
+    return Object.fromEntries(headers.map((header, column) => [header, values[column] ?? '']));
+  });
   return { headers, rows };
 }
 
-function parseLine(line) {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === ',' && !inQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += ch;
-    }
+// Newlines inside quoted descriptions are part of the field. Splitting the
+// file into physical lines would silently lose or corrupt those transactions.
+function parseRecords(text) {
+  const records = [];
+  let row = [], field = '', inQuotes = false, quoteClosed = false;
+  const finishField = () => { row.push(field.trim()); field = ''; quoteClosed = false; };
+  const finishRow = () => {
+    finishField();
+    if (row.some(value => value !== '')) records.push(row);
+    row = [];
+  };
+  for (let index = 0; index < text.length; index++) {
+    const ch = text[index];
+    if (inQuotes) {
+      if (ch === '"' && text[index + 1] === '"') { field += '"'; index++; }
+      else if (ch === '"') { inQuotes = false; quoteClosed = true; }
+      else field += ch;
+    } else if (ch === ',') finishField();
+    else if (ch === '\n' || ch === '\r') {
+      finishRow();
+      if (ch === '\r' && text[index + 1] === '\n') index++;
+    } else if (ch === '"') {
+      if (quoteClosed || field.trim()) throw new Error('Unexpected quote in an unquoted CSV field.');
+      field = '';
+      inQuotes = true;
+    } else if (quoteClosed && ch.trim()) throw new Error('Unexpected text after a closing quote in the CSV file.');
+    else field += ch;
   }
-  result.push(current.trim());
-  return result;
+  if (inQuotes) throw new Error('Unclosed quoted field in the CSV file.');
+  finishRow();
+  return records;
 }
 
 export function generateCSV(rows, headers) {
@@ -182,14 +176,20 @@ export function generateCSV(rows, headers) {
 
 export function autoMapColumns(headers) {
   const lower = headers.map(h => h.toLowerCase().trim());
-  const mapping = { date: null, description: null, amount: null, debit: null, credit: null };
+  const mapping = { date: null, description: null, amount: null, debit: null, credit: null, category: null };
 
   lower.forEach((h, i) => {
-    if (!mapping.date && DATE_HEADERS.some(d => h.includes(d))) mapping.date = headers[i];
-    if (!mapping.description && DESC_HEADERS.some(d => h.includes(d))) mapping.description = headers[i];
-    if (!mapping.amount && AMOUNT_HEADERS.some(d => h.includes(d))) mapping.amount = headers[i];
-    if (!mapping.debit && DEBIT_HEADERS.some(d => h.includes(d))) mapping.debit = headers[i];
-    if (!mapping.credit && CREDIT_HEADERS.some(d => h.includes(d))) mapping.credit = headers[i];
+    if (h === 'category') {
+      mapping.category = headers[i];
+    } else if (DATE_HEADERS.some(d => h.includes(d))) {
+      if (!mapping.date) mapping.date = headers[i];
+    } else if (DEBIT_HEADERS.some(d => h.includes(d))) {
+      if (!mapping.debit) mapping.debit = headers[i];
+    } else if (CREDIT_HEADERS.some(d => h.includes(d))) {
+      if (!mapping.credit) mapping.credit = headers[i];
+    } else if (AMOUNT_HEADERS.some(d => h.includes(d))) {
+      if (!mapping.amount) mapping.amount = headers[i];
+    } else if (!mapping.description && DESC_HEADERS.some(d => h.includes(d))) mapping.description = headers[i];
   });
 
   return mapping;
