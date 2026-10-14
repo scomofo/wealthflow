@@ -36,6 +36,7 @@ import { renderImportModal } from './components/import-modal.js';
 import { renderRecurringModal } from './components/recurring-modal.js';
 import { detectRecurringPayments } from './utils/recurring-detector.js';
 import { focusActiveModal, trapModalTab } from './utils/dialog-focus.js';
+import { initWindowControlsOverlay } from './utils/window-controls.js';
 import { renderOnboardingStepper } from './components/onboarding-stepper.js';
 
 // Handler modules
@@ -384,6 +385,7 @@ function bindEvents() {
 
 // --- Initialize ---
 async function init() {
+  initWindowControlsOverlay();
   window.onerror = (msg, source, line, col, _error) => {
     if (window.wealthflow?.log) window.wealthflow.log('error', `Uncaught error: ${msg}`, { source, line, col });
     showToast('An unexpected error occurred', 'error');

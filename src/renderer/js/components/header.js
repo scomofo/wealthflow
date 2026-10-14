@@ -11,7 +11,7 @@ export function renderHeader(settings) {
       <button class="icon-btn" data-nav="settings" aria-label="Settings">${icon('settings', 14)}</button>
       <div class="avatar">
         <div class="avatar-circle">${h(initial)}</div>
-        <span style="font-size:12px;font-weight:600">${h(settings.user_name)}</span>
+        <span class="avatar-name" title="${h(settings.user_name || '')}">${h(settings.user_name || '')}</span>
       </div>
     </div>
   </header>`;
