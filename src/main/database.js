@@ -404,10 +404,20 @@ class WealthFlowDatabase {
       'SELECT date, amount, description FROM transactions WHERE date >= ? AND date <= ? AND deleted_at IS NULL',
       [minDate, maxDate]
     );
-    const existingSet = new Set(
-      existing.map(t => `${t.date}|${t.amount}|${t.description}`)
-    );
-    return checks.map(c => existingSet.has(`${c.date}|${c.amount}|${c.description}`));
+    // Match occurrences, not just membership: two identical purchases on the
+    // same day are legitimate if the ledger only contains one of them.
+    const key = t => JSON.stringify([t.date, t.amount, t.description]);
+    const counts = new Map();
+    for (const transaction of existing) {
+      const k = key(transaction);
+      counts.set(k, (counts.get(k) || 0) + 1);
+    }
+    return checks.map(check => {
+      const k = key(check), count = counts.get(k) || 0;
+      if (count === 0) return false;
+      counts.set(k, count - 1);
+      return true;
+    });
   }
 
   // Budgets
@@ -560,7 +570,7 @@ class WealthFlowDatabase {
     const goalStats = this.getOne('SELECT COALESCE(SUM(current), 0) as total, COUNT(*) as total_count FROM goals WHERE deleted_at IS NULL');
     const totalSaved = (goalStats?.total_count || 0) > 0 ? goalStats.total : (settings.savings_buffer || 0);
     const catRows = this.getAll(
-      'SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND deleted_at IS NULL AND substr(date, 1, 7) = ? GROUP BY category ORDER BY total DESC',
+      "SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE amount < 0 AND category != 'Transfer' AND deleted_at IS NULL AND substr(date, 1, 7) = ? GROUP BY category ORDER BY total DESC",
       [anchor]
     );
     const catSpending = {};
@@ -733,7 +743,7 @@ class WealthFlowDatabase {
       SELECT strftime('%Y-%m', date) as month,
              SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income,
              SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as expenses
-      FROM transactions WHERE date >= ? AND deleted_at IS NULL
+      FROM transactions WHERE date >= ? AND deleted_at IS NULL AND category != 'Transfer'
       GROUP BY strftime('%Y-%m', date) ORDER BY month ASC
     `, [cutoffStr]);
   }

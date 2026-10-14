@@ -46,6 +46,8 @@
 ### 💳 Track
 - **Budgets** &mdash; Monthly category breakdowns
 - **Transactions** &mdash; Import CSV, OFX, QIF, XLSX
+- **Import Review** &mdash; Explicit date order, row errors, preserved bank descriptions and categories, and repeat-import checks
+- **Transfer-safe Totals** &mdash; Internal transfers excluded from income, spending breakdowns and historical charts
 - **Bank Presets** &mdash; TD, RBC, BMO, Scotiabank, CIBC and more
 - **Recurring Detection** &mdash; Identify subscriptions and repeating payments
 

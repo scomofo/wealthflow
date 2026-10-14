@@ -1,9 +1,10 @@
 // Export/Import orchestration for WealthFlow
 import { uid } from '../helpers.js';
-import { parseCSV, generateCSV, autoMapColumns, autoCategorize } from './csv-parser.js';
+import { parseCSV, generateCSV, autoMapColumns } from './csv-parser.js';
 import { parseOFX, isOFX } from './ofx-parser.js';
 import { generateMonthlyReportHTML } from './pdf-report.js';
-import { detectBank, listBankPresets } from './bank-presets.js';
+import { detectBank, listBankPresets, BANK_PRESETS, resolveBankMapping } from './bank-presets.js';
+import { normalizeImportRow, MAX_IMPORT_BATCH } from './transaction-import.js';
 import * as State from '../state/core.js';
 
 const api = window.wealthflow;
@@ -92,86 +93,48 @@ export async function importFile() {
   }
 
   const { headers, rows } = parsed;
-  if (headers.length === 0 || rows.length === 0) return null;
+  if (headers.length === 0 || rows.length === 0) throw new Error('This file has no transaction rows to review.');
 
-  // Try to auto-detect bank from CSV headers
-  let detectedBank = null;
-  let mapping;
-  if (fileType === 'csv') {
-    const bankKey = detectBank(headers);
-    if (bankKey) {
-      const bankInfo = listBankPresets().find(p => p.key === bankKey);
-      detectedBank = { key: bankKey, name: bankInfo ? bankInfo.name : bankKey };
-      // Override mapping with bank preset's known column mapping
-      const { BANK_PRESETS } = await import('./bank-presets.js');
-      const presetDef = BANK_PRESETS[bankKey];
-      if (presetDef && presetDef.mapping) {
-        const pm = presetDef.mapping;
-        // Resolve each field to actual header name
-        const resolve = (field) => {
-          if (!field) return null;
-          if (Array.isArray(field)) {
-            for (const candidate of field) {
-              const found = headers.find(hdr => hdr.toLowerCase().trim() === candidate.toLowerCase().trim());
-              if (found) return found;
-            }
-            return null;
-          }
-          return headers.find(hdr => hdr.toLowerCase().trim() === field.toLowerCase().trim()) || null;
-        };
-        mapping = {};
-        if (pm.date) mapping.date = resolve(pm.date);
-        if (pm.description) mapping.description = resolve(pm.description);
-        if (pm.amount) mapping.amount = resolve(pm.amount);
-        if (pm.debit) mapping.debit = resolve(pm.debit);
-        if (pm.credit) mapping.credit = resolve(pm.credit);
-      }
-    } else {
-      mapping = autoMapColumns(headers);
-    }
-  } else {
-    mapping = autoMapColumns(headers);
-  }
+  const bankKey = fileType === 'csv' || fileType === 'xlsx' ? detectBank(headers) : null;
+  const bank = bankKey ? BANK_PRESETS[bankKey] : null;
+  const detectedBank = bankKey ? { key: bankKey, name: listBankPresets().find(p => p.key === bankKey).name } : null;
+  const mapping = { ...autoMapColumns(headers), ...(bankKey ? resolveBankMapping(bankKey, headers) : {}) };
+  const dateFormat = bank?.dateFormat === 'DD/MM/YYYY' ? 'DD/MM/YYYY' : 'MM/DD/YYYY';
 
   // Check if user has an AI API key
   const settings = State.getState().settings;
   const hasAiKey = !!(settings && settings.hasApiKey);
 
-  return { headers, rows, mapping, filePath, fileType, hasAiKey, detectedBank };
+  return { headers, rows, mapping, filePath, fileType, hasAiKey, detectedBank, dateFormat };
 }
 
 // Check for duplicates against existing transactions
-export async function checkDuplicates(rows, mapping) {
+export async function checkDuplicates(rows, mapping, options = {}) {
+  const validIndices = [];
   const checks = [];
-  for (const row of rows) {
-    const dateVal = mapping.date ? row[mapping.date] : null;
-    const descVal = mapping.description ? row[mapping.description] : '';
-    let amount = 0;
-
-    if (mapping.amount) {
-      amount = parseFloat(String(row[mapping.amount] || '').replace(/[,$]/g, '')) || 0;
-    } else if (mapping.debit || mapping.credit) {
-      const debit = parseFloat(String((mapping.debit ? row[mapping.debit] : '') || '').replace(/[,$]/g, '')) || 0;
-      const credit = parseFloat(String((mapping.credit ? row[mapping.credit] : '') || '').replace(/[,$]/g, '')) || 0;
-      amount = credit > 0 ? credit : (debit > 0 ? -debit : 0);
-    }
-
-    const date = normalizeDate(dateVal);
-    checks.push({ date: date || '', amount, description: descVal });
-  }
-
-  return State.findDuplicateTransactions(checks);
+  rows.forEach((row, index) => {
+    const parsed = normalizeImportRow(row, mapping, options);
+    if (parsed.error) return;
+    validIndices.push(index);
+    checks.push({ date: parsed.date, amount: parsed.amount, description: parsed.description });
+  });
+  const duplicates = rows.map(() => false);
+  if (checks.length === 0) return duplicates;
+  const matches = await State.findDuplicateTransactions(checks);
+  validIndices.forEach((index, i) => { duplicates[index] = matches[i] === true; });
+  return duplicates;
 }
 
 // AI-enhanced categorization for "Other" transactions
-export async function aiCategorizeImport(rows, mapping) {
+export async function aiCategorizeImport(rows, mapping, options = {}) {
   const descriptions = [];
   const indices = [];
 
   for (let i = 0; i < rows.length; i++) {
-    const descVal = mapping.description ? rows[i][mapping.description] : '';
-    if (descVal && autoCategorize(descVal) === 'Other') {
-      descriptions.push(descVal);
+    const parsed = normalizeImportRow(rows[i], mapping, options);
+    const explicitCategory = mapping.category ? String(rows[i][mapping.category] ?? '').trim() : '';
+    if (!parsed.error && !explicitCategory && parsed.category === 'Other') {
+      descriptions.push(parsed.description);
       indices.push(i);
     }
   }
@@ -180,7 +143,9 @@ export async function aiCategorizeImport(rows, mapping) {
 
   // Batch in groups of 50 to stay within token limits
   const aiCategories = {};
+  let failed = false;
   for (let batch = 0; batch < descriptions.length; batch += 50) {
+    if (options.isCurrent && !options.isCurrent()) return {};
     const batchDescs = descriptions.slice(batch, batch + 50);
     const batchIndices = indices.slice(batch, batch + 50);
     try {
@@ -189,130 +154,41 @@ export async function aiCategorizeImport(rows, mapping) {
         if (results[j]) aiCategories[idx] = results[j];
       });
     } catch {
-      // AI categorization failed silently — fall back to keyword matching
+      failed = true;
     }
   }
+
+  if (failed) throw new Error('AI categorization unavailable; use local categories.');
 
   return aiCategories;
 }
 
-// ─── Date Normalization ────────────────────────────────────────
-
-const MONTH_ABBR = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
-
-function normalizeDate(raw) {
-  if (!raw) return null;
-  const s = String(raw).trim();
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  if (/^\d{4}\/\d{2}\/\d{2}$/.test(s)) return s.replace(/\//g, '-');
-
-  const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (slash) {
-    const [, m, d, y] = slash;
-    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-  }
-
-  const dash = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-  if (dash) {
-    const [, m, d, y] = dash;
-    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-  }
-
-  const monDash = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
-  if (monDash) {
-    const [, d, mon, y] = monDash;
-    const m = MONTH_ABBR[mon.toLowerCase()];
-    if (m) return `${y}-${String(m).padStart(2,'0')}-${d.padStart(2,'0')}`;
-  }
-
-  const longMon = s.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
-  if (longMon) {
-    const [, mon, d, y] = longMon;
-    const m = MONTH_ABBR[mon.toLowerCase().slice(0,3)];
-    if (m) return `${y}-${String(m).padStart(2,'0')}-${d.padStart(2,'0')}`;
-  }
-
-  if (/^\d{8}$/.test(s)) {
-    return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
-  }
-
-  const parsed = new Date(s);
-  if (!isNaN(parsed)) return parsed.toISOString().slice(0, 10);
-
-  return null;
-}
-
 // ─── Apply Import (batch insert with validation) ─────────────
 
-export async function applyImport(rows, mapping, duplicates, aiCategories) {
+export async function applyImport(rows, mapping, duplicates, aiCategories, options = {}) {
   const transactions = [];
   const errors = [];
-  let skipped = 0;
   let duplicateCount = 0;
 
-  for (let i = 0; i < rows.length; i++) {
-    if (duplicates && duplicates[i]) {
+  rows.forEach((row, index) => {
+    const parsed = normalizeImportRow(row, mapping, { ...options, aiCategory: aiCategories?.[index] });
+    if (parsed.error) {
+      errors.push({ row: index + 1, reason: parsed.error });
+    } else if (duplicates?.[index]) {
       duplicateCount++;
-      continue;
-    }
-
-    const row = rows[i];
-    const dateVal = mapping.date ? row[mapping.date] : null;
-    const descVal = mapping.description ? row[mapping.description] : '';
-    let amountVal = 0;
-
-    if (mapping.amount) {
-      amountVal = parseFloat(String(row[mapping.amount] || '').replace(/[,$]/g, '')) || 0;
-    } else if (mapping.debit || mapping.credit) {
-      const debit = parseFloat(String((mapping.debit ? row[mapping.debit] : '') || '').replace(/[,$]/g, '')) || 0;
-      const credit = parseFloat(String((mapping.credit ? row[mapping.credit] : '') || '').replace(/[,$]/g, '')) || 0;
-      amountVal = credit > 0 ? credit : (debit > 0 ? -debit : 0);
-    }
-
-    if (!dateVal || amountVal === 0) {
-      errors.push({ row: i + 1, reason: !dateVal ? 'Missing date' : 'Zero amount' });
-      skipped++;
-      continue;
-    }
-
-    const date = normalizeDate(dateVal);
-    if (!date) {
-      errors.push({ row: i + 1, reason: `Invalid date: ${dateVal}` });
-      skipped++;
-      continue;
-    }
-
-    let category;
-    if (amountVal > 0) {
-      category = 'Income';
-    } else if (aiCategories && aiCategories[i]) {
-      category = aiCategories[i];
     } else {
-      category = autoCategorize(descVal);
+      transactions.push({
+        id: uid(), date: parsed.date, description: parsed.description,
+        amount: parsed.amount, category: parsed.category, icon: 'receipt',
+      });
     }
+  });
 
-    transactions.push({
-      id: uid(),
-      description: descVal,
-      amount: amountVal,
-      category,
-      date,
-      icon: 'receipt',
-    });
-  }
-
-  if (transactions.length > 0) {
-    await State.addTransactionsBatch(transactions);
-  }
-
+  if (transactions.length > MAX_IMPORT_BATCH) throw new Error('Import up to 10,000 transactions at a time. Split this file into smaller statements.');
+  if (transactions.length > 0) await State.addTransactionsBatch(transactions);
   return {
-    imported: transactions.length,
-    skipped,
-    duplicateCount,
-    errorCount: errors.length,
-    errors,
-    transactions,
+    imported: transactions.length, skipped: errors.length, duplicateCount,
+    errorCount: errors.length, errors, transactions,
   };
 }
 
@@ -403,97 +279,15 @@ export async function applyHoldingsImport(rows, mapping, bankPreset) {
 }
 
 // ─── Post-Import Reconciliation ──────────────────────────────
-// Updates debts, budgets, and other data based on imported transactions
-
-export async function reconcileAfterImport(importedTransactions, detectedBank) {
-  const state = State.getState();
-  const updates = { debtsUpdated: 0, budgetsUpdated: 0, goalsUpdated: 0 };
-
-  // --- 1. Update debt balances from credit card / loan payments ---
-  // If we imported a credit card statement, the sum of transactions IS the current activity.
-  // Look for debts that match the bank/source and update balance.
-  if (state.debts.length > 0 && importedTransactions.length > 0) {
-    // Calculate net balance from imported transactions (expenses are negative)
-    const importedExpenses = importedTransactions.filter(t => t.amount < 0);
-    const importedPayments = importedTransactions.filter(t => t.amount > 0);
-    const totalNewCharges = importedExpenses.reduce((s, t) => s + Math.abs(t.amount), 0);
-    const totalPayments = importedPayments.reduce((s, t) => s + t.amount, 0);
-
-    // Try to match debts by name similarity to bank or transaction descriptions
-    for (const debt of state.debts) {
-      const debtName = debt.name.toLowerCase();
-      const bankName = detectedBank?.name?.toLowerCase() || '';
-
-      // Match if debt name contains bank name, or bank name contains debt name,
-      // or debt type is 'credit' and the bank matches a credit card issuer
-      const isMatch = (
-        (bankName && (debtName.includes(bankName) || bankName.includes(debtName))) ||
-        (debt.type === 'credit' && bankName && debtName.split(/\s+/).some(w => bankName.includes(w))) ||
-        (debt.type === 'credit' && importedExpenses.length > 5) // If many expenses, likely a CC statement
-      );
-
-      if (isMatch && totalNewCharges > 0) {
-        // For credit cards: new balance = old balance + new charges - payments made
-        const newBalance = Math.max(0, debt.balance + totalNewCharges - totalPayments);
-        await State.updateDebt({ ...debt, balance: newBalance });
-        updates.debtsUpdated++;
-        break; // Only update one matching debt per import
-      }
-    }
+// Activity alone does not identify an account balance, a goal deposit or a
+// registered contribution. Those records require explicit user entries.
+export async function reconcileAfterImport() {
+  try {
+    await State.snapshotNetWorth();
+    return { snapshotUpdated: true };
+  } catch {
+    return { snapshotUpdated: false };
   }
-
-  // --- 2. Recalculate budget spending from latest transactions ---
-  // Budgets are computed from transactions, so no direct update needed.
-  // But we can trigger a net worth snapshot since data changed.
-  try { await State.snapshotNetWorth(); } catch { /* best-effort: snapshot is non-critical */ }
-
-  // --- 3. Check if any imported payments match savings goals ---
-  // Look for transactions with descriptions matching goal names
-  if (state.goals.length > 0) {
-    for (const tx of importedTransactions) {
-      if (tx.amount <= 0) continue; // Only deposits
-      const desc = tx.description.toLowerCase();
-      for (const goal of state.goals) {
-        const goalName = goal.name.toLowerCase();
-        if (desc.includes(goalName) || goalName.split(/\s+/).some(w => w.length > 3 && desc.includes(w))) {
-          const newCurrent = goal.current + tx.amount;
-          if (newCurrent !== goal.current) {
-            await State.updateGoal({ ...goal, current: Math.min(newCurrent, goal.target) });
-            updates.goalsUpdated++;
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  // --- 4. Update contribution tracking for registered account deposits ---
-  // Look for transactions that might be TFSA/RRSP/FHSA contributions
-  const regKeywords = {
-    tfsa: ['tfsa', 'tax free', 'tax-free'],
-    rrsp: ['rrsp', 'retirement savings'],
-    fhsa: ['fhsa', 'first home'],
-    resp: ['resp', 'education savings'],
-  };
-  for (const tx of importedTransactions) {
-    if (tx.amount <= 0) continue;
-    const desc = tx.description.toLowerCase();
-    for (const [acctType, keywords] of Object.entries(regKeywords)) {
-      if (keywords.some(k => desc.includes(k))) {
-        await State.addContribution({
-          id: uid(),
-          account_type: acctType,
-          amount: tx.amount,
-          date: tx.date,
-          description: tx.description,
-          institution: detectedBank?.name || null,
-        });
-        break;
-      }
-    }
-  }
-
-  return updates;
 }
 
 // ─── Legacy compatibility ────────────────────────────────────

@@ -35,6 +35,7 @@ import { renderResidence } from './pages/residence.js';
 import { renderImportModal } from './components/import-modal.js';
 import { renderRecurringModal } from './components/recurring-modal.js';
 import { detectRecurringPayments } from './utils/recurring-detector.js';
+import { focusActiveModal, trapModalTab } from './utils/dialog-focus.js';
 import { renderOnboardingStepper } from './components/onboarding-stepper.js';
 
 // Handler modules
@@ -82,31 +83,6 @@ function renderStartupShell() {
     <div class="startup-mark">W</div>
     <div>Loading your financial command center...</div>
   </div>`;
-}
-
-function getModalFocusable() {
-  const modal = document.querySelector('.modal-overlay[role="dialog"] .modal');
-  if (!modal) return [];
-  return [...modal.querySelectorAll('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')];
-}
-
-function focusActiveModal() {
-  const modal = document.querySelector('.modal-overlay[role="dialog"] .modal');
-  if (!modal || modal.contains(document.activeElement)) return;
-  const first = getModalFocusable()[0];
-  if (first) first.focus();
-  else { modal.setAttribute('tabindex', '-1'); modal.focus(); }
-}
-
-function trapModalTab(e) {
-  if (e.key !== 'Tab') return false;
-  const focusable = getModalFocusable();
-  if (focusable.length === 0) return false;
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); return true; }
-  if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); return true; }
-  return false;
 }
 
 // --- Debounced page re-render ---
@@ -326,9 +302,11 @@ function bindEvents() {
     const inTextField = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
 
     if (e.key === 'Escape') {
+      if (appState.importModalData) { handlePlanAction('close-import-modal', null, ctx); return; }
       if (appState.activeModal) { appState.activeModal = null; appState.editData = null; render(); return; }
       if (appState.showAI) { appState.showAI = false; render(); return; }
     }
+    if (appState.activeModal || appState.importModalData || appState.recurringModalData) return;
     if (e.ctrlKey && e.key === 'n' && !inTextField) {
       e.preventDefault();
       appState.activeModal = 'transaction';

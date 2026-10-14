@@ -78,9 +78,10 @@ export async function processRecurringBills() {
 // Batch transactions
 export async function addTransactionsBatch(txs) {
   await api.addTransactionsBatch(txs);
-  // Reload transactions from DB to ensure cache is in sync
-  state.transactions = await api.getTransactions();
-  state.counts = await api.getCounts();
+  // The write has committed. Mirror it immediately; a subsequent read failure
+  // must not make a successful import look like a failed, retryable write.
+  state.transactions = [...txs, ...state.transactions].sort((a, b) => b.date.localeCompare(a.date));
+  state.counts.transactions += txs.length;
   return txs.length;
 }
 export async function findDuplicateTransactions(checks) {
