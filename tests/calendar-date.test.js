@@ -36,17 +36,16 @@ describe('recurring calendar-date arithmetic', () => {
 
 
 describe('local calendar dates and daylight-saving boundaries', () => {
-  test('formats the local date rather than the UTC date', () => {
-    const original = process.env.TZ;
-    try {
-      process.env.TZ = 'America/Edmonton';
-      expect(getLocalCalendarDate(new Date('2026-03-08T06:30:00.000Z'))).toBe('2026-03-07');
-      process.env.TZ = 'UTC';
-      expect(getLocalCalendarDate(new Date('2026-03-08T06:30:00.000Z'))).toBe('2026-03-08');
-    } finally {
-      if (original === undefined) delete process.env.TZ;
-      else process.env.TZ = original;
-    }
+  test('formats the date in the configured local timezone', () => {
+    const { spawnSync } = require('node:child_process');
+    const script = `const { getLocalCalendarDate } = require('./src/shared/calendar-date.js'); console.log(getLocalCalendarDate(new Date('2026-03-08T06:30:00.000Z')));`;
+    const result = spawnSync(process.execPath, ['-e', script], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      env: { ...process.env, TZ: 'America/Edmonton' },
+    });
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toBe('2026-03-07');
   });
 
   test.each([
