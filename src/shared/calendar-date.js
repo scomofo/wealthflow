@@ -31,6 +31,13 @@ function getLocalCalendarDate(value = new Date()) {
 }
 
 // Difference in whole calendar days, independent of 23/25-hour DST days.
+function addCalendarDays(fromDate, days) {
+  if (!Number.isInteger(days)) throw new TypeError('Calendar-day offset must be an integer');
+  const date = parseCalendarDate(fromDate);
+  date.setUTCDate(date.getUTCDate() + days);
+  return formatCalendarDate(date);
+}
+
 function calendarDayDifference(fromDate, toDate) {
   const from = parseCalendarDate(fromDate);
   const to = parseCalendarDate(toDate);
@@ -38,9 +45,12 @@ function calendarDayDifference(fromDate, toDate) {
     - Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate())) / 86400000);
 }
 
-function calculateNextDue(fromDate, frequency) {
+function calculateNextDue(fromDate, frequency, recurrenceDay = null) {
   const date = parseCalendarDate(fromDate);
   const originalDay = date.getUTCDate();
+  const requestedDay = Number.isInteger(Number(recurrenceDay)) && Number(recurrenceDay) >= 1 && Number(recurrenceDay) <= 31
+    ? Number(recurrenceDay)
+    : originalDay;
 
   switch (frequency) {
     case 'weekly': date.setUTCDate(originalDay + 7); break;
@@ -51,7 +61,7 @@ function calculateNextDue(fromDate, frequency) {
       date.setUTCDate(1);
       date.setUTCMonth(date.getUTCMonth() + monthsToAdd);
       const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
-      date.setUTCDate(Math.min(originalDay, lastDay));
+      date.setUTCDate(Math.min(requestedDay, lastDay));
       break;
     }
     case 'annual': {
@@ -60,7 +70,7 @@ function calculateNextDue(fromDate, frequency) {
       const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
       date.setUTCDate(1);
       date.setUTCFullYear(year);
-      date.setUTCDate(Math.min(originalDay, lastDay));
+      date.setUTCDate(Math.min(requestedDay, lastDay));
       break;
     }
     default: return fromDate;
@@ -68,4 +78,4 @@ function calculateNextDue(fromDate, frequency) {
   return formatCalendarDate(date);
 }
 
-module.exports = { calculateNextDue, parseCalendarDate, formatCalendarDate, getLocalCalendarDate, calendarDayDifference };
+module.exports = { calculateNextDue, parseCalendarDate, formatCalendarDate, getLocalCalendarDate, calendarDayDifference, addCalendarDays };

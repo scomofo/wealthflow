@@ -5,7 +5,7 @@ const { app } = require('electron');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
 const { logger } = require('./logger');
-const { calculateNextDue, getLocalCalendarDate } = require('../shared/calendar-date');
+const { calculateNextDue, getLocalCalendarDate, addCalendarDays } = require('../shared/calendar-date');
 
 // The decrypted API key must never leave the main process — not to the
 // renderer over IPC, and not into an exported JSON backup. This produces a
@@ -230,6 +230,7 @@ class WealthFlowDatabase {
       require('./migrations/013-guided-onboarding-profile'),
       require('./migrations/014-current-ai-models'),
       require('./migrations/015-investment-fx'),
+      require('./migrations/016-bill-recurrence-day'),
     ];
 
     for (const migration of migrations) {
@@ -491,17 +492,19 @@ class WealthFlowDatabase {
     // was saved, making _ruleBillsDueSoon treat it as permanently overdue
     // forever, with no way to clear it short of deleting the bill.
     this.run(
-      'INSERT INTO bills (id, title, type, amount, date, recurring, frequency, category, next_due_date, auto_generate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO bills (id, title, type, amount, date, recurring, frequency, category, next_due_date, auto_generate, recurrence_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [b.id, b.title, b.type || 'bill', b.amount || 0, b.date, b.recurring || null,
-       b.frequency || null, b.category || 'Other', b.next_due_date ?? null, b.auto_generate || 0]
+       b.frequency || null, b.category || 'Other', b.next_due_date ?? null, b.auto_generate || 0,
+       b.frequency ? (b.recurrence_day || Number(String(b.date || b.next_due_date || '').slice(8, 10)) || null) : null]
     );
     return b;
   }
   updateBill(b) {
     this.run(
-      'UPDATE bills SET title=?, type=?, amount=?, date=?, recurring=?, frequency=?, category=?, last_paid_date=?, next_due_date=?, auto_generate=? WHERE id=?',
+      'UPDATE bills SET title=?, type=?, amount=?, date=?, recurring=?, frequency=?, category=?, last_paid_date=?, next_due_date=?, auto_generate=?, recurrence_day=? WHERE id=?',
       [b.title, b.type, b.amount, b.date, b.recurring, b.frequency, b.category,
-       b.last_paid_date, b.next_due_date, b.auto_generate, b.id]
+       b.last_paid_date, b.next_due_date, b.auto_generate,
+       b.frequency ? (b.recurrence_day || Number(String(b.date || b.next_due_date || '').slice(8, 10)) || null) : null, b.id]
     );
     return b;
   }
@@ -751,7 +754,7 @@ class WealthFlowDatabase {
 
   // Process recurring bills
   processRecurringBills() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalCalendarDate();
     const overdue = this.getAll(
       'SELECT * FROM bills WHERE frequency IS NOT NULL AND auto_generate = 1 AND next_due_date <= ? AND deleted_at IS NULL', [today]
     );
@@ -768,7 +771,7 @@ class WealthFlowDatabase {
         'INSERT INTO recurring_log (id, bill_id, paid_date, amount, period_start, period_end, transaction_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [logId, bill.id, today, bill.amount, bill.next_due_date, bill.next_due_date, txId]
       );
-      const nextDue = this._calculateNextDue(bill.next_due_date, bill.frequency);
+      const nextDue = this._calculateNextDue(bill.next_due_date, bill.frequency, bill.recurrence_day);
       this.db.run('UPDATE bills SET next_due_date = ?, last_paid_date = ? WHERE id = ?',
         [nextDue, today, bill.id]);
       generated.push({ bill: bill.title, txId });
@@ -777,8 +780,8 @@ class WealthFlowDatabase {
     return generated;
   }
 
-  _calculateNextDue(fromDate, frequency) {
-    return calculateNextDue(fromDate, frequency);
+  _calculateNextDue(fromDate, frequency, recurrenceDay = null) {
+    return calculateNextDue(fromDate, frequency, recurrenceDay);
   }
 
   // Permanently clear user financial/profile data while preserving the
@@ -1043,7 +1046,7 @@ class WealthFlowDatabase {
   listNextBestActions(statusFilter) {
     if (statusFilter) {
       if (statusFilter === 'open') {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = getLocalCalendarDate();
         this.db.run(
           "UPDATE next_best_actions SET status = 'open', snoozed_until = NULL WHERE status = 'snoozed' AND snoozed_until IS NOT NULL AND snoozed_until <= ? AND deleted_at IS NULL",
           [today]
@@ -1149,8 +1152,8 @@ class WealthFlowDatabase {
 
   // Bills due soon
   getBillsDueSoon(days = 3) {
-    const today = new Date().toISOString().slice(0, 10);
-    const futureDate = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+    const today = getLocalCalendarDate();
+    const futureDate = addCalendarDays(today, Math.max(0, Math.floor(days)));
     return this.getAll(
       'SELECT * FROM bills WHERE deleted_at IS NULL AND next_due_date >= ? AND next_due_date <= ? ORDER BY next_due_date',
       [today, futureDate]

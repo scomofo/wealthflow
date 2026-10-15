@@ -1,4 +1,4 @@
-const { calculateNextDue, parseCalendarDate, getLocalCalendarDate, calendarDayDifference } = require('../src/shared/calendar-date.js');
+const { calculateNextDue, parseCalendarDate, getLocalCalendarDate, calendarDayDifference, addCalendarDays } = require('../src/shared/calendar-date.js');
 
 describe('recurring calendar-date arithmetic', () => {
   test.each([
@@ -13,6 +13,23 @@ describe('recurring calendar-date arithmetic', () => {
     ['year boundary stays stable', '2026-12-31', 'monthly', '2027-01-31'],
   ])('%s', (_label, from, frequency, expected) => {
     expect(calculateNextDue(from, frequency)).toBe(expected);
+  });
+
+
+  test.each([
+    ['Jan 31 monthly anchor survives February clamp', '2026-02-28', 'monthly', 31, '2026-03-31'],
+    ['Jan 30 monthly anchor survives February clamp', '2026-02-28', 'monthly', 30, '2026-03-30'],
+    ['Feb 29 annual anchor returns in leap year', '2027-02-28', 'annual', 29, '2028-02-29'],
+    ['quarterly anchor survives April clamp', '2026-04-30', 'quarterly', 31, '2026-07-31'],
+    ['monthly recurrence defaults to current day without anchor', '2026-02-28', 'monthly', null, '2026-03-28'],
+  ])('preserves recurrence anchor: %s', (_label, from, frequency, anchor, expected) => {
+    expect(calculateNextDue(from, frequency, anchor)).toBe(expected);
+  });
+
+  test('calendar-day offsets remain stable across DST-sized days', () => {
+    expect(addCalendarDays('2026-03-07', 2)).toBe('2026-03-09');
+    expect(addCalendarDays('2026-10-31', 1)).toBe('2026-11-01');
+    expect(() => addCalendarDays('2026-03-07', 1.5)).toThrow('integer');
   });
 
   test('rejects malformed and impossible calendar dates', () => {
