@@ -69,7 +69,8 @@ export async function handleMoneyAction(action, btn, ctx) {
           id: uid(), bill_id: billId, paid_date: today, amount: bill.amount,
         });
         if (bill.frequency) {
-          const nextDue = calculateNextDue(today, bill.frequency);
+          const recurrenceDay = bill.recurrence_day || Number(String(bill.date || today).slice(8, 10));
+          const nextDue = calculateNextDue(today, bill.frequency, recurrenceDay);
           await State.updateBill({ ...bill, last_paid_date: today, next_due_date: nextDue });
         } else if (bill.next_due_date) {
           // One-off bill: there is no "next" occurrence, so clear the due
@@ -119,6 +120,7 @@ export async function handleMoneyAction(action, btn, ctx) {
           amount: p.avgAmount,
           date: p.nextDate,
           frequency: p.frequency,
+          recurrence_day: Number(String(p.nextDate).slice(8, 10)),
           category: p.category || 'Other',
           next_due_date: p.nextDate,
           auto_generate: 0,
