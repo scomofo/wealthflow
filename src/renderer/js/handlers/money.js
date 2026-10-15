@@ -5,7 +5,6 @@
 import { detectRecurringPayments } from '../utils/recurring-detector.js';
 import { renderRecurringModal } from '../components/recurring-modal.js';
 import { addXP } from './shared.js';
-import { calculateNextDue } from '../../../shared/calendar-date.js';
 import { calculateNextDue, getLocalCalendarDate } from '../../../shared/calendar-date.js';
 
 export async function handleMoneyAction(action, btn, ctx) {
