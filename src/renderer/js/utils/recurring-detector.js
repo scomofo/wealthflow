@@ -1,6 +1,8 @@
 // Recurring Payment Detector for WealthFlow
 // Analyzes transaction history to find recurring payment patterns
 
+import { calculateNextDue, calendarDayDifference } from '../../../shared/calendar-date.js';
+
 const FREQUENCY_RANGES = [
   { name: 'weekly', min: 5, max: 9, days: 7 },
   { name: 'biweekly', min: 12, max: 17, days: 14 },
@@ -39,11 +41,10 @@ function groupTransactions(transactions) {
 function detectFrequency(dates) {
   if (dates.length < 2) return null;
 
-  const sorted = dates.map(d => new Date(d).getTime()).sort((a, b) => a - b);
+  const sorted = [...dates].sort();
   const intervals = [];
   for (let i = 1; i < sorted.length; i++) {
-    const days = Math.round((sorted[i] - sorted[i - 1]) / (1000 * 60 * 60 * 24));
-    intervals.push(days);
+    intervals.push(calendarDayDifference(sorted[i - 1], sorted[i]));
   }
 
   const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
@@ -69,21 +70,8 @@ function detectFrequency(dates) {
 
 // Predict the next payment date
 function predictNextDate(dates, frequency) {
-  const sorted = dates.sort();
-  const lastDate = new Date(sorted[sorted.length - 1]);
-  const daysMap = { weekly: 7, biweekly: 14, monthly: 0, quarterly: 0, annual: 0 };
-
-  if (frequency === 'monthly') {
-    lastDate.setMonth(lastDate.getMonth() + 1);
-  } else if (frequency === 'quarterly') {
-    lastDate.setMonth(lastDate.getMonth() + 3);
-  } else if (frequency === 'annual') {
-    lastDate.setFullYear(lastDate.getFullYear() + 1);
-  } else {
-    lastDate.setDate(lastDate.getDate() + (daysMap[frequency] || 30));
-  }
-
-  return lastDate.toISOString().slice(0, 10);
+  const sorted = [...dates].sort();
+  return calculateNextDue(sorted[sorted.length - 1], frequency);
 }
 
 /**

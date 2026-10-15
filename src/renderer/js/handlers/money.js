@@ -5,18 +5,7 @@
 import { detectRecurringPayments } from '../utils/recurring-detector.js';
 import { renderRecurringModal } from '../components/recurring-modal.js';
 import { addXP } from './shared.js';
-
-function calculateNextDue(fromDate, frequency) {
-  const d = new Date(fromDate);
-  switch (frequency) {
-    case 'weekly': d.setDate(d.getDate() + 7); break;
-    case 'biweekly': d.setDate(d.getDate() + 14); break;
-    case 'monthly': d.setMonth(d.getMonth() + 1); break;
-    case 'quarterly': d.setMonth(d.getMonth() + 3); break;
-    case 'annual': d.setFullYear(d.getFullYear() + 1); break;
-  }
-  return d.toISOString().slice(0, 10);
-}
+import { calculateNextDue, getLocalCalendarDate } from '../../../shared/calendar-date.js';
 
 export async function handleMoneyAction(action, btn, ctx) {
   const { State, render, showToast, uid, appState, getSection,
@@ -70,7 +59,7 @@ export async function handleMoneyAction(action, btn, ctx) {
       const billId = btn.dataset.id;
       const bill = State.getState().bills.find(b => b.id === billId);
       if (bill) {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = getLocalCalendarDate();
         await State.addTransaction({
           id: uid(), description: bill.title,
           amount: bill.type === 'income' ? Math.abs(bill.amount) : -Math.abs(bill.amount),

@@ -55,6 +55,15 @@ describe('WealthFlowDatabase.addBill next_due_date handling', () => {
     expect(bills[0].next_due_date).toBeNull();
   });
 
+  test.each([
+    ['monthly month-end clamp', '2026-01-31', 'monthly', '2026-02-28'],
+    ['quarterly month-end clamp', '2026-01-31', 'quarterly', '2026-04-30'],
+    ['leap day annual clamp', '2024-02-29', 'annual', '2025-02-28'],
+    ['weekly across year boundary', '2026-12-28', 'weekly', '2027-01-04'],
+  ])('database recurring date: %s', (_label, from, frequency, expected) => {
+    expect(database._calculateNextDue(from, frequency)).toBe(expected);
+  });
+
   test('a recurring bill keeps its explicit next_due_date', () => {
     database.addBill({
       id: 'b2', title: 'Rent', amount: 1500, date: '2020-01-01',

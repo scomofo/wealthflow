@@ -110,9 +110,10 @@ npm start          # 🖥️ Launch Electron app
 ```bash
 npm run lint
 npm test
+npm run test:header   # Native Electron caption/header layout acceptance
 ```
 
-GitHub Actions runs lint and tests on pull requests and pushes to `master`.
+GitHub Actions runs lint, tests and native Windows header-layout acceptance on pull requests and pushes to `master`.
 
 ## 📦 Build Installer
 

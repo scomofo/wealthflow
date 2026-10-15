@@ -20,8 +20,8 @@
   --purple: #7a6ea8;
   --orange: #c08a40;
   --pink: #a8607a;
-  --font-display: 'Literata', Georgia, 'Times New Roman', serif;
-  --font-body: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'Cascadia Code', 'SF Mono', Consolas, Monaco, monospace;
   --bg-elevated: #1a1d22;
   --bg-soft: rgba(255,255,255,0.02);
