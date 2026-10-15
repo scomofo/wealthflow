@@ -115,6 +115,10 @@ npm run test:header   # Native Electron caption/header layout acceptance
 
 GitHub Actions runs lint, tests and native Windows header-layout acceptance on pull requests and pushes to `master`.
 
+## 🔐 Backup and Restore
+
+WealthFlow data is stored locally. Use **Settings → Data Management → Backup (JSON)** to create a portable database backup, then **Restore Backup** on another computer. Restore replaces the destination's financial records; back up any destination data first. API keys are device-local and external advisor document files must be copied separately. This is manual transfer, not cloud sync. See [the backup and restore guide](docs/backup-and-restore.md).
+
 ## 📦 Build Installer
 
 ```bash
