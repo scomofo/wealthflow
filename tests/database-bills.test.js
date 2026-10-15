@@ -64,6 +64,17 @@ describe('WealthFlowDatabase.addBill next_due_date handling', () => {
     expect(database._calculateNextDue(from, frequency)).toBe(expected);
   });
 
+  test('monthly bill preserves day 31 through a February clamp', () => {
+    database.addBill({
+      id: 'b5', title: 'Month-end bill', amount: 50, date: '2026-01-31',
+      frequency: 'monthly', next_due_date: '2026-02-28',
+    });
+    flushPendingSave(database);
+    const bill = database.listBills().find((b) => b.id === 'b5');
+    expect(bill.recurrence_day).toBe(31);
+    expect(database._calculateNextDue(bill.next_due_date, bill.frequency, bill.recurrence_day)).toBe('2026-03-31');
+  });
+
   test('a recurring bill keeps its explicit next_due_date', () => {
     database.addBill({
       id: 'b2', title: 'Rent', amount: 1500, date: '2020-01-01',
