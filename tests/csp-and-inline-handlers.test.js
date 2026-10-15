@@ -23,7 +23,7 @@ describe('startup uses local fonts and a restrictive CSP', () => {
   });
 
   test('no Google Fonts requests or third-party font origins remain at startup', () => {
-    expect(html).not.toMatch(/fonts\\.googleapis\\.com|fonts\\.gstatic\\.com|fonts\\.googleapis\\.com\/css/);
+    expect(html).not.toMatch(/fonts\.googleapis\.com|fonts\.gstatic\.com/);
     expect(html).not.toMatch(/<link rel="preconnect" href="https?:/);
     const csp = cspMatch[1];
     expect(csp.match(/style-src ([^;]+)/)[1]).not.toContain('https://');
