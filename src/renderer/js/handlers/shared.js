@@ -6,6 +6,7 @@
 // Also: handleSaveModal(), addXP()
 
 import { setExpandedGroup } from '../components/sidebar.js';
+import { getLocalCalendarDate } from '../../../shared/calendar-date.js';
 import { renderDecisionCard } from '../components/ai-decision-card.js';
 import {
   buildCompletionToast,
@@ -626,7 +627,7 @@ export async function handleSaveModal(type, ctx) {
       const freq = document.getElementById('m-freq')?.value;
       const autogen = document.getElementById('m-autogen')?.checked;
       if (!title) return;
-      const billDate = date || new Date().toISOString().slice(0, 10);
+      const billDate = date || getLocalCalendarDate();
       const billData = {
         title, amount: +(amt || 0),
         date: billDate, type: btype || 'bill',
