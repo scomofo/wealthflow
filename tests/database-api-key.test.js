@@ -227,13 +227,22 @@ describe('WealthFlowDatabase API key encryption', () => {
     });
     flushPendingSave(database);
     const backup = JSON.parse(JSON.stringify(database.exportAllData()));
-    backup.tables.transactions = [{
-      id: null,
-      description: 'Constraint violation',
-      amount: -1,
-      category: 'Other',
-      date: '2026-10-11',
-    }];
+    backup.tables.transactions = [
+      {
+        id: 'duplicate-backup-row',
+        description: 'First row',
+        amount: -1,
+        category: 'Other',
+        date: '2026-10-11',
+      },
+      {
+        id: 'duplicate-backup-row',
+        description: 'Duplicate primary key',
+        amount: -2,
+        category: 'Other',
+        date: '2026-10-12',
+      },
+    ];
 
     expect(() => database.restoreAllData(backup)).toThrow('Restore failed; no backup data was applied');
     expect(database.listTransactions().map(tx => tx.id)).toEqual(['keep-rollback-test']);
