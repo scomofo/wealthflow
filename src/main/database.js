@@ -5,6 +5,7 @@ const { app } = require('electron');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
 const { logger } = require('./logger');
+const { calculateNextDue } = require('../shared/calendar-date');
 
 // The decrypted API key must never leave the main process — not to the
 // renderer over IPC, and not into an exported JSON backup. This produces a
@@ -777,22 +778,7 @@ class WealthFlowDatabase {
   }
 
   _calculateNextDue(fromDate, frequency) {
-    const d = new Date(fromDate);
-    const origDay = d.getDate();
-    switch (frequency) {
-      case 'weekly': d.setDate(d.getDate() + 7); break;
-      case 'biweekly': d.setDate(d.getDate() + 14); break;
-      case 'monthly':
-        d.setMonth(d.getMonth() + 1);
-        if (d.getDate() !== origDay) d.setDate(0); // fix month overflow
-        break;
-      case 'quarterly':
-        d.setMonth(d.getMonth() + 3);
-        if (d.getDate() !== origDay) d.setDate(0);
-        break;
-      case 'annual': d.setFullYear(d.getFullYear() + 1); break;
-    }
-    return d.toISOString().slice(0, 10);
+    return calculateNextDue(fromDate, frequency);
   }
 
   // Permanently clear user financial/profile data while preserving the
