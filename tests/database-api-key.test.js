@@ -136,6 +136,57 @@ describe('WealthFlowDatabase API key encryption', () => {
     expect(exported.settings.apiKeyMasked).toBe(maskApiKey('sk-ant-should-not-leak'));
   });
 
+  test('full backup includes the whole database and excludes device-bound credentials', () => {
+    database.addTransaction({
+      id: 'portable-tx', description: 'Portable transaction', amount: -12,
+      category: 'Food', date: '2026-10-01',
+    });
+    database.updateSettings({ ai_api_key: 'sk-ant-should-not-leak' });
+    flushPendingSave(database);
+
+    const exported = database.exportAllData();
+    expect(exported.format).toBe('wealthflow-full-backup');
+    expect(exported.formatVersion).toBe(2);
+    expect(exported.tables.transactions).toHaveLength(1);
+    expect(exported.tables.settings[0].ai_api_key).toBe('');
+    expect(exported.tables).toHaveProperty('advisor_personal');
+    expect(JSON.stringify(exported)).not.toContain('sk-ant-should-not-leak');
+  });
+
+  test('restore replaces data atomically and preserves the destination device API key', () => {
+    database.updateSettings({ ai_api_key: 'sk-ant-local-device-key' });
+    database.addTransaction({
+      id: 'keep-tx', description: 'Keep from backup', amount: -12,
+      category: 'Food', date: '2026-10-01',
+    });
+    flushPendingSave(database);
+    const backup = database.exportAllData();
+
+    database.addTransaction({
+      id: 'remove-tx', description: 'Should be removed', amount: -99,
+      category: 'Other', date: '2026-10-02',
+    });
+    flushPendingSave(database);
+
+    const result = database.restoreAllData(backup);
+    expect(result.restored).toBe(true);
+    expect(database.listTransactions().map(tx => tx.id)).toEqual(['keep-tx']);
+    expect(database.getSettings().ai_api_key).toBe('sk-ant-local-device-key');
+  });
+
+  test('rejects malformed backups without changing existing records', () => {
+    database.addTransaction({
+      id: 'safe-tx', description: 'Keep this record', amount: -1,
+      category: 'Other', date: '2026-10-01',
+    });
+    flushPendingSave(database);
+    expect(() => database.restoreAllData({
+      format: 'wealthflow-full-backup', formatVersion: 2, schemaVersion: 15,
+      tables: { 'settings; DROP TABLE transactions;': [] },
+    })).toThrow('unsupported table');
+    expect(database.listTransactions().map(tx => tx.id)).toEqual(['safe-tx']);
+  });
+
   test('maskApiKey never reveals the middle of the key', () => {
     expect(maskApiKey('')).toBe('');
     expect(maskApiKey('sk-ant-api03-abcdefghijklmnopqrstuvwxyz')).toBe('sk-ant…wxyz');
