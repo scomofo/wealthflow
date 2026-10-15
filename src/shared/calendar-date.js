@@ -39,6 +39,7 @@ function calculateNextDue(fromDate, frequency) {
       const year = date.getUTCFullYear() + 1;
       const month = date.getUTCMonth();
       const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+      date.setUTCDate(1);
       date.setUTCFullYear(year);
       date.setUTCDate(Math.min(originalDay, lastDay));
       break;
