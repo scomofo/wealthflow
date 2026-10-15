@@ -899,6 +899,15 @@ class WealthFlowDatabase {
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'schema_version' ORDER BY name"
     ).map(row => row.name);
     const allowed = new Set(existingTables);
+    // A same-schema backup must contain every table. Silently treating an
+    // omitted table as empty could erase data if a backup was truncated or
+    // manually edited. Older schema versions may legitimately predate tables.
+    if (backup.schemaVersion === currentVersion) {
+      const missingTables = existingTables.filter(name => !Object.prototype.hasOwnProperty.call(backup.tables, name));
+      if (missingTables.length) {
+        throw new Error(`Backup is incomplete; missing tables: ${missingTables.join(', ')}.`);
+      }
+    }
     for (const [table, rows] of Object.entries(backup.tables)) {
       if (!allowed.has(table) || !Array.isArray(rows)) {
         throw new Error(`Backup contains an unsupported table: ${table}.`);

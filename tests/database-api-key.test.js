@@ -187,6 +187,67 @@ describe('WealthFlowDatabase API key encryption', () => {
     expect(database.listTransactions().map(tx => tx.id)).toEqual(['safe-tx']);
   });
 
+  test('round-trips the full backup through JSON serialization', () => {
+    database.addTransaction({
+      id: 'json-roundtrip-tx', description: 'JSON round trip', amount: -27.5,
+      category: 'Groceries', date: '2026-10-11',
+    });
+    database.updateSettings({ user_name: 'Backup User' });
+    flushPendingSave(database);
+
+    const backup = JSON.parse(JSON.stringify(database.exportAllData()));
+    database.addTransaction({
+      id: 'later-tx', description: 'Added after export', amount: -4,
+      category: 'Other', date: '2026-10-12',
+    });
+    flushPendingSave(database);
+
+    database.restoreAllData(backup);
+    expect(database.listTransactions().map(tx => tx.id)).toEqual(['json-roundtrip-tx']);
+    expect(database.getSettings().user_name).toBe('Backup User');
+  });
+
+  test('rejects a truncated same-schema backup before deleting existing data', () => {
+    database.addTransaction({
+      id: 'keep-truncated-test', description: 'Must survive', amount: -10,
+      category: 'Other', date: '2026-10-10',
+    });
+    flushPendingSave(database);
+    const backup = JSON.parse(JSON.stringify(database.exportAllData()));
+    delete backup.tables.transactions;
+
+    expect(() => database.restoreAllData(backup)).toThrow('Backup is incomplete');
+    expect(database.listTransactions().map(tx => tx.id)).toEqual(['keep-truncated-test']);
+  });
+
+  test('rolls back a restore when row data violates a database constraint', () => {
+    database.addTransaction({
+      id: 'keep-rollback-test', description: 'Must survive failed restore', amount: -10,
+      category: 'Other', date: '2026-10-10',
+    });
+    flushPendingSave(database);
+    const backup = JSON.parse(JSON.stringify(database.exportAllData()));
+    backup.tables.transactions = [
+      {
+        id: 'duplicate-backup-row',
+        description: 'First row',
+        amount: -1,
+        category: 'Other',
+        date: '2026-10-11',
+      },
+      {
+        id: 'duplicate-backup-row',
+        description: 'Duplicate primary key',
+        amount: -2,
+        category: 'Other',
+        date: '2026-10-12',
+      },
+    ];
+
+    expect(() => database.restoreAllData(backup)).toThrow('Restore failed; no backup data was applied');
+    expect(database.listTransactions().map(tx => tx.id)).toEqual(['keep-rollback-test']);
+  });
+
   test('maskApiKey never reveals the middle of the key', () => {
     expect(maskApiKey('')).toBe('');
     expect(maskApiKey('sk-ant-api03-abcdefghijklmnopqrstuvwxyz')).toBe('sk-ant…wxyz');
