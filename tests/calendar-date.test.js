@@ -1,4 +1,4 @@
-const { calculateNextDue, parseCalendarDate } = require('../src/shared/calendar-date.js');
+const { calculateNextDue, parseCalendarDate, getLocalCalendarDate, calendarDayDifference } = require('../src/shared/calendar-date.js');
 
 describe('recurring calendar-date arithmetic', () => {
   test.each([
@@ -31,5 +31,34 @@ describe('recurring calendar-date arithmetic', () => {
       if (original === undefined) delete process.env.TZ;
       else process.env.TZ = original;
     }
+  });
+});
+
+
+describe('local calendar dates and daylight-saving boundaries', () => {
+  test('formats the local date rather than the UTC date', () => {
+    const original = process.env.TZ;
+    try {
+      process.env.TZ = 'America/Edmonton';
+      expect(getLocalCalendarDate(new Date('2026-03-08T06:30:00.000Z'))).toBe('2026-03-07');
+      process.env.TZ = 'UTC';
+      expect(getLocalCalendarDate(new Date('2026-03-08T06:30:00.000Z'))).toBe('2026-03-08');
+    } finally {
+      if (original === undefined) delete process.env.TZ;
+      else process.env.TZ = original;
+    }
+  });
+
+  test.each([
+    ['spring forward', '2026-03-08', '2026-03-09', 1],
+    ['fall back', '2026-11-01', '2026-11-02', 1],
+    ['reverse date order', '2026-03-09', '2026-03-08', -1],
+    ['three calendar days', '2026-03-07', '2026-03-10', 3],
+  ])('counts %s in calendar days', (_label, from, to, expected) => {
+    expect(calendarDayDifference(from, to)).toBe(expected);
+  });
+
+  test('rejects invalid dates for calendar-day comparison', () => {
+    expect(() => calendarDayDifference('2026-02-30', '2026-03-01')).toThrow('Invalid calendar date');
   });
 });
