@@ -2,7 +2,7 @@
 // UTC methods keep YYYY-MM-DD values stable across machine timezones; these
 // values represent calendar days, not instants in time.
 function parseCalendarDate(value) {
-  if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     throw new TypeError('Expected a calendar date in YYYY-MM-DD format');
   }
   const [year, month, day] = value.split('-').map(Number);
