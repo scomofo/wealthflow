@@ -61,6 +61,7 @@ export function renderSettings(state) {
       </div>
       <div class="card">
         <div style="font-weight:600;font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:6px">${icon('download', 16)} Data Management</div>
+        <div style="font-size:11px;color:var(--sub);line-height:1.5;margin-bottom:10px">Full JSON backups include your WealthFlow database records. Restoring replaces data on this computer. Your local AI key is kept on this device and is never exported; document files stored outside the database must be copied separately.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-secondary" data-action="export-json">${icon('download', 12)} Backup (JSON)</button>
           <button class="btn btn-secondary" data-action="import-json-backup">${icon('upload', 12)} Restore Backup</button>
