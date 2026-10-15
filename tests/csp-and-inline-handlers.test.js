@@ -14,7 +14,7 @@ function readRepoFile(...parts) {
   return fs.readFileSync(path.join(__dirname, '..', ...parts), 'utf8');
 }
 
-describe('Content-Security-Policy allows the fonts it links', () => {
+describe('startup uses local fonts and a restrictive CSP', () => {
   const html = readRepoFile('src', 'renderer', 'index.html');
   const cspMatch = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/);
 
@@ -22,20 +22,19 @@ describe('Content-Security-Policy allows the fonts it links', () => {
     expect(cspMatch).not.toBeNull();
   });
 
-  test('style-src allows fonts.googleapis.com, where the Google Fonts <link rel="stylesheet"> is served from', () => {
+  test('no Google Fonts requests or third-party font origins remain at startup', () => {
+    expect(html).not.toMatch(/fonts\\.googleapis\\.com|fonts\\.gstatic\\.com|fonts\\.googleapis\\.com\/css/);
+    expect(html).not.toMatch(/<link rel="preconnect" href="https?:/);
     const csp = cspMatch[1];
-    const styleSrc = csp.match(/style-src ([^;]+)/)[1];
-    expect(styleSrc).toContain('https://fonts.googleapis.com');
-
-    // The stylesheet link itself must actually point at an allowed origin.
-    const linkMatch = html.match(/<link rel="stylesheet" href="(https:\/\/fonts\.googleapis\.com[^"]*)">/);
-    expect(linkMatch).not.toBeNull();
+    expect(csp.match(/style-src ([^;]+)/)[1]).not.toContain('https://');
+    expect(csp.match(/font-src ([^;"]+)/)[1]).toBe("'self'");
   });
 
-  test('font-src allows fonts.gstatic.com, where the actual font files are served from', () => {
-    const csp = cspMatch[1];
-    const fontSrc = csp.match(/font-src ([^;"]+)/)[1];
-    expect(fontSrc).toContain('https://fonts.gstatic.com');
+  test('theme font stacks have high-quality system fallbacks', () => {
+    const theme = readRepoFile('src', 'renderer', 'styles', 'theme.css');
+    expect(theme).toMatch(/--font-display:.*Georgia.*serif/);
+    expect(theme).toMatch(/--font-body:.*system-ui/);
+    expect(theme).not.toMatch(/Literata|Plus Jakarta Sans/);
   });
 });
 
