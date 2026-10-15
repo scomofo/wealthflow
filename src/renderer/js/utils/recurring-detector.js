@@ -71,7 +71,9 @@ function detectFrequency(dates) {
 // Predict the next payment date
 function predictNextDate(dates, frequency) {
   const sorted = [...dates].sort();
-  return calculateNextDue(sorted[sorted.length - 1], frequency);
+  const firstDay = Number(sorted[0].slice(8, 10));
+  const recurrenceDay = ['monthly', 'quarterly', 'annual'].includes(frequency) ? firstDay : null;
+  return calculateNextDue(sorted[sorted.length - 1], frequency, recurrenceDay);
 }
 
 /**
