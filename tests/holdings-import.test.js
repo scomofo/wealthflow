@@ -1,4 +1,5 @@
 const { resolveHoldingCostBasis } = require('../src/renderer/js/utils/holdings-import.js');
+const { resolveBankMapping } = require('../src/renderer/js/utils/bank-presets.js');
 
 describe('resolveHoldingCostBasis', () => {
   test('converts CAD book value into native USD cost per share using the supplied FX rate', () => {
@@ -33,5 +34,16 @@ describe('resolveHoldingCostBasis', () => {
   test('rejects invalid quantities and book values', () => {
     expect(resolveHoldingCostBasis({ quantity: 0, bookValueCad: 100 })).toHaveProperty('error');
     expect(resolveHoldingCostBasis({ quantity: 1, bookValueCad: -100 })).toHaveProperty('error');
+  });
+});
+
+
+describe('Wealthsimple holdings FX column mapping', () => {
+  test('maps an explicit USD/CAD rate when supplied and tolerates exports without it', () => {
+    const baseHeaders = ['Account Name', 'Symbol', 'Market Price', 'Quantity', 'Book Value (CAD)', 'Market Price Currency', 'Market Value', 'Market Value Currency'];
+    const withRate = resolveBankMapping('WEALTHSIMPLE_HOLDINGS', [...baseHeaders, 'Exchange Rate to CAD']);
+    const withoutRate = resolveBankMapping('WEALTHSIMPLE_HOLDINGS', baseHeaders);
+    expect(withRate.exchangeRateToCad).toBe('Exchange Rate to CAD');
+    expect(withoutRate.exchangeRateToCad).toBeNull();
   });
 });
