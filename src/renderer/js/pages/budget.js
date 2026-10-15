@@ -15,7 +15,7 @@ export function renderBudget(state, F) {
           ${icon('lightbulb', 18, '#0a0b0f')}
         </div>
         <div>
-          <div style="font-weight:700;font-size:16px;margin-bottom:4px">AI Budget Analysis</div>
+          <div style="font-weight:700;font-size:16px;margin-bottom:4px">Budget Insights</div>
           <div style="font-size:12px;color:var(--sub);line-height:1.6">Top spending: ${top || 'No data'}. ${advice}</div>
         </div>
       </div>
