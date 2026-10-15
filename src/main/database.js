@@ -6,6 +6,7 @@ const { app } = require('electron');
 const { DEFAULT_AI_MODEL } = require('./constants');
 const { logger } = require('./logger');
 const { calculateNextDue } = require('../shared/calendar-date');
+const { calculateNextDue, getLocalCalendarDate } = require('../shared/calendar-date');
 
 // The decrypted API key must never leave the main process — not to the
 // renderer over IPC, and not into an exported JSON backup. This produces a
@@ -720,7 +721,7 @@ class WealthFlowDatabase {
   // Net worth history
   listNetWorthHistory() { return this.getAll('SELECT * FROM net_worth_history ORDER BY date ASC'); }
   snapshotNetWorth() {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalCalendarDate();
     const existing = this.getOne('SELECT * FROM net_worth_history WHERE date = ?', [today]);
     if (existing) return existing;
     const totalInv = this.getScalar(`SELECT COALESCE(SUM(shares * current_price * CASE WHEN UPPER(COALESCE(currency, 'CAD')) = 'USD' THEN COALESCE(NULLIF(exchange_rate_to_cad, 0), 1) ELSE 1 END), 0) FROM investments`) || 0;

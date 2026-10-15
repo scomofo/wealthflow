@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { reconcileContributionRoom } = require('./contribution-room');
 const { scoreToPriority } = require('./action-priority');
+const { getLocalCalendarDate, calendarDayDifference } = require('../shared/calendar-date');
 
 function makeAction(fields) {
   const score = fields.score || 0;
@@ -171,14 +172,11 @@ class NextBestActionsEngine {
 
   _ruleBillsDueSoon(bills) {
     const actions = [];
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = getLocalCalendarDate();
 
     for (const bill of bills) {
       if (!bill.next_due_date) continue;
-      const dueDate = new Date(bill.next_due_date + 'T00:00:00');
-      const diffMs = dueDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      const diffDays = calendarDayDifference(today, bill.next_due_date);
       const overdue = diffDays < 0;
 
       if (diffDays <= 3) {

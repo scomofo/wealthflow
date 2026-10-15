@@ -5,6 +5,7 @@ import { parseOFX, isOFX } from './ofx-parser.js';
 import { generateMonthlyReportHTML } from './pdf-report.js';
 import { detectBank, listBankPresets, BANK_PRESETS, resolveBankMapping } from './bank-presets.js';
 import { normalizeImportRow, MAX_IMPORT_BATCH } from './transaction-import.js';
+import { resolveHoldingCostBasis } from './holdings-import.js';
 import * as State from '../state/core.js';
 
 const api = window.wealthflow;
@@ -214,64 +215,113 @@ export async function applyHoldingsImport(rows, mapping, bankPreset) {
   let updated = 0;
   let added = 0;
   let skipped = 0;
+  const plannedByKey = new Map();
 
+  // Validate and normalize the entire snapshot before writing anything.
+  // Keying the plan prevents duplicate rows from creating duplicate holdings.
   for (const row of rows) {
-    const symbol = (row[mapping.symbol] || '').trim().replace(/"/g, '');
-    const name = (row[mapping.name] || '').trim().replace(/"/g, '');
-    if (!symbol || symbol.length < 1) { skipped++; continue; }
+    const symbol = String(row[mapping.symbol] || '').trim().replace(/"/g, '');
+    const name = String(row[mapping.name] || '').trim().replace(/"/g, '');
+    if (!symbol) { skipped++; continue; }
 
-    const quantity = parseFloat((row[mapping.quantity] || '0').replace(/[,"]/g, '')) || 0;
-    const price = parseFloat((row[mapping.price] || '0').replace(/[,"]/g, '')) || 0;
-    const currency = (row[mapping.priceCurrency] || 'CAD').replace(/"/g, '').trim();
-    const bookValue = parseFloat((row[mapping.bookValue] || '0').replace(/[,"]/g, '')) || 0;
-    const accountType = (row[mapping.accountType] || 'non-registered').replace(/"/g, '').trim().toLowerCase();
-    const securityType = (row[mapping.securityType] || '').replace(/"/g, '').trim();
+    const parseAmount = value => {
+      const text = String(value ?? '').replace(/[, "$]/g, '').trim();
+      if (!text) return 0;
+      const number = Number(text);
+      return Number.isFinite(number) ? number : NaN;
+    };
+    const quantity = parseAmount(row[mapping.quantity]);
+    const price = parseAmount(row[mapping.price]);
+    const currency = String(row[mapping.priceCurrency] || 'CAD').replace(/"/g, '').trim().toUpperCase();
+    const bookValueCad = parseAmount(row[mapping.bookValue]);
+    const marketValue = parseAmount(row[mapping.marketValue]);
+    const marketValueCurrency = String(row[mapping.marketValueCurrency] || '').replace(/"/g, '').trim().toUpperCase();
+    const explicitFx = mapping.exchangeRateToCad ? parseAmount(row[mapping.exchangeRateToCad]) : NaN;
+    const accountType = String(row[mapping.accountType] || 'non-registered').replace(/"/g, '').trim().toLowerCase();
+    const securityType = String(row[mapping.securityType] || '').replace(/"/g, '').trim();
 
-    // Map account type to WealthFlow types
-    const acctMap = { 'rrsp': 'rrsp', 'tfsa': 'tfsa', 'resp': 'resp', 'fhsa': 'fhsa', 'crypto': 'non-registered', 'managed': 'rrsp', 'self-directed': 'non-registered' };
+    if (![quantity, price, bookValueCad].every(Number.isFinite) || quantity < 0 || price < 0 || bookValueCad < 0) {
+      throw new Error(`Invalid quantity, market price or Book Value (CAD) for ${symbol}. No holdings were imported.`);
+    }
+
+    const acctMap = { rrsp: 'rrsp', tfsa: 'tfsa', resp: 'resp', fhsa: 'fhsa', crypto: 'non-registered', managed: 'rrsp', 'self-directed': 'non-registered' };
     const wfAccountType = acctMap[accountType] || 'non-registered';
-
-    // Map security type
-    const typeMap = { 'EXCHANGE_TRADED_FUND': 'etf', 'STOCK': 'stock', 'MUTUAL_FUND': 'mutual_fund', 'BOND': 'bond', 'CRYPTOCURRENCY': 'crypto' };
+    const typeMap = { EXCHANGE_TRADED_FUND: 'etf', STOCK: 'stock', MUTUAL_FUND: 'mutual_fund', BOND: 'bond', CRYPTOCURRENCY: 'crypto' };
     const wfType = typeMap[securityType] || 'stock';
-
-    // Calculate avg cost from book value
-    const avgCost = quantity > 0 ? bookValue / quantity : 0;
-
-    // Check if we already track this symbol in this account type
-    const existing = state.investments.find(
-      i => i.symbol.replace('.TO', '').toUpperCase() === symbol.replace('.TO', '').toUpperCase()
-        && i.account_type === wfAccountType
+    const normalizedSymbol = symbol.replace('.TO', '').toUpperCase();
+    const key = `${normalizedSymbol}::${wfAccountType}`;
+    const existing = state.investments.find(i =>
+      i.symbol.replace('.TO', '').toUpperCase() === normalizedSymbol
+      && i.account_type === wfAccountType
     );
 
-    if (existing) {
-      // Update existing holding
+    // A zero-quantity row means a previously tracked position was closed.
+    // Preserve that record with zero shares instead of leaving stale net worth.
+    if (quantity === 0) {
+      if (!existing) { skipped++; continue; }
+      const rate = Number.isFinite(explicitFx) && explicitFx > 0
+        ? explicitFx
+        : (existing.exchange_rate_to_cad || (currency === 'CAD' ? 1 : undefined));
+      if (currency === 'USD' && !(Number.isFinite(rate) && rate > 0)) {
+        throw new Error(`${symbol}: cannot preserve the closed USD holding without a valid USD/CAD rate. No holdings were imported.`);
+      }
+      plannedByKey.set(key, {
+        symbol, name, quantity: 0, price, currency, accountType: wfAccountType,
+        securityType: wfType, existing, avgCost: existing.avg_cost,
+        exchangeRateToCad: rate || 1,
+      });
+      continue;
+    }
+
+    const costBasis = resolveHoldingCostBasis({
+      quantity,
+      bookValueCad,
+      currency,
+      exchangeRateToCad: explicitFx,
+      existingExchangeRateToCad: existing?.exchange_rate_to_cad,
+      price,
+      marketValue,
+      marketValueCurrency,
+    });
+    if (costBasis.error) {
+      throw new Error(`${symbol}: ${costBasis.error} No holdings were imported.`);
+    }
+
+    // If the export repeats a symbol/account row, the last snapshot row wins.
+    plannedByKey.set(key, {
+      symbol, name, quantity, price, currency, accountType: wfAccountType,
+      securityType: wfType, existing, avgCost: costBasis.avgCost,
+      exchangeRateToCad: costBasis.exchangeRateToCad,
+    });
+  }
+
+  for (const holding of plannedByKey.values()) {
+    if (holding.existing) {
       await State.updateInvestment({
-        ...existing,
-        shares: quantity,
-        current_price: currency === 'CAD' ? price : price, // price in its native currency
-        avg_cost: avgCost > 0 ? avgCost : existing.avg_cost,
-        currency,
-        name: name || existing.name,
+        ...holding.existing,
+        shares: holding.quantity,
+        current_price: holding.price,
+        avg_cost: holding.avgCost > 0 ? holding.avgCost : holding.existing.avg_cost,
+        currency: holding.currency,
+        exchange_rate_to_cad: holding.exchangeRateToCad,
+        name: holding.name || holding.existing.name,
       });
       updated++;
-    } else if (quantity > 0) {
-      // Add new holding
+    } else {
       await State.addInvestment({
         id: uid(),
-        symbol,
-        name,
-        shares: quantity,
-        avg_cost: avgCost,
-        current_price: price,
-        type: wfType,
-        account_type: wfAccountType,
+        symbol: holding.symbol,
+        name: holding.name,
+        shares: holding.quantity,
+        avg_cost: holding.avgCost,
+        current_price: holding.price,
+        type: holding.securityType,
+        account_type: holding.accountType,
         institution: bankPreset?.name || 'Wealthsimple',
-        currency,
+        currency: holding.currency,
+        exchange_rate_to_cad: holding.exchangeRateToCad,
       });
       added++;
-    } else {
-      skipped++;
     }
   }
 
