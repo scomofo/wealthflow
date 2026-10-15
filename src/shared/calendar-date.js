@@ -31,6 +31,13 @@ function getLocalCalendarDate(value = new Date()) {
 }
 
 // Difference in whole calendar days, independent of 23/25-hour DST days.
+function addCalendarDays(fromDate, days) {
+  if (!Number.isInteger(days)) throw new TypeError('Calendar-day offset must be an integer');
+  const date = parseCalendarDate(fromDate);
+  date.setUTCDate(date.getUTCDate() + days);
+  return formatCalendarDate(date);
+}
+
 function calendarDayDifference(fromDate, toDate) {
   const from = parseCalendarDate(fromDate);
   const to = parseCalendarDate(toDate);
@@ -71,4 +78,4 @@ function calculateNextDue(fromDate, frequency, recurrenceDay = null) {
   return formatCalendarDate(date);
 }
 
-module.exports = { calculateNextDue, parseCalendarDate, formatCalendarDate, getLocalCalendarDate, calendarDayDifference };
+module.exports = { calculateNextDue, parseCalendarDate, formatCalendarDate, getLocalCalendarDate, calendarDayDifference, addCalendarDays };
