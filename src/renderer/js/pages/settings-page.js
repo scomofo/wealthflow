@@ -63,6 +63,7 @@ export function renderSettings(state) {
         <div style="font-weight:600;font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:6px">${icon('download', 16)} Data Management</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-secondary" data-action="export-json">${icon('download', 12)} Backup (JSON)</button>
+          <button class="btn btn-secondary" data-action="import-json-backup">${icon('upload', 12)} Restore Backup</button>
           <button class="btn btn-secondary" data-action="export-csv">${icon('download', 12)} Export CSV</button>
           <button class="btn btn-secondary" data-action="import-csv">${icon('upload', 12)} Import Data</button>
           <button class="btn btn-secondary" data-action="export-pdf">${icon('file-text', 12)} PDF Report</button>
