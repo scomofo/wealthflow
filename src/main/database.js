@@ -852,6 +852,7 @@ class WealthFlowDatabase {
       }
       tables[name] = rows;
     }
+    const { ai_api_key, ...safeSettings } = this.getSettings();
     return {
       format: 'wealthflow-full-backup',
       formatVersion: 2,
@@ -859,6 +860,21 @@ class WealthFlowDatabase {
       exportDate: new Date().toISOString(),
       appVersion: '1.0.0',
       tables,
+      // Keep the original named collections for compatibility with older
+      // tooling while the versioned table snapshot preserves newer modules.
+      settings: { ...safeSettings, hasApiKey: !!ai_api_key, apiKeyMasked: maskApiKey(ai_api_key) },
+      transactions: this.listTransactions(),
+      budgets: this.listBudgets(),
+      goals: this.listGoals(),
+      debts: this.listDebts(),
+      investments: this.listInvestments(),
+      bills: this.listBills(),
+      contributions: this.listContributions(),
+      contributionRoom: this.listContributionRoom(),
+      respBeneficiaries: this.listRESPBeneficiaries(),
+      gics: this.listGICs(),
+      challenges: this.listChallenges(),
+      netWorthHistory: this.listNetWorthHistory(),
     };
   }
 
