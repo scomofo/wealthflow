@@ -75,3 +75,40 @@ describe('handlePlanAction affordability check', () => {
     expect(ctx.render).toHaveBeenCalledTimes(1);
   });
 });
+
+
+describe('handlePlanAction JSON backup feedback', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('does not claim export success when the save dialog is canceled', async () => {
+    const { exportJSON } = require('../src/renderer/js/utils/export-import.js');
+    exportJSON.mockResolvedValue(false);
+    const ctx = { showToast: jest.fn() };
+
+    await handlePlanAction('export-json', {}, ctx);
+
+    expect(ctx.showToast).not.toHaveBeenCalled();
+  });
+
+  test('reports export success only after a file was saved', async () => {
+    const { exportJSON } = require('../src/renderer/js/utils/export-import.js');
+    exportJSON.mockResolvedValue(true);
+    const ctx = { showToast: jest.fn() };
+
+    await handlePlanAction('export-json', {}, ctx);
+
+    expect(ctx.showToast).toHaveBeenCalledWith('Backup exported as JSON', 'success');
+  });
+
+  test('shows a useful error if writing the backup fails', async () => {
+    const { exportJSON } = require('../src/renderer/js/utils/export-import.js');
+    exportJSON.mockRejectedValue(new Error('Disk full'));
+    const ctx = { showToast: jest.fn() };
+
+    await handlePlanAction('export-json', {}, ctx);
+
+    expect(ctx.showToast).toHaveBeenCalledWith('Backup export failed: Disk full', 'error');
+  });
+});

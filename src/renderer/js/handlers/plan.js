@@ -92,10 +92,15 @@ export async function handlePlanAction(action, btn, ctx) {
       return true;
     }
 
-    case 'export-json':
-      await exportJSON();
-      showToast('Data exported as JSON');
+    case 'export-json': {
+      try {
+        const exported = await exportJSON();
+        if (exported) showToast('Backup exported as JSON', 'success');
+      } catch (err) {
+        showToast('Backup export failed: ' + (err?.message || 'Please try again.'), 'error');
+      }
       return true;
+    }
 
     case 'export-csv':
       await exportCSV();
