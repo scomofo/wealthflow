@@ -29,6 +29,27 @@ module.exports = [
     },
   },
   {
+    // Shared date helpers are CommonJS and run in the Electron main process.
+    files: ['src/shared/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-console': 'off',
+    },
+  },
+  {
     // Vendored, minified third-party bundle — not our code to lint.
     ignores: ['src/renderer/js/lib/**'],
   },
