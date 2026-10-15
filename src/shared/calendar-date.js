@@ -70,7 +70,7 @@ function calculateNextDue(fromDate, frequency, recurrenceDay = null) {
       const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
       date.setUTCDate(1);
       date.setUTCFullYear(year);
-      date.setUTCDate(Math.min(originalDay, lastDay));
+      date.setUTCDate(Math.min(requestedDay, lastDay));
       break;
     }
     default: return fromDate;
