@@ -5,7 +5,7 @@ const { app } = require('electron');
 
 const { DEFAULT_AI_MODEL } = require('./constants');
 const { logger } = require('./logger');
-const { calculateNextDue, getLocalCalendarDate } = require('../shared/calendar-date');
+const { calculateNextDue, getLocalCalendarDate, addCalendarDays } = require('../shared/calendar-date');
 
 // The decrypted API key must never leave the main process — not to the
 // renderer over IPC, and not into an exported JSON backup. This produces a
@@ -1153,8 +1153,7 @@ class WealthFlowDatabase {
   // Bills due soon
   getBillsDueSoon(days = 3) {
     const today = getLocalCalendarDate();
-    const futureDate = calculateNextDue(today, 'weekly');
-    const maxDate = days === 7 ? futureDate : require('../shared/calendar-date').formatCalendarDate(new Date(Date.UTC(...today.split('-').map(Number).map((v, i) => i === 1 ? v - 1 : v))));
+    const futureDate = addCalendarDays(today, Math.max(0, Math.floor(days)));
     return this.getAll(
       'SELECT * FROM bills WHERE deleted_at IS NULL AND next_due_date >= ? AND next_due_date <= ? ORDER BY next_due_date',
       [today, futureDate]
