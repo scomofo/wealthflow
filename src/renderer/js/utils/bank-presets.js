@@ -100,6 +100,7 @@ export const BANK_PRESETS = {
       bookValue: 'Book Value (CAD)',
       marketValue: 'Market Value',
       marketValueCurrency: 'Market Value Currency',
+      exchangeRateToCad: 'Exchange Rate to CAD',
       accountType: 'Account Type',
       accountName: 'Account Name',
       securityType: 'Security Type',
