@@ -836,11 +836,35 @@ class WealthFlowDatabase {
     return true;
   }
 
-  // Export all data
+  // Export a versioned, portable snapshot of every user-data table.
+  // Device-bound credentials are deliberately excluded; a destination device
+  // keeps its own local AI key, if configured.
   exportAllData() {
-    // The decrypted API key must never end up in a JSON backup file.
+    const schemaVersion = this.getScalar('SELECT COALESCE(MAX(version), 0) FROM schema_version') || 0;
+    const tables = {};
+    const tableRows = this.getAll(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'schema_version' ORDER BY name"
+    );
+    for (const { name } of tableRows) {
+      const escaped = name.replace(/"/g, '""');
+      const rows = this.getAll(`SELECT * FROM "${escaped}"`);
+      if (name === 'settings') {
+        for (const row of rows) {
+          if (Object.prototype.hasOwnProperty.call(row, 'ai_api_key')) row.ai_api_key = '';
+        }
+      }
+      tables[name] = rows;
+    }
     const { ai_api_key, ...safeSettings } = this.getSettings();
     return {
+      format: 'wealthflow-full-backup',
+      formatVersion: 2,
+      schemaVersion,
+      exportDate: new Date().toISOString(),
+      appVersion: '1.0.0',
+      tables,
+      // Keep the original named collections for compatibility with older
+      // tooling while the versioned table snapshot preserves newer modules.
       settings: { ...safeSettings, hasApiKey: !!ai_api_key, apiKeyMasked: maskApiKey(ai_api_key) },
       transactions: this.listTransactions(),
       budgets: this.listBudgets(),
@@ -854,9 +878,80 @@ class WealthFlowDatabase {
       gics: this.listGICs(),
       challenges: this.listChallenges(),
       netWorthHistory: this.listNetWorthHistory(),
-      exportDate: new Date().toISOString(),
-      version: '1.0.0',
     };
+  }
+
+  // Restore is intentionally replace-all: mixing financial records from two
+  // machines can double-count transactions. Validation and the entire restore
+  // happen in one SQL transaction, so malformed files cannot leave partial data.
+  restoreAllData(backup) {
+    if (!backup || backup.format !== 'wealthflow-full-backup' || backup.formatVersion !== 2
+      || !Number.isInteger(backup.schemaVersion) || backup.schemaVersion < 1
+      || !backup.tables || typeof backup.tables !== 'object' || Array.isArray(backup.tables)) {
+      throw new Error('This is not a supported WealthFlow full backup.');
+    }
+    const currentVersion = this.getScalar('SELECT COALESCE(MAX(version), 0) FROM schema_version') || 0;
+    if (backup.schemaVersion > currentVersion) {
+      throw new Error('This backup was created by a newer version of WealthFlow. Update this app before restoring it.');
+    }
+
+    const existingTables = this.getAll(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'schema_version' ORDER BY name"
+    ).map(row => row.name);
+    const allowed = new Set(existingTables);
+    for (const [table, rows] of Object.entries(backup.tables)) {
+      if (!allowed.has(table) || !Array.isArray(rows)) {
+        throw new Error(`Backup contains an unsupported table: ${table}.`);
+      }
+      const escaped = table.replace(/"/g, '""');
+      const columns = this.db.exec(`PRAGMA table_info("${escaped}")`)[0]?.values.map(row => row[1]) || [];
+      for (const row of rows) {
+        if (!row || typeof row !== 'object' || Array.isArray(row)
+          || Object.keys(row).some(key => !columns.includes(key))) {
+          throw new Error(`Backup contains invalid data for table ${table}.`);
+        }
+      }
+    }
+
+    // Preserve the destination device's locally configured credential. The
+    // source backup never carries a plaintext or device-encrypted API key.
+    const currentKey = this.getOne('SELECT ai_api_key FROM settings LIMIT 1')?.ai_api_key ?? '';
+    const tables = existingTables.map(name => ({
+      name,
+      rows: Array.isArray(backup.tables[name]) ? backup.tables[name] : [],
+    }));
+    this.db.run('PRAGMA foreign_keys = OFF');
+    this.db.run('BEGIN TRANSACTION');
+    try {
+      for (const { name } of [...tables].reverse()) {
+        this.db.run(`DELETE FROM "${name.replace(/"/g, '""')}"`);
+      }
+      for (const { name, rows } of tables) {
+        if (rows.length === 0) continue;
+        const escaped = name.replace(/"/g, '""');
+        const columns = this.db.exec(`PRAGMA table_info("${escaped}")`)[0]?.values.map(row => row[1]) || [];
+        for (const sourceRow of rows) {
+          const row = { ...sourceRow };
+          if (name === 'settings' && Object.prototype.hasOwnProperty.call(row, 'ai_api_key')) {
+            row.ai_api_key = currentKey;
+          }
+          const keys = Object.keys(row);
+          if (keys.length === 0) continue;
+          if (keys.some(key => !columns.includes(key))) throw new Error(`Backup contains invalid columns for ${name}.`);
+          const quoted = keys.map(key => `"${key.replace(/"/g, '""')}"`).join(', ');
+          const placeholders = keys.map(() => '?').join(', ');
+          this.db.run(`INSERT INTO "${escaped}" (${quoted}) VALUES (${placeholders})`, keys.map(key => row[key] ?? null));
+        }
+      }
+      this.db.run('COMMIT');
+    } catch (error) {
+      try { this.db.run('ROLLBACK'); } catch { /* transaction may already be closed */ }
+      throw new Error(`Restore failed; no backup data was applied. ${error.message}`, { cause: error });
+    } finally {
+      this.db.run('PRAGMA foreign_keys = ON');
+    }
+    this.save();
+    return { restored: true, schemaVersion: backup.schemaVersion, tableCount: tables.length };
   }
 
   // Advisor Profile — Singleton tables

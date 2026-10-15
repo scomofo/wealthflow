@@ -6,7 +6,7 @@
 // being interpolated into HTML strings. This pattern is inherited from the original
 // app.js code and is consistent throughout the codebase.
 
-import { exportJSON, exportCSV, importFile, applyImport, applyHoldingsImport, checkDuplicates, aiCategorizeImport, saveImportHistory, exportPDF, reconcileAfterImport } from '../utils/export-import.js';
+import { exportJSON, exportCSV, importFile, importJSONBackup, applyImport, applyHoldingsImport, checkDuplicates, aiCategorizeImport, saveImportHistory, exportPDF, reconcileAfterImport } from '../utils/export-import.js';
 import { exportToQIF } from '../utils/qif-export.js';
 import { renderImportModal, computeStats } from '../components/import-modal.js';
 import { BANK_PRESETS } from '../utils/bank-presets.js';
@@ -116,6 +116,19 @@ export async function handlePlanAction(action, btn, ctx) {
       const pdfF = await State.computeFinancials();
       await exportPDF(State.getState(), pdfF);
       showToast('PDF report exported');
+      return true;
+    }
+
+    case 'import-json-backup': {
+      if (!confirm('Restoring a backup replaces the financial data on this computer. Export a backup of the current computer first if you may need it. Continue?')) return true;
+      try {
+        const result = await importJSONBackup();
+        if (!result) return true;
+        showToast('Backup restored. Reloading WealthFlow…', 'success');
+        location.reload();
+      } catch (err) {
+        showToast('Backup restore failed: ' + (err?.message || 'Please try again.'), 'error');
+      }
       return true;
     }
 

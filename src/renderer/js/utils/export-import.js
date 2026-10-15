@@ -25,6 +25,25 @@ export async function exportJSON() {
   return true;
 }
 
+export async function importJSONBackup() {
+  const result = await api.showOpenDialog({
+    title: 'Restore WealthFlow Backup',
+    filters: [{ name: 'WealthFlow JSON Backup', extensions: ['json'] }],
+    properties: ['openFile'],
+  });
+  if (result.canceled || !result.filePaths || result.filePaths.length === 0) return null;
+  let backup;
+  try {
+    backup = JSON.parse(await api.readFile(result.filePaths[0]));
+  } catch {
+    throw new Error('This file is not valid JSON. No data was changed.');
+  }
+  if (!backup || backup.format !== 'wealthflow-full-backup' || backup.formatVersion !== 2) {
+    throw new Error('This is not a supported full WealthFlow backup. No data was changed.');
+  }
+  return api.restoreAllData(backup);
+}
+
 export async function exportCSV() {
   const result = await api.showSaveDialog({
     title: 'Export Transactions CSV',
