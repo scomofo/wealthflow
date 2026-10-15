@@ -215,18 +215,17 @@ export async function applyHoldingsImport(rows, mapping, bankPreset) {
   let updated = 0;
   let added = 0;
   let skipped = 0;
-  const planned = [];
+  const plannedByKey = new Map();
 
-  // Validate and normalize the entire snapshot before writing anything. In
-  // particular, never partially import a file then discover a USD basis cannot
-  // be converted from the CAD-denominated Book Value column.
+  // Validate and normalize the entire snapshot before writing anything.
+  // Keying the plan prevents duplicate rows from creating duplicate holdings.
   for (const row of rows) {
     const symbol = String(row[mapping.symbol] || '').trim().replace(/"/g, '');
     const name = String(row[mapping.name] || '').trim().replace(/"/g, '');
     if (!symbol) { skipped++; continue; }
 
     const parseAmount = value => {
-      const text = String(value ?? '').replace(/[,"$]/g, '').trim();
+      const text = String(value ?? '').replace(/[, "$]/g, '').trim();
       if (!text) return 0;
       const number = Number(text);
       return Number.isFinite(number) ? number : NaN;
@@ -249,12 +248,30 @@ export async function applyHoldingsImport(rows, mapping, bankPreset) {
     const wfAccountType = acctMap[accountType] || 'non-registered';
     const typeMap = { EXCHANGE_TRADED_FUND: 'etf', STOCK: 'stock', MUTUAL_FUND: 'mutual_fund', BOND: 'bond', CRYPTOCURRENCY: 'crypto' };
     const wfType = typeMap[securityType] || 'stock';
-
+    const normalizedSymbol = symbol.replace('.TO', '').toUpperCase();
+    const key = `${normalizedSymbol}::${wfAccountType}`;
     const existing = state.investments.find(i =>
-      i.symbol.replace('.TO', '').toUpperCase() === symbol.replace('.TO', '').toUpperCase()
+      i.symbol.replace('.TO', '').toUpperCase() === normalizedSymbol
       && i.account_type === wfAccountType
     );
-    if (quantity <= 0) { skipped++; continue; }
+
+    // A zero-quantity row means a previously tracked position was closed.
+    // Preserve that record with zero shares instead of leaving stale net worth.
+    if (quantity === 0) {
+      if (!existing) { skipped++; continue; }
+      const rate = Number.isFinite(explicitFx) && explicitFx > 0
+        ? explicitFx
+        : (existing.exchange_rate_to_cad || (currency === 'CAD' ? 1 : undefined));
+      if (currency === 'USD' && !(Number.isFinite(rate) && rate > 0)) {
+        throw new Error(`${symbol}: cannot preserve the closed USD holding without a valid USD/CAD rate. No holdings were imported.`);
+      }
+      plannedByKey.set(key, {
+        symbol, name, quantity: 0, price, currency, accountType: wfAccountType,
+        securityType: wfType, existing, avgCost: existing.avg_cost,
+        exchangeRateToCad: rate || 1,
+      });
+      continue;
+    }
 
     const costBasis = resolveHoldingCostBasis({
       quantity,
@@ -270,14 +287,15 @@ export async function applyHoldingsImport(rows, mapping, bankPreset) {
       throw new Error(`${symbol}: ${costBasis.error} No holdings were imported.`);
     }
 
-    planned.push({
+    // If the export repeats a symbol/account row, the last snapshot row wins.
+    plannedByKey.set(key, {
       symbol, name, quantity, price, currency, accountType: wfAccountType,
       securityType: wfType, existing, avgCost: costBasis.avgCost,
       exchangeRateToCad: costBasis.exchangeRateToCad,
     });
   }
 
-  for (const holding of planned) {
+  for (const holding of plannedByKey.values()) {
     if (holding.existing) {
       await State.updateInvestment({
         ...holding.existing,
