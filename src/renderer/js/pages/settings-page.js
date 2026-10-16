@@ -3,6 +3,7 @@ import { icon } from '../icons.js';
 import { h } from '../helpers.js';
 import { PROVINCES } from '../canadian/constants.js';
 import { renderSyncRecoveryPanel } from '../components/sync-recovery-panel.js';
+import { renderSyncTrustPanel } from '../components/sync-trust-panel.js';
 
 const AI_MODELS = [
   { id: 'claude-sonnet-5', name: 'Claude Sonnet 5 (Recommended)', desc: 'Smart, balanced default' },
@@ -71,6 +72,7 @@ export function renderSettings(state) {
           <button class="btn btn-secondary" data-action="export-pdf">${icon('file-text', 12)} PDF Report</button>
         </div>
       </div>
+      ${renderSyncTrustPanel(state.syncStatus)}
       ${renderSyncRecoveryPanel(state.syncStatus)}
       <div class="card danger-zone">
         <div style="font-weight:600;font-size:14px;margin-bottom:8px;color:var(--red);display:flex;align-items:center;gap:6px">${icon('alert-triangle', 16)} Danger Zone</div>
