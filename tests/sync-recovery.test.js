@@ -1,8 +1,25 @@
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+function loadRecoveryModule() {
+  const sourcePath = path.join(__dirname, '../src/renderer/js/sync-recovery.js');
+  let source = fs.readFileSync(sourcePath, 'utf8');
+  source = source
+    .replace(/export const /g, 'const ')
+    .replace(/export function /g, 'function ');
+  source += '\nmodule.exports = { SYNC_RECOVERY_STATES, buildSyncRecoveryView, allowedSyncRecoveryActions };';
+
+  const module = { exports: {} };
+  vm.runInNewContext(source, { module, exports: module.exports });
+  return module.exports;
+}
+
 const {
   SYNC_RECOVERY_STATES,
   buildSyncRecoveryView,
   allowedSyncRecoveryActions,
-} = require('../src/renderer/js/sync-recovery.js');
+} = loadRecoveryModule();
 
 describe('sync recovery view model', () => {
   test('conflict requires explicit resolution and inspection', () => {
@@ -13,7 +30,7 @@ describe('sync recovery view model', () => {
 
     expect(view.title).toBe('Both copies changed');
     expect(view.summary).toMatch(/will not choose a winner automatically/i);
-    expect(allowedSyncRecoveryActions(view)).toEqual([
+    expect(Array.from(allowedSyncRecoveryActions(view))).toEqual([
       'sync-resolve-conflict',
       'sync-inspect',
       'sync-restore-previous',
@@ -35,7 +52,7 @@ describe('sync recovery view model', () => {
   test('same state has no destructive primary action', () => {
     const view = buildSyncRecoveryView({ state: SYNC_RECOVERY_STATES.SAME });
     expect(view.primaryAction).toBeNull();
-    expect(allowedSyncRecoveryActions(view)).toEqual(['sync-inspect']);
+    expect(Array.from(allowedSyncRecoveryActions(view))).toEqual(['sync-inspect']);
   });
 
   test('absent sync state renders no view model', () => {
