@@ -1,9 +1,9 @@
-function safeHost(endpoint) {
+export function safeHost(endpoint) {
   if (!endpoint) return null;
   try { return new URL(endpoint).host; } catch { return null; }
 }
 
-function buildSyncTrustView(status) {
+export function buildSyncTrustView(status) {
   if (!status || typeof status !== 'object') return null;
   const devices = Array.isArray(status.devices) ? status.devices : [];
   return {
@@ -34,5 +34,3 @@ function buildSyncTrustView(status) {
     ],
   };
 }
-
-module.exports = { buildSyncTrustView, safeHost };
