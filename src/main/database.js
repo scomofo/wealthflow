@@ -21,6 +21,7 @@ class WealthFlowDatabase {
   constructor() {
     this.db = null;
     this.dbPath = null;
+    this._commitListeners = new Set();
   }
 
   async init() {
@@ -110,10 +111,19 @@ class WealthFlowDatabase {
         fs.closeSync(fd);
       }
       fs.renameSync(this._tmpPath, this.dbPath);
+      for (const listener of this._commitListeners) {
+        try { listener(); } catch (err) { logger.warn('Database commit listener failed', { error: err.message }); }
+      }
     } catch (err) {
       try { if (fs.existsSync(this._tmpPath)) fs.unlinkSync(this._tmpPath); } catch { /* best-effort cleanup */ }
       throw err;
     }
+  }
+
+  onCommittedSave(listener) {
+    if (typeof listener !== 'function') throw new Error('Commit listener must be a function');
+    this._commitListeners.add(listener);
+    return () => this._commitListeners.delete(listener);
   }
 
   run(sql, params = []) {

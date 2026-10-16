@@ -5,6 +5,8 @@ const { logger } = require('./logger');
 let mainWindow;
 let database;
 let aiService;
+let syncCoordinator;
+let syncShuttingDown = false;
 
 // Two instances writing to the same sql.js-backed wealthflow.db would silently
 // clobber each other (last save wins), so only one instance may run at a time.
@@ -90,6 +92,21 @@ app.whenReady().then(async () => {
   // The original database instance remains owned here for lifecycle/close.
   registerIpcHandlers(createValidatedDatabase(database), aiService);
   createWindow();
+  try {
+    const { createSyncRuntime } = require('./sync-runtime');
+    const runtime = createSyncRuntime({
+      database,
+      userDataPath: app.getPath('userData'),
+      onState: (state) => logger.info('Cloud sync state', { state: state.state, action: state.action, reason: state.reason }),
+    });
+    if (runtime) {
+      syncCoordinator = runtime.coordinator;
+      void syncCoordinator.start().catch((error) => logger.warn('Startup cloud sync failed', { error: error.message }));
+      logger.info('Cloud sync configured', runtime.config);
+    }
+  } catch (error) {
+    logger.error('Cloud sync configuration failed', { error: error.message });
+  }
   logger.info('Application ready');
 
   app.on('activate', () => {
@@ -102,4 +119,16 @@ app.on('window-all-closed', () => {
   if (database) database.close();
   logger.info('WealthFlow shutting down');
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', (event) => {
+  if (!syncCoordinator || syncShuttingDown) return;
+  event.preventDefault();
+  syncShuttingDown = true;
+  void syncCoordinator.stop()
+    .catch((error) => logger.warn('Shutdown cloud sync failed', { error: error.message }))
+    .finally(() => {
+      syncCoordinator = null;
+      app.quit();
+    });
 });
