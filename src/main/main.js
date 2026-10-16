@@ -5,6 +5,8 @@ const { logger } = require('./logger');
 let mainWindow;
 let database;
 let aiService;
+let syncCoordinator;
+let syncShuttingDown = false;
 
 // Two instances writing to the same sql.js-backed wealthflow.db would silently
 // clobber each other (last save wins), so only one instance may run at a time.
@@ -90,6 +92,32 @@ app.whenReady().then(async () => {
   // The original database instance remains owned here for lifecycle/close.
   registerIpcHandlers(createValidatedDatabase(database), aiService);
   createWindow();
+  const syncEndpoint = process.env.WEALTHFLOW_SYNC_ENDPOINT;
+  const syncPassphrase = process.env.WEALTHFLOW_SYNC_PASSPHRASE;
+  if (syncEndpoint && syncPassphrase) {
+    try {
+      const { LocalSyncJournal } = require('./sync-journal');
+      const { SyncDeviceRegistry } = require('./sync-devices');
+      const { HttpsSyncTransport } = require('./sync-transport');
+      const { SyncEngine } = require('./sync-engine');
+      const { BackgroundSyncCoordinator } = require('./background-sync');
+      const syncRoot = path.join(app.getPath('userData'), 'sync');
+      const devices = new SyncDeviceRegistry({ rootDir: syncRoot, deviceName: process.env.WEALTHFLOW_DEVICE_NAME || 'This computer' });
+      const local = devices.ensureLocal();
+      const journal = new LocalSyncJournal({ rootDir: syncRoot, deviceId: local.id });
+      const transport = new HttpsSyncTransport({ endpoint: syncEndpoint, authorization: process.env.WEALTHFLOW_SYNC_AUTH || null });
+      const engine = new SyncEngine({ database, journal, transport, passphrase: syncPassphrase, deviceRegistry: devices });
+      syncCoordinator = new BackgroundSyncCoordinator({
+        syncOnce: () => engine.syncOnce(),
+        onState: (state) => logger.info('Cloud sync state', { state: state.state, action: state.action, reason: state.reason }),
+      });
+      database.onCommittedSave(() => syncCoordinator?.markDirty());
+      void syncCoordinator.start().catch((error) => logger.warn('Startup cloud sync failed', { error: error.message }));
+      logger.info('Cloud sync configured', { endpointHost: new URL(syncEndpoint).host });
+    } catch (error) {
+      logger.error('Cloud sync configuration failed', { error: error.message });
+    }
+  }
   logger.info('Application ready');
 
   app.on('activate', () => {
@@ -102,4 +130,16 @@ app.on('window-all-closed', () => {
   if (database) database.close();
   logger.info('WealthFlow shutting down');
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', (event) => {
+  if (!syncCoordinator || syncShuttingDown) return;
+  event.preventDefault();
+  syncShuttingDown = true;
+  void syncCoordinator.stop()
+    .catch((error) => logger.warn('Shutdown cloud sync failed', { error: error.message }))
+    .finally(() => {
+      syncCoordinator = null;
+      app.quit();
+    });
 });
