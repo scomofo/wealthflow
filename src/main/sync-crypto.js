@@ -16,7 +16,7 @@ function deriveSyncKey(passphrase, salt) {
   requirePassphrase(passphrase);
   const saltBuffer = Buffer.isBuffer(salt) ? salt : Buffer.from(salt, 'base64');
   if (saltBuffer.length !== SALT_BYTES) throw new Error('Invalid sync encryption salt.');
-  return crypto.scryptSync(passphrase, saltBuffer, KEY_BYTES, { N: 1 << 15, r: 8, p: 1 });
+  return crypto.scryptSync(passphrase, saltBuffer, KEY_BYTES, { N: 1 << 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
 }
 
 function encryptSyncPackage(syncPackage, passphrase) {
