@@ -1,10 +1,10 @@
-const { buildSyncTrustView } = require('../sync-trust');
+import { buildSyncTrustView } from '../sync-trust.js';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
-function renderSyncTrustPanel(status) {
+export function renderSyncTrustPanel(status) {
   const view = buildSyncTrustView(status);
   if (!view) return '';
   const deviceRows = view.devices.map(device => `
@@ -31,5 +31,3 @@ function renderSyncTrustPanel(status) {
       <p style="font-size:10px;color:var(--sub);line-height:1.5;margin-top:10px">Manual JSON backup remains an independent recovery path. Divergent financial histories are never silently merged.</p>
     </div>`;
 }
-
-module.exports = { renderSyncTrustPanel };
